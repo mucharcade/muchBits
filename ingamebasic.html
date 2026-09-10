@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Paso 2: Mundo Exterior con Colisiones</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"></script>
+    <style>
+        body { margin: 0; background-color: #111; }
+    </style>
+</head>
+<body>
+
+<script>
+    const config = {
+        type: Phaser.CANVAS, // FORZADO A CANVAS para permitir la lectura de píxeles sin errores
+        width: 1000, 
+        height: 800,
+        physics: {
+            default: 'arcade',
+            arcade: { 
+                gravity: { y: 0 }, 
+                debug: true // Muestra las áreas de colisión en verde de los portales
+            }
+        },
+        scene: { preload: preload, create: create, update: update }
+    };
+
+    const game = new Phaser.Game(config);
+
+    function preload() {
+        // Modo basico sin graficos.
+        // Aqui se pueden cargar texturas si se desea, pero para este ejemplo se usan figuras simples.
+    }
+
+    let jugador;
+    let teclado;
+    let salas;
+    
+    // Variables para registrar la última posición totalmente segura dentro del camino
+    let ultimaPosSegura = { x: 150, y: 120 }; 
+
+    function create() {
+        // --- Fondo del Mundo (Pasto Verde) ---
+        let fondoPasto = this.make.graphics({ x: 0, y: 0, add: false });
+        fondoPasto.fillStyle(0x27ae60, 1);
+        fondoPasto.fillRect(0, 0, 1000, 800);
+        fondoPasto.generateTexture('textura_pasto', 1000, 800);
+        this.add.image(500, 400, 'textura_pasto');
+
+        let gSala = this.make.graphics({ x: 0, y: 0, add: false });
+        gSala.fillStyle(0xe74c3c, 0.4); 
+        gSala.lineStyle(4, 0xe74c3c, 1);  
+        gSala.fillCircle(60, 60, 60);
+        gSala.generateTexture('textura_sala', 120, 120);
+
+        // --- 2. DIBUJO DEL CAMINO ---
+        let graficosBorde = this.add.graphics();
+        let graficosCamino = this.add.graphics();
+        
+        graficosBorde.lineStyle(76, 0x1e272c, 1); 
+        graficosCamino.lineStyle(70, 0x7f8c8d, 1); // El camino transitable es de color Gris (RGB: 127, 140, 141)
+
+        let caminoOriginal = new Phaser.Curves.Spline([
+            80, 120,   
+            260, 55,    
+            470, 55,
+            610, 150,   
+            665, 360,
+            635, 505,   
+            540, 570,
+            350, 610,
+            190, 500,   
+            80, 350
+        ]);
+
+        caminoOriginal.draw(graficosBorde, 64);
+        caminoOriginal.draw(graficosCamino, 64);
+
+        // Ramales hacia las salas
+        let graficosRamalesBorde = this.add.graphics();
+        let graficosRamales = this.add.graphics();
+        graficosRamalesBorde.lineStyle(56, 0x1e272c, 1);
+        graficosRamales.lineStyle(50, 0x7f8c8d, 1);
+
+        let caminoSalaC = new Phaser.Curves.Spline([470, 55, 455, 125, 470, 190, 470, 255]);
+        let caminoSalaB = new Phaser.Curves.Spline([665, 360, 725, 350, 775, 330, 820, 320]);
+        let caminoSalaA = new Phaser.Curves.Spline([540, 570, 590, 620, 660, 680, 740, 720]);
+
+        caminoSalaC.draw(graficosRamalesBorde, 32); caminoSalaC.draw(graficosRamales, 32);
+        caminoSalaB.draw(graficosRamalesBorde, 32); caminoSalaB.draw(graficosRamales, 32);
+        caminoSalaA.draw(graficosRamalesBorde, 32); caminoSalaA.draw(graficosRamales, 32);
+
+        // --- 3. CREACIÓN DE LAS SALAS ---
+        salas = this.physics.add.staticGroup();
+
+        let salaA = salas.create(740, 720, 'textura_sala');
+        salaA.setData('nombre', 'Sala A');
+        this.add.text(715, 710, 'SALA A', { fill: '#ffffff', fontStyle: 'bold', fontFamily: 'Arial' });
+
+        let salaB = salas.create(820, 320, 'textura_sala');
+        salaB.setData('nombre', 'Sala B');
+        this.add.text(795, 310, 'SALA B', { fill: '#ffffff', fontStyle: 'bold', fontFamily: 'Arial' });
+
+        let salaC = salas.create(470, 255, 'textura_sala');
+        salaC.setData('nombre', 'Sala C');
+        this.add.text(445, 245, 'SALA C', { fill: '#ffffff', fontStyle: 'bold', fontFamily: 'Arial' });
+
+        salas.children.iterate((sala) => {
+            sala.body.setCircle(60);
+        });
+
+        // --- 4. CREACIÓN DEL JUGADOR ---
+        jugador = this.physics.add.sprite(150, 120, 'textura_jugador');
+        jugador.setCollideWorldBounds(true);
+
+        this.physics.add.overlap(jugador, salas, transportarASala, null, this);
+        teclado = this.input.keyboard.createCursorKeys();
+    }
+
+    function update() {
+        // Guardamos la posición del frame actual antes de aplicar el movimiento de las teclas
+        let posPreviaX = jugador.x;
+        let posPreviaY = jugador.y;
+
+        jugador.setVelocity(0);
+
+        if (teclado.left.isDown) jugador.setVelocityX(-160);
+        else if (teclado.right.isDown) jugador.setVelocityX(160);
+
+        if (teclado.up.isDown) jugador.setVelocityY(-160);
+        else if (teclado.down.isDown) jugador.setVelocityY(160);
+
+        // --- RESTRICCIÓN DE MOVIMIENTO POR COLOR (COLISIÓN DE MAPA PERMANENTE) ---
+        if (game.canvas) {
+            let ctx = game.canvas.getContext('2d');
+            
+            // Analizamos el píxel exactamente en el centro inferior del cuadrado del jugador
+            let pixel = ctx.getImageData(Math.floor(jugador.x), Math.floor(jugador.y + 10), 1, 1).data;
+            let r = pixel[0];
+            let g = pixel[1];
+            let b = pixel[2];
+
+            // Si el color detectado abajo es puramente el Verde del pasto (39, 174, 96), el jugador se salió del camino
+            if (r === 39 && g === 174 && b === 96) {
+                // Forzar al jugador a regresar inmediatamente a su última posición segura registrada
+                jugador.x = ultimaPosSegura.x;
+                jugador.y = ultimaPosSegura.y;
+                jugador.setVelocity(0);
+            } else {
+                // Si está pisando camino gris o portales rojos, guardamos esta ubicación como un punto seguro válido
+                ultimaPosSegura.x = posPreviaX;
+                ultimaPosSegura.y = posPreviaY;
+            }
+        }
+    }
+
+    function transportarASala(jugador, sala) {
+        let destino = sala.getData('nombre');
+        alert("¡Portal activado! Entrando a la escena: " + destino);
+        
+        // Devolvemos al jugador a una zona segura al inicio del circuito para evitar bucles del alert
+        jugador.x = 150;
+        jugador.y = 120;
+        ultimaPosSegura = { x: 150, y: 120 };
+    }
+</script>
+
+</body>
+</html>

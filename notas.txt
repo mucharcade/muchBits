@@ -1,0 +1,20 @@
+1. Dimensiones de la Hoja de Sprites (.png)
+Ancho total de la imagen: 256 píxeles
+Alto total de la imagen: 256 píxeles
+Tamaño de cada celda individual (frameWidth y frameHeight): 64 × 64 píxeles
+Esta medida de \(64 \times 64\) es ideal porque te da un margen simétrico perfecto para centrar los pies,
+ la cabeza blanca y los hombros con chaqueta azul de tu personaje sin que choque con los bordes de su celda.
+ 
+2. Distribución y Coordenadas en Código
+Al organizar tu imagen de esta manera, los índices de tus fotogramas se ordenarán del 0 al 15 
+(empezando a contar de izquierda a derecha y de arriba a abajo).
+Aquí tienes la correspondencia exacta que debes usar para configurar tus animaciones en la sección create() de tu escena:
+Dirección de MovimientoFila en la ImagenRango de Cuadros en Phaser
+Caminar hacia Abajo (Frente)
+Fila 1{ start: 0, end: 3 }
+Caminar hacia la Izquierda (Perfil)
+Fila 2{ start: 4, end: 7 }
+Caminar hacia la Derecha (Perfil)
+Fila 3{ start: 8, end: 11 }
+Caminar hacia Arriba (Espalda)
+Fila 4{ start: 12, end: 15 }
