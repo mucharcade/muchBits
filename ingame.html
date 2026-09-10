@@ -1,16 +1,62 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MuchBits</title>
+    <title>MuchBits - Arcade Universe</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Press+Start+2P&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
+    <div class="page-overlay"></div>
+
+    <div class="main-wrapper">
+        <header class="game-header">
+            <div class="brand">
+                <span class="brand-badge">MUCHBITS</span>
+                <h1 class="game-title">ARCADE UNIVERSE</h1>
+            </div>
+            <div class="header-status">
+                <span class="status-dot"></span> EN VIVO
+            </div>
+        </header>
+
+        <main class="game-card">
+            <div id="game-container" class="canvas-wrapper"></div>
+
+            <footer class="controls-bar">
+                <div class="control-group">
+                    <span class="control-label">Movimiento:</span>
+                    <span class="key">▲</span>
+                    <span class="key">▼</span>
+                    <span class="key">◄</span>
+                    <span class="key">►</span>
+                </div>
+                <div class="control-group">
+                    <span class="control-label">Confirmar:</span>
+                    <span class="key">ENTER</span>
+                    <span class="key">S</span>
+                </div>
+                <div class="control-group">
+                    <span class="control-label">Cancelar / Menú:</span>
+                    <span class="key">ESC</span>
+                    <span class="key">N</span>
+                </div>
+            </footer>
+        </main>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.60.0/phaser.min.js"></script>
     <script src="js/EscenaMenu.js"></script>
     <script src="js/EscenaJuego.js"></script>
     <script src="js/EscenaDinoRun.js"></script>
     <script src="js/config.js"></script>
 </body>
+
 </html>

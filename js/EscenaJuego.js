@@ -5,6 +5,7 @@ class EscenaJuego extends Phaser.Scene {
 
     init(data) {
         this.ignoreEscape = Boolean(data && data.ignoreEscape);
+        this.posInicial = (data && data.posInicial) ? data.posInicial : null;
     }
 
     preload() {
@@ -19,16 +20,22 @@ class EscenaJuego extends Phaser.Scene {
         const anchoMundo = 2000;
         const altoMundo = 1200;
 
-        this.ultimaPosSegura = { x: 160, y: 420 };
+        let startX = (this.posInicial && this.posInicial.x) ? this.posInicial.x : 160; // Aqui pasamos la pos inicial desde otra escena, si no existe
+        let startY = (this.posInicial && this.posInicial.y) ? this.posInicial.y : 500; // dejamos la posicion por defecto (160, 500)
+
+        this.ultimaPosSegura = { x: startX, y: startY }; //posición inicial del jugador
         this.enPortal = false;
 
         this.physics.world.setBounds(0, 0, anchoMundo, altoMundo);
         this.cameras.main.setBounds(0, 0, anchoMundo, altoMundo);
 
-        let fondoPasto = this.make.graphics({ x: 0, y: 0, add: false });
-        fondoPasto.fillStyle(0x27ae60, 1);
-        fondoPasto.fillRect(0, 0, anchoMundo, altoMundo);
-        fondoPasto.generateTexture('textura_pasto', anchoMundo, altoMundo);
+        if (!this.textures.exists('textura_pasto')) {
+            let fondoPasto = this.make.graphics({ x: 0, y: 0, add: false });
+            fondoPasto.fillStyle(0x2f8f46, 1);
+            fondoPasto.fillRect(0, 0, anchoMundo, altoMundo);
+            fondoPasto.generateTexture('textura_pasto', anchoMundo, altoMundo);
+            fondoPasto.destroy();
+        }
         this.add.image(anchoMundo / 2, altoMundo / 2, 'textura_pasto');
 
         const mitadArbusto = 75;
@@ -43,39 +50,58 @@ class EscenaJuego extends Phaser.Scene {
             this.add.image(anchoMundo - mitadArbusto, y, 'arbusto').setDisplaySize(150, 150);
         }
 
-        let edificios = this.add.graphics();
-        edificios.fillStyle(0x7f8c8d, 1);
-        edificios.fillRect(70, 230, 150, 170);
-        edificios.fillRect(70, 760, 170, 190);
-        edificios.lineStyle(4, 0x34495e, 1);
-        edificios.strokeRect(70, 230, 150, 170);
-        edificios.strokeRect(70, 760, 170, 190);
-        this.add.text(145, 315, 'EDIFICIO', {
+        let edificios = this.add.graphics().setDepth(2);
+        edificios.fillStyle(0x7f8c8d, 1); // color de los edificios
+        edificios.fillRect(120, 250, 150, 200); // edificio, pos X 110, pos Y 230, ancho 150, alto 170
+        edificios.fillRect(170, 590, 170, 190); // auditorio, pos X 70, pos Y 760, ancho 170, alto 190
+        edificios.lineStyle(4, 0x34495e, 1); // color del borde de los edificios
+        edificios.strokeRect(120, 250, 150, 200); // borde del edificio 1, pos X 110, pos Y 230, ancho 150, alto 170
+        edificios.strokeRect(170, 590, 170, 190); // borde del auditorio, pos X 70, pos Y 760, ancho 170, alto 190
+        this.add.text(195, 355, 'EDIFICIO', { // texto del edificio 1, pos X 185, pos Y 315
             fontSize: '20px',
             fill: '#ffffff',
             fontStyle: 'bold'
-        }).setOrigin(0.5);
-        this.add.text(155, 855, 'AUDITORIO', {
+        }).setOrigin(0.5).setDepth(3);
+        this.add.text(250, 680, 'AUDITORIO', { // texto del edificio 2, pos X 155, pos Y 855
             fontSize: '20px',
             fill: '#ffffff',
             fontStyle: 'bold'
-        }).setOrigin(0.5);
+        }).setOrigin(0.5).setDepth(3);
 
-        let gSala = this.make.graphics({ x: 0, y: 0, add: false });
-        gSala.fillStyle(0xe74c3c, 0.4);
-        gSala.lineStyle(4, 0xe74c3c, 1);
-        gSala.fillCircle(60, 60, 60);
-        gSala.generateTexture('textura_sala', 120, 120);
+        let colisionEdificio = this.add.zone(195, 350, 150, 200);
+        this.physics.add.existing(colisionEdificio, true);
 
-        this.anims.create({ key: 'caminar-abajo', frames: this.anims.generateFrameNumbers('jugador', { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
-        this.anims.create({ key: 'caminar-izquierda', frames: this.anims.generateFrameNumbers('jugador', { start: 8, end: 11 }), frameRate: 8, repeat: -1 });
-        this.anims.create({ key: 'caminar-derecha', frames: this.anims.generateFrameNumbers('jugador', { start: 12, end: 15 }), frameRate: 8, repeat: -1 });
-        this.anims.create({ key: 'caminar-arriba', frames: this.anims.generateFrameNumbers('jugador', { start: 4, end: 7 }), frameRate: 8, repeat: -1 });
+        let colisionAuditorio = this.add.zone(255, 685, 170, 190);
+        this.physics.add.existing(colisionAuditorio, true);
+
+        this.edificiosGroup = this.physics.add.staticGroup([colisionEdificio, colisionAuditorio]);
+
+        if (!this.textures.exists('textura_sala')) {
+            let gSala = this.make.graphics({ x: 0, y: 0, add: false });
+            gSala.fillStyle(0xe74c3c, 0.4);
+            gSala.lineStyle(4, 0xe74c3c, 1);
+            gSala.fillCircle(60, 60, 60);
+            gSala.generateTexture('textura_sala', 120, 120);
+            gSala.destroy();
+        }
+
+        if (!this.anims.exists('caminar-abajo')) {
+            this.anims.create({ key: 'caminar-abajo', frames: this.anims.generateFrameNumbers('jugador', { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
+        }
+        if (!this.anims.exists('caminar-izquierda')) {
+            this.anims.create({ key: 'caminar-izquierda', frames: this.anims.generateFrameNumbers('jugador', { start: 8, end: 11 }), frameRate: 8, repeat: -1 });
+        }
+        if (!this.anims.exists('caminar-derecha')) {
+            this.anims.create({ key: 'caminar-derecha', frames: this.anims.generateFrameNumbers('jugador', { start: 12, end: 15 }), frameRate: 8, repeat: -1 });
+        }
+        if (!this.anims.exists('caminar-arriba')) {
+            this.anims.create({ key: 'caminar-arriba', frames: this.anims.generateFrameNumbers('jugador', { start: 4, end: 7 }), frameRate: 8, repeat: -1 });
+        }
 
         let graficosBorde = this.add.graphics();
         let graficosCamino = this.add.graphics();
-        graficosBorde.lineStyle(76, 0x1e272c, 1);
-        graficosCamino.lineStyle(70, 0x7f8c8d, 1);
+        graficosBorde.lineStyle(76, 0x101417, 1);
+        graficosCamino.lineStyle(70, 0x4a5154, 1);
 
         let caminoOriginal = new Phaser.Curves.Spline([
             160, 420,
@@ -100,8 +126,8 @@ class EscenaJuego extends Phaser.Scene {
 
         let entradaBorde = this.add.graphics();
         let entradaPasto = this.add.graphics();
-        entradaBorde.lineStyle(116, 0x1e272c, 1);
-        entradaPasto.lineStyle(100, 0x7f8c8d, 1);
+        entradaBorde.lineStyle(116, 0x101417, 1);
+        entradaPasto.lineStyle(100, 0x4a5154, 1);
 
         caminoOriginal.draw(graficosBorde, 64);
         caminoOriginal.draw(graficosCamino, 64);
@@ -124,36 +150,38 @@ class EscenaJuego extends Phaser.Scene {
         this.salas = this.physics.add.staticGroup();
 
         let salaD = this.salas.create(300, 90, 'textura_sala');
-        salaD.setData({ nombre: 'Dino', salida: { x: 350, y: 150 } });
+        salaD.setData({ nombre: 'DINO', salida: { x: 350, y: 150 } }); // SALA DINO
         this.add.text(275, 80, 'DINO', { fill: '#ffffff', fontStyle: 'bold', fontFamily: 'Arial' });
 
         let salaA = this.salas.create(1400, 1080, 'textura_sala');
-        salaA.setData({ nombre: 'Sala A', salida: { x: 1400, y: 1000 } });
+        salaA.setData({ nombre: 'A', salida: { x: 1400, y: 1000 } }); // SALA A
         this.add.text(1375, 1070, 'SALA A', { fill: '#ffffff', fontStyle: 'bold', fontFamily: 'Arial' });
 
         let salaB = this.salas.create(1840, 450, 'textura_sala');
-        salaB.setData({ nombre: 'Sala B', salida: { x: 1750, y: 450 } });
+        salaB.setData({ nombre: 'B', salida: { x: 1750, y: 450 } }); // SALA B
         this.add.text(1815, 440, 'SALA B', { fill: '#ffffff', fontStyle: 'bold', fontFamily: 'Arial' });
 
         let salaC = this.salas.create(820, 600, 'textura_sala');
-        salaC.setData({ nombre: 'Sala C', salida: { x: 820, y: 510 } });
+        salaC.setData({ nombre: 'C', salida: { x: 820, y: 510 } }); // SALA C
         this.add.text(795, 590, 'SALA C', { fill: '#ffffff', fontStyle: 'bold', fontFamily: 'Arial' });
 
         this.salas.children.iterate((sala) => { sala.body.setCircle(60); });
 
-        this.jugador = this.physics.add.sprite(160, 420, 'jugador', 0);
+        this.jugador = this.physics.add.sprite(startX, startY, 'jugador', 0).setDepth(4); //posición inicial del jugador
         this.jugador.setDisplaySize(40, 60);
         this.jugador.body.setSize(40, 72, true);
         this.jugador.play('caminar-abajo');
         this.jugador.setCollideWorldBounds(true);
-        // La camara sigue al jugador con un efecto de suavizado
-        this.cameras.main.startFollow(this.jugador, true, 0.08, 0.08);
+        this.cameras.main.startFollow(this.jugador, true, 0.08, 0.08); // La camara sigue al jugador con un efecto de suavizado
 
+        this.physics.add.collider(this.jugador, this.edificiosGroup); //colision con edificios
         this.physics.add.overlap(this.jugador, this.salas, this.entrarAAnuncioPortal, null, this);
 
         this.teclado = this.input.keyboard.createCursorKeys();
         this.teclaESC = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
         this.teclaENTER = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
+        this.teclaS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+        this.teclaN = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.N);
 
         this.textoPortal = this.add.text(500, 400, '', {
             fontSize: '24px',
@@ -170,6 +198,15 @@ class EscenaJuego extends Phaser.Scene {
             padding: { x: 5, y: 5 }
         }).setScrollFactor(0).setDepth(10);
 
+        this.textoCoordenadas = this.add.text(500, 15, 'X: 160 | Y: 420', {
+            fontSize: '16px',
+            fill: '#ffffff',
+            backgroundColor: '#111111',
+            padding: { x: 10, y: 5 },
+            fontFamily: 'Arial',
+            fontStyle: 'bold'
+        }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(10);
+
         let botonMenu = this.add.text(800, 20, 'VOLVER AL MENÚ', {
             fontSize: '18px',
             fill: '#ffffff',
@@ -179,6 +216,7 @@ class EscenaJuego extends Phaser.Scene {
         }).setInteractive({ useHandCursor: true }).setScrollFactor(0).setDepth(10);
 
         botonMenu.on('pointerdown', () => {
+            this.scene.stop('EscenaDinoRun');
             this.scene.start('EscenaMenu');
         });
 
@@ -187,14 +225,33 @@ class EscenaJuego extends Phaser.Scene {
     }
 
     update() {
+        if (this.textoCoordenadas && this.jugador) {
+            let xInt = Math.round(this.jugador.x);
+            let yInt = Math.round(this.jugador.y);
+            this.textoCoordenadas.setText(`X: ${xInt} | Y: ${yInt}`);
+        }
+
         if (this.enPortal) {
             this.jugador.setVelocity(0);
 
-            if (Phaser.Input.Keyboard.JustDown(this.teclaENTER) ||
-                Phaser.Input.Keyboard.JustDown(this.teclaESC)) {
-                this.textoPortal.setVisible(false);
-                this.enPortal = false;
-                this.reiniciarJugador();
+            if (this.salaActual && this.salaActual.getData('nombre').toUpperCase() === 'DINO') {
+                if (Phaser.Input.Keyboard.JustDown(this.teclaENTER) || Phaser.Input.Keyboard.JustDown(this.teclaS)) {
+                    this.textoPortal.setVisible(false);
+                    this.enPortal = false;
+                    this.scene.sleep('EscenaJuego');
+                    this.scene.launch('EscenaDinoRun');
+                } else if (Phaser.Input.Keyboard.JustDown(this.teclaESC) || Phaser.Input.Keyboard.JustDown(this.teclaN)) {
+                    this.textoPortal.setVisible(false);
+                    this.enPortal = false;
+                    this.reiniciarJugador();
+                }
+            } else {
+                if (Phaser.Input.Keyboard.JustDown(this.teclaENTER) ||
+                    Phaser.Input.Keyboard.JustDown(this.teclaESC)) {
+                    this.textoPortal.setVisible(false);
+                    this.enPortal = false;
+                    this.reiniciarJugador();
+                }
             }
             return;
         }
@@ -202,6 +259,7 @@ class EscenaJuego extends Phaser.Scene {
         if (this.ignoreEscape) {
             if (!this.teclaESC.isDown) this.ignoreEscape = false;
         } else if (Phaser.Input.Keyboard.JustDown(this.teclaESC)) {
+            this.scene.stop('EscenaDinoRun');
             this.scene.start('EscenaMenu');
             return;
         }
@@ -252,19 +310,14 @@ class EscenaJuego extends Phaser.Scene {
     entrarAAnuncioPortal(jugador, sala) {
         if (this.enPortal) return;
 
-        if (sala.getData('nombre') === 'Dino') {
-            this.scene.start('EscenaDinoRun');
-            return;
-        }
-
         this.enPortal = true;
         this.salaActual = sala;
         let destino = sala.getData('nombre');
 
         this.textoPortal.setText(
-            `¡Portal Detectado: ${destino}!\n\n` +
-            `Presiona [ENTER] para Cerrar\n` +
-            `Presiona [ESC] para salir de la sala`
+            `¡Sala ${destino} Detectada!\n\n` +
+            `Presiona [ENTER] para Entrar\n` +
+            `Presiona [ESC] para Salir`
         );
         this.textoPortal.setVisible(true);
     }
@@ -272,7 +325,7 @@ class EscenaJuego extends Phaser.Scene {
     reiniciarJugador() {
         let salida = this.salaActual
             ? this.salaActual.getData('salida')
-            : { x: 160, y: 420 };
+            : { x: 160, y: 500 };
 
         this.jugador.x = salida.x;
         this.jugador.y = salida.y;
