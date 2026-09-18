@@ -31,21 +31,21 @@
             <div id="game-container" class="canvas-wrapper"></div>
 
             <footer class="controls-bar">
-                <div class="control-group">
+                <div class="control-group movement-controls">
                     <span class="control-label">Movimiento:</span>
-                    <span class="key">▲</span>
-                    <span class="key">▼</span>
-                    <span class="key">◄</span>
-                    <span class="key">►</span>
+                    <button class="key arrow-up" type="button" data-control="up" aria-label="Arriba">▲</button>
+                    <button class="key arrow-down" type="button" data-control="down" aria-label="Abajo">▼</button>
+                    <button class="key arrow-left" type="button" data-control="left" aria-label="Izquierda">◄</button>
+                    <button class="key arrow-right" type="button" data-control="right" aria-label="Derecha">►</button>
                 </div>
                 <div class="control-group">
                     <span class="control-label">Confirmar:</span>
-                    <span class="key">ENTER</span>
+                    <button class="key action-key" type="button" data-action="enter" aria-label="Enter">ENTER</button>
                     <span class="key">S</span>
                 </div>
                 <div class="control-group">
                     <span class="control-label">Cancelar / Menú:</span>
-                    <span class="key">ESC</span>
+                    <button class="key action-key" type="button" data-action="escape" aria-label="Escape">ESC</button>
                     <span class="key">N</span>
                 </div>
             </footer>
@@ -56,6 +56,7 @@
     <script src="js/EscenaMenu.js"></script>
     <script src="js/EscenaJuego.js"></script>
     <script src="js/EscenaDinoRun.js"></script>
+    <script src="js/mobileControls.js"></script>
     <script src="js/config.js"></script>
 </body>
 

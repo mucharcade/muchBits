@@ -11,6 +11,10 @@ class EscenaDinoRun extends Phaser.Scene {
         this.load.image('arbusto', 'pictures/arbusto.png');
         this.load.image('arbol', 'pictures/arbol.png');
         this.load.image('roca', 'pictures/roca.png');
+        this.load.spritesheet('terodactilo', 'pictures/terodactile.png', {
+            frameWidth: 543,
+            frameHeight: 724
+        });
         this.load.spritesheet('dinosaurio-perseguidor', 'pictures/dinosaur-run.png', {
             frameWidth: 396,
             frameHeight: 396
@@ -39,14 +43,13 @@ class EscenaDinoRun extends Phaser.Scene {
     }
 
     crearTexturas() {
-        if (!this.textures.exists('dino-obstaculo-alto')) {
-            const obstaculoAlto = this.make.graphics({ x: 0, y: 0, add: false });
-            obstaculoAlto.fillStyle(0x8e44ad, 1);
-            obstaculoAlto.fillRoundedRect(4, 4, 102, 22, 8);
-            obstaculoAlto.fillStyle(0xd7bde2, 1);
-            obstaculoAlto.fillRect(20, 9, 28, 5);
-            obstaculoAlto.generateTexture('dino-obstaculo-alto', 110, 30);
-            obstaculoAlto.destroy();
+        if (!this.anims.exists('terodactilo-volando')) {
+            this.anims.create({
+                key: 'terodactilo-volando',
+                frames: this.anims.generateFrameNumbers('terodactilo', { start: 0, end: 3 }),
+                frameRate: 8,
+                repeat: -1
+            });
         }
 
         if (!this.textures.exists('dino-suelo')) {
@@ -146,7 +149,7 @@ class EscenaDinoRun extends Phaser.Scene {
             });
         }
 
-        this.perseguidor = this.physics.add.sprite(0, 550, 'dinosaurio-perseguidor', 0)
+        this.perseguidor = this.physics.add.sprite(50, 550, 'dinosaurio-perseguidor', 0)
             .setDisplaySize(170, 170)
             .setFlipX(true)
             .setDepth(2);
@@ -225,7 +228,7 @@ class EscenaDinoRun extends Phaser.Scene {
 
     crearObstaculos() {
         this.obstaculos = this.physics.add.group();
-        this.physics.add.overlap(this.jugador, this.obstaculos, this.terminar, null, this);
+        this.physics.add.overlap(this.jugador, this.obstaculos, this.terminarPorPerseguidor, null, this);
         this.crearObstaculo(760, 'bajo');
         this.crearObstaculo(1060, 'alto');
     }
@@ -236,13 +239,17 @@ class EscenaDinoRun extends Phaser.Scene {
         const obstaculo = this.obstaculos.create(
             x,
             yPos,
-            isBajo ? 'roca' : 'dino-obstaculo-alto'
+            isBajo ? 'roca' : 'terodactilo'
         ).setDepth(3);
 
         if (isBajo) {
             obstaculo.setOrigin(0.5, 1);
             obstaculo.setDisplaySize(56, 56);
             obstaculo.body.setSize(obstaculo.width * 0.85, obstaculo.height * 0.85, true);
+        } else {
+            obstaculo.setDisplaySize(105, 70);
+            obstaculo.body.setSize(300, 100, true);
+            obstaculo.play('terodactilo-volando');
         }
 
         obstaculo.body.setAllowGravity(false);
@@ -252,7 +259,10 @@ class EscenaDinoRun extends Phaser.Scene {
     }
 
     update(time, delta) {
-        if (Phaser.Input.Keyboard.JustDown(this.teclaESC)) {
+        const escapeTactil = window.mobileControls?.consume('escape');
+        const enterTactil = window.mobileControls?.consume('enter');
+
+        if (Phaser.Input.Keyboard.JustDown(this.teclaESC) || escapeTactil) {
             this.salirAlMapa();
             return;
         }
@@ -264,19 +274,13 @@ class EscenaDinoRun extends Phaser.Scene {
         if (this.pausado) return;
 
         if (this.terminado) {
-            if (Phaser.Input.Keyboard.JustDown(this.teclaENTER) || Phaser.Input.Keyboard.JustDown(this.teclaEspacio)) {
+            if (Phaser.Input.Keyboard.JustDown(this.teclaENTER) || enterTactil || Phaser.Input.Keyboard.JustDown(this.teclaEspacio)) {
                 this.reiniciar();
             }
             return;
         }
 
-        const distanciaPerseguidor = this.jugador.x - this.perseguidor.x;
-        const velocidadPerseguidor = Math.min(155, 55 + this.puntuacion * 0.35);
-        if (distanciaPerseguidor <= 145) {
-            this.terminarPorPerseguidor();
-            return;
-        }
-        this.perseguidor.setVelocityX(distanciaPerseguidor > 70 ? velocidadPerseguidor : 0);
+        this.perseguidor.setVelocityX(0);
 
         // Movimiento de paralaje para los arbustos de paisaje en el fondo
         if (this.grupoArbustos) {
@@ -308,14 +312,17 @@ class EscenaDinoRun extends Phaser.Scene {
         }
 
         const enSuelo = this.jugador.body.blocked.down || this.jugador.body.touching.down;
-        if ((Phaser.Input.Keyboard.JustDown(this.teclado.up) || Phaser.Input.Keyboard.JustDown(this.teclaEspacio)) && enSuelo) {
+        const saltoTactil = enSuelo && window.mobileControls?.consume('up');
+        const saltoTeclado = Phaser.Input.Keyboard.JustDown(this.teclado.up) || Phaser.Input.Keyboard.JustDown(this.teclaEspacio);
+        if ((saltoTeclado || saltoTactil) && enSuelo) {
             this.jugador.setVelocityY(-620);
         }
 
-        if (this.teclado.down.isDown && enSuelo && !this.agachado) {
+        const abajoActivo = this.teclado.down.isDown || window.mobileControls?.isDown('down');
+        if (abajoActivo && enSuelo && !this.agachado) {
             this.jugador.setDisplaySize(40, 40);
             this.agachado = true;
-        } else if (!this.teclado.down.isDown && this.agachado) {
+        } else if (!abajoActivo && this.agachado) {
             this.jugador.setDisplaySize(40, 60);
             this.agachado = false;
         }
@@ -372,7 +379,7 @@ class EscenaDinoRun extends Phaser.Scene {
         if (this.terminado || this.capturaIniciada) return;
         this.terminado = true;
         this.capturaIniciada = true;
-        const posicionFinal = this.jugador.x - 105;
+        const posicionFinal = this.jugador.x - 30;
         this.perseguidor.body.enable = false;
         this.jugador.setVelocity(0, 0);
         this.perseguidor.setVelocity(0, 0);
@@ -386,8 +393,8 @@ class EscenaDinoRun extends Phaser.Scene {
         this.tweens.add({
             targets: this.perseguidor,
             x: posicionFinal,
-            y: this.jugador.y - 3,
-            duration: 800,
+            y: this.jugador.y - 15,
+            duration: 600,
             ease: 'Power2',
             onComplete: () => {
                 this.textoEstado.setText(`¡EL DINOSAURIO TE ATRAPÓ!\nPuntuación: ${puntuacionFinal}\nMejor: ${this.mejorPuntuacion}\n\nENTER o ESPACIO para reintentar\nESC para volver al mapa`).setVisible(true);
@@ -421,7 +428,7 @@ class EscenaDinoRun extends Phaser.Scene {
         this.capturaIniciada = false;
         this.jugador.setPosition(220, 550);
         this.jugador.setVelocity(0, 0);
-        this.perseguidor.setPosition(0, 550);
+        this.perseguidor.setPosition(50, 550);
         this.perseguidor.setVelocity(0, 0);
         this.perseguidor.body.enable = true;
         this.perseguidor.play('dinosaurio-corriendo');

@@ -225,6 +225,9 @@ class EscenaJuego extends Phaser.Scene {
     }
 
     update() {
+        const enterTactil = window.mobileControls?.consume('enter');
+        const escapeTactil = window.mobileControls?.consume('escape');
+
         if (this.textoCoordenadas && this.jugador) {
             let xInt = Math.round(this.jugador.x);
             let yInt = Math.round(this.jugador.y);
@@ -235,18 +238,19 @@ class EscenaJuego extends Phaser.Scene {
             this.jugador.setVelocity(0);
 
             if (this.salaActual && this.salaActual.getData('nombre').toUpperCase() === 'DINO') {
-                if (Phaser.Input.Keyboard.JustDown(this.teclaENTER) || Phaser.Input.Keyboard.JustDown(this.teclaS)) {
+                if (Phaser.Input.Keyboard.JustDown(this.teclaENTER) || enterTactil || Phaser.Input.Keyboard.JustDown(this.teclaS)) {
                     this.textoPortal.setVisible(false);
                     this.enPortal = false;
                     this.scene.sleep('EscenaJuego');
                     this.scene.launch('EscenaDinoRun');
-                } else if (Phaser.Input.Keyboard.JustDown(this.teclaESC) || Phaser.Input.Keyboard.JustDown(this.teclaN)) {
+                } else if (Phaser.Input.Keyboard.JustDown(this.teclaESC) || escapeTactil || Phaser.Input.Keyboard.JustDown(this.teclaN)) {
                     this.textoPortal.setVisible(false);
                     this.enPortal = false;
                     this.reiniciarJugador();
                 }
             } else {
                 if (Phaser.Input.Keyboard.JustDown(this.teclaENTER) ||
+                    enterTactil ||
                     Phaser.Input.Keyboard.JustDown(this.teclaESC)) {
                     this.textoPortal.setVisible(false);
                     this.enPortal = false;
@@ -258,7 +262,7 @@ class EscenaJuego extends Phaser.Scene {
 
         if (this.ignoreEscape) {
             if (!this.teclaESC.isDown) this.ignoreEscape = false;
-        } else if (Phaser.Input.Keyboard.JustDown(this.teclaESC)) {
+        } else if (Phaser.Input.Keyboard.JustDown(this.teclaESC) || escapeTactil) {
             this.scene.stop('EscenaDinoRun');
             this.scene.start('EscenaMenu');
             return;
@@ -268,11 +272,21 @@ class EscenaJuego extends Phaser.Scene {
         let posPreviaY = this.jugador.y;
         this.jugador.setVelocity(0);
 
-        if (this.teclado.left.isDown) this.jugador.setVelocityX(-160);
-        else if (this.teclado.right.isDown) this.jugador.setVelocityX(160);
+        const controlesTactiles = window.mobileControls;
+        controlesTactiles?.consume('up');
+        controlesTactiles?.consume('down');
+        controlesTactiles?.consume('left');
+        controlesTactiles?.consume('right');
+        const izquierdaActiva = this.teclado.left.isDown || controlesTactiles?.isDown('left');
+        const derechaActiva = this.teclado.right.isDown || controlesTactiles?.isDown('right');
+        const arribaActivo = this.teclado.up.isDown || controlesTactiles?.isDown('up');
+        const abajoActivo = this.teclado.down.isDown || controlesTactiles?.isDown('down');
 
-        if (this.teclado.up.isDown) this.jugador.setVelocityY(-160);
-        else if (this.teclado.down.isDown) this.jugador.setVelocityY(160);
+        if (izquierdaActiva) this.jugador.setVelocityX(-160);
+        else if (derechaActiva) this.jugador.setVelocityX(160);
+
+        if (arribaActivo) this.jugador.setVelocityY(-160);
+        else if (abajoActivo) this.jugador.setVelocityY(160);
 
         if (this.jugador.body.velocity.x < 0) this.jugador.anims.play('caminar-izquierda', true);
         else if (this.jugador.body.velocity.x > 0) this.jugador.anims.play('caminar-derecha', true);
