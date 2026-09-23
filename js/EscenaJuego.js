@@ -6,14 +6,17 @@ class EscenaJuego extends Phaser.Scene {
     init(data) {
         this.ignoreEscape = Boolean(data && data.ignoreEscape);
         this.posInicial = (data && data.posInicial) ? data.posInicial : null;
+        this.avatarKey = (data && data.avatarKey) ? data.avatarKey : (localStorage.getItem('muchbits-avatar') || 'user_default');
     }
 
     preload() {
-        this.load.spritesheet('jugador', 'pictures/plantilla.png', {
-            frameWidth: 102,
-            frameHeight: 153
-        });
         this.load.image('arbusto', 'pictures/arbusto.png');
+        if (!this.textures.exists(`avatar-${this.avatarKey}`)) {
+            this.load.spritesheet(`avatar-${this.avatarKey}`, `pictures/${this.avatarKey}.png`, {
+                frameWidth: 64,
+                frameHeight: 64
+            });
+        }
     }
 
     create() {
@@ -85,18 +88,16 @@ class EscenaJuego extends Phaser.Scene {
             gSala.destroy();
         }
 
-        if (!this.anims.exists('caminar-abajo')) {
-            this.anims.create({ key: 'caminar-abajo', frames: this.anims.generateFrameNumbers('jugador', { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
-        }
-        if (!this.anims.exists('caminar-izquierda')) {
-            this.anims.create({ key: 'caminar-izquierda', frames: this.anims.generateFrameNumbers('jugador', { start: 8, end: 11 }), frameRate: 8, repeat: -1 });
-        }
-        if (!this.anims.exists('caminar-derecha')) {
-            this.anims.create({ key: 'caminar-derecha', frames: this.anims.generateFrameNumbers('jugador', { start: 12, end: 15 }), frameRate: 8, repeat: -1 });
-        }
-        if (!this.anims.exists('caminar-arriba')) {
-            this.anims.create({ key: 'caminar-arriba', frames: this.anims.generateFrameNumbers('jugador', { start: 4, end: 7 }), frameRate: 8, repeat: -1 });
-        }
+        const avatarTexKey = `avatar-${this.avatarKey}`;
+        if (this.anims.exists('avatar-abajo')) this.anims.remove('avatar-abajo');
+        if (this.anims.exists('avatar-arriba')) this.anims.remove('avatar-arriba');
+        if (this.anims.exists('avatar-izquierda')) this.anims.remove('avatar-izquierda');
+        if (this.anims.exists('avatar-derecha')) this.anims.remove('avatar-derecha');
+
+        this.anims.create({ key: 'avatar-abajo', frames: this.anims.generateFrameNumbers(avatarTexKey, { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
+        this.anims.create({ key: 'avatar-arriba', frames: this.anims.generateFrameNumbers(avatarTexKey, { start: 4, end: 7 }), frameRate: 8, repeat: -1 });
+        this.anims.create({ key: 'avatar-izquierda', frames: this.anims.generateFrameNumbers(avatarTexKey, { start: 8, end: 11 }), frameRate: 8, repeat: -1 });
+        this.anims.create({ key: 'avatar-derecha', frames: this.anims.generateFrameNumbers(avatarTexKey, { start: 12, end: 15 }), frameRate: 8, repeat: -1 });
 
         let graficosBorde = this.add.graphics();
         let graficosCamino = this.add.graphics();
@@ -150,7 +151,7 @@ class EscenaJuego extends Phaser.Scene {
         this.salas = this.physics.add.staticGroup();
 
         let salaD = this.salas.create(300, 90, 'textura_sala');
-        salaD.setData({ nombre: 'DINO', salida: { x: 350, y: 150 } }); // SALA DINO
+        salaD.setData({ nombre: 'DINO', salida: { x: 400, y: 220 } }); // SALA DINO
         this.add.text(275, 80, 'DINO', { fill: '#ffffff', fontStyle: 'bold', fontFamily: 'Arial' });
 
         let salaA = this.salas.create(1400, 1080, 'textura_sala');
@@ -167,11 +168,11 @@ class EscenaJuego extends Phaser.Scene {
 
         this.salas.children.iterate((sala) => { sala.body.setCircle(60); });
 
-        this.jugador = this.physics.add.sprite(startX, startY, 'jugador', 0).setDepth(4); //posición inicial del jugador
-        this.jugador.setDisplaySize(40, 60);
-        this.jugador.body.setSize(40, 72, true);
-        this.jugador.play('caminar-abajo');
+        this.jugador = this.physics.add.sprite(startX, startY, avatarTexKey, 0).setDepth(4); //posición inicial del jugador
+        this.jugador.setDisplaySize(58, 58);
+        this.jugador.body.setSize(38, 52, true);
         this.jugador.setCollideWorldBounds(true);
+        this.jugador.play('avatar-abajo');
         this.cameras.main.startFollow(this.jugador, true, 0.08, 0.08); // La camara sigue al jugador con un efecto de suavizado
 
         this.physics.add.collider(this.jugador, this.edificiosGroup); //colision con edificios
@@ -288,16 +289,17 @@ class EscenaJuego extends Phaser.Scene {
         if (arribaActivo) this.jugador.setVelocityY(-160);
         else if (abajoActivo) this.jugador.setVelocityY(160);
 
-        if (this.jugador.body.velocity.x < 0) this.jugador.anims.play('caminar-izquierda', true);
-        else if (this.jugador.body.velocity.x > 0) this.jugador.anims.play('caminar-derecha', true);
-        else if (this.jugador.body.velocity.y < 0) this.jugador.anims.play('caminar-arriba', true);
-        else if (this.jugador.body.velocity.y > 0) this.jugador.anims.play('caminar-abajo', true);
+        if (this.jugador.body.velocity.x < 0) this.jugador.anims.play('avatar-izquierda', true);
+        else if (this.jugador.body.velocity.x > 0) this.jugador.anims.play('avatar-derecha', true);
+        else if (this.jugador.body.velocity.y < 0) this.jugador.anims.play('avatar-arriba', true);
+        else if (this.jugador.body.velocity.y > 0) this.jugador.anims.play('avatar-abajo', true);
+        else this.jugador.anims.stop();
 
         if (this.sys.game.canvas) {
             let ctx = this.sys.game.canvas.getContext('2d');
             let camara = this.cameras.main;
             let pixelX = Math.floor(this.jugador.x - camara.scrollX);
-            let pixelY = Math.floor(this.jugador.y + 10 - camara.scrollY);
+            let pixelY = Math.floor(this.jugador.y + 20 - camara.scrollY);
 
             if (pixelX < 0 || pixelY < 0 ||
                 pixelX >= this.sys.game.canvas.width ||

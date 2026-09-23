@@ -4,10 +4,14 @@ class EscenaDinoRun extends Phaser.Scene {
     }
 
     preload() {
-        this.load.spritesheet('jugador-run', 'pictures/plantilla.png', {
-            frameWidth: 102,
-            frameHeight: 153
-        });
+        const avatarKey = localStorage.getItem('muchbits-avatar') || 'user_default';
+        this.avatarKey = avatarKey;
+        if (!this.textures.exists(`avatar-${avatarKey}`)) {
+            this.load.spritesheet(`avatar-${avatarKey}`, `pictures/${avatarKey}.png`, {
+                frameWidth: 64,
+                frameHeight: 64
+            });
+        }
         this.load.image('arbusto', 'pictures/arbusto.png');
         this.load.image('arbol', 'pictures/arbol.png');
         this.load.image('roca', 'pictures/roca.png');
@@ -43,6 +47,17 @@ class EscenaDinoRun extends Phaser.Scene {
     }
 
     crearTexturas() {
+        const animKeyRun = `dino-jugador-corriendo-${this.avatarKey}`;
+        if (this.anims.exists(animKeyRun)) {
+            this.anims.remove(animKeyRun);
+        }
+        this.anims.create({
+            key: animKeyRun,
+            frames: this.anims.generateFrameNumbers(`avatar-${this.avatarKey}`, { start: 12, end: 15 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
         if (!this.anims.exists('terodactilo-volando')) {
             this.anims.create({
                 key: 'terodactilo-volando',
@@ -121,21 +136,14 @@ class EscenaDinoRun extends Phaser.Scene {
     }
 
     crearJugador() {
-        if (!this.anims.exists('dino-run-derecha')) {
-            this.anims.create({
-                key: 'dino-run-derecha',
-                frames: this.anims.generateFrameNumbers('jugador-run', { start: 12, end: 15 }),
-                frameRate: 8,
-                repeat: -1
-            });
-        }
-
-        this.jugador = this.physics.add.sprite(220, 550, 'jugador-run', 12).setDepth(3);
-        this.jugador.setDisplaySize(40, 60);
-        this.jugador.body.setSize(40, 60, true);
+        const animKeyRun = `dino-jugador-corriendo-${this.avatarKey}`;
+        this.jugador = this.physics.add.sprite(220, 550, `avatar-${this.avatarKey}`, 12).setDepth(3);
+        this.jugador.setDisplaySize(58, 58);
+        this.jugador.body.setSize(38, 52, true);
         this.jugador.body.setGravityY(1050);
         this.jugador.setCollideWorldBounds(false);
-        this.jugador.play('dino-run-derecha');
+        this.jugador.setFlipX(false);
+        this.jugador.play(animKeyRun, true);
         this.physics.add.collider(this.jugador, this.suelo);
     }
 
@@ -320,10 +328,10 @@ class EscenaDinoRun extends Phaser.Scene {
 
         const abajoActivo = this.teclado.down.isDown || window.mobileControls?.isDown('down');
         if (abajoActivo && enSuelo && !this.agachado) {
-            this.jugador.setDisplaySize(40, 40);
+            this.jugador.setDisplaySize(58, 38);
             this.agachado = true;
         } else if (!abajoActivo && this.agachado) {
-            this.jugador.setDisplaySize(40, 60);
+            this.jugador.setDisplaySize(58, 58);
             this.agachado = false;
         }
 
@@ -347,7 +355,7 @@ class EscenaDinoRun extends Phaser.Scene {
 
     salirAlMapa() {
         const mapa = this.scene.get('EscenaJuego');
-        const salida = { x: 350, y: 150 };
+        const salida = { x: 400, y: 220 };
         mapa.jugador.setPosition(salida.x, salida.y);
         mapa.jugador.setVelocity(0, 0);
         mapa.ultimaPosSegura = { x: salida.x, y: salida.y };
@@ -432,9 +440,11 @@ class EscenaDinoRun extends Phaser.Scene {
         this.perseguidor.setVelocity(0, 0);
         this.perseguidor.body.enable = true;
         this.perseguidor.play('dinosaurio-corriendo');
-        this.jugador.setDisplaySize(40, 60);
-        this.jugador.body.setSize(40, 60, true);
-        this.jugador.play('dino-run-derecha');
+        const animKeyRun = `dino-jugador-corriendo-${this.avatarKey}`;
+        this.jugador.setDisplaySize(58, 58);
+        this.jugador.body.setSize(38, 52, true);
+        this.jugador.setFlipX(false);
+        this.jugador.play(animKeyRun, true);
         this.textoEstado.setVisible(false);
         this.crearObstaculo(760, 'bajo');
         this.crearObstaculo(1060, 'alto');
