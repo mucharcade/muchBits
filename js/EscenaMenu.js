@@ -5,9 +5,9 @@ class EscenaMenu extends Phaser.Scene {
 
     preload() {
         this.load.image('arbusto', 'pictures/arbusto.png');
-        this.load.spritesheet('dinobit-menu', 'pictures/dinobit.png', {
-            frameWidth: 75,
-            frameHeight: 74
+        this.load.spritesheet('dinobit-menu', 'pictures/dinosaur-run.png', {
+            frameWidth: 396,
+            frameHeight: 396
         });
 
         this.avatarOpciones = ['user_default', 'user_male', 'user_female'];
@@ -25,42 +25,42 @@ class EscenaMenu extends Phaser.Scene {
 
         for (let x = 45; x <= 945; x += 90) {
             this.add.image(x, 30, 'arbusto')
-                .setDisplaySize(130, 130)
+                .setDisplaySize(65, 65)
                 .setDepth(-1);
             this.add.image(x, 770, 'arbusto')
-                .setDisplaySize(130, 130)
+                .setDisplaySize(65, 65)
                 .setDepth(-1);
         }
 
         for (let y = 120; y <= 680; y += 95) {
             this.add.image(30, y, 'arbusto')
-                .setDisplaySize(130, 130)
+                .setDisplaySize(65, 65)
                 .setDepth(-1);
             this.add.image(970, y, 'arbusto')
-                .setDisplaySize(130, 130)
+                .setDisplaySize(65, 65)
                 .setDepth(-1);
+        }
+
+        if (!this.anims.exists('dino-menu-corriendo')) {
+            this.anims.create({
+                key: 'dino-menu-corriendo',
+                frames: this.anims.generateFrameNumbers('dinobit-menu', { start: 0, end: 12 }),
+                frameRate: 12,
+                repeat: -1
+            });
         }
 
         if (!this.anims.exists('dino-menu-derecha')) {
             this.anims.create({
                 key: 'dino-menu-derecha',
-                frames: this.anims.generateFrameNumbers('dinobit-menu', { start: 8, end: 11 }),
-                frameRate: 8,
-                repeat: -1
-            });
-        }
-
-        if (!this.anims.exists('dino-menu-izquierda')) {
-            this.anims.create({
-                key: 'dino-menu-izquierda',
-                frames: this.anims.generateFrameNumbers('dinobit-menu', { start: 12, end: 15 }),
-                frameRate: 8,
+                frames: this.anims.generateFrameNumbers('dinobit-menu', { start: 0, end: 12 }),
+                frameRate: 12,
                 repeat: -1
             });
         }
 
         this.dinoMenu = this.add.sprite(-80, 710, 'dinobit-menu')
-            .setDisplaySize(80, 78)
+            .setDisplaySize(90, 90)
             .setDepth(1);
         this.dinoVaHaciaLaDerecha = true;
         this.moverDinoMenu();
@@ -155,7 +155,7 @@ class EscenaMenu extends Phaser.Scene {
         let vaHaciaLaDerecha = this.dinoVaHaciaLaDerecha;
         this.dinoMenu
             .setFlipX(vaHaciaLaDerecha)
-            .play(vaHaciaLaDerecha ? 'dino-menu-derecha' : 'dino-menu-derecha');
+            .play('dino-menu-corriendo', true);
 
         this.tweens.add({
             targets: this.dinoMenu,

@@ -14,6 +14,7 @@ class EscenaDinoRun extends Phaser.Scene {
         }
         this.load.image('arbusto', 'pictures/arbusto.png');
         this.load.image('arbol', 'pictures/arbol.png');
+        this.load.image('arbol_grande', 'pictures/arbol_grande.png');
         this.load.image('roca', 'pictures/roca.png');
         this.load.spritesheet('terodactilo', 'pictures/terodactile.png', {
             frameWidth: 543,
@@ -34,6 +35,7 @@ class EscenaDinoRun extends Phaser.Scene {
         this.pausado = false;
         this.agachado = false;
         this.capturaIniciada = false;
+        this.usarArbolGrande = false;
         this.temporizadorObstaculo = 850;
         this.temporizadorArbol = Phaser.Math.Between(900, 1800);
 
@@ -284,6 +286,7 @@ class EscenaDinoRun extends Phaser.Scene {
         if (this.terminado) {
             if (Phaser.Input.Keyboard.JustDown(this.teclaENTER) || enterTactil || Phaser.Input.Keyboard.JustDown(this.teclaEspacio)) {
                 this.reiniciar();
+                return;
             }
             return;
         }
@@ -367,8 +370,12 @@ class EscenaDinoRun extends Phaser.Scene {
     }
 
     crearArbolPaisaje(x) {
-        const arbol = this.add.image(x, 475, 'arbol')
-            .setDisplaySize(130, 130)
+        this.usarArbolGrande = !this.usarArbolGrande;
+        const keyTextura = this.usarArbolGrande ? 'arbol_grande' : 'arbol';
+        const displaySize = this.usarArbolGrande ? 140 : 110;
+        const posY = this.usarArbolGrande ? 465 : 475;
+        const arbol = this.add.image(x, posY, keyTextura)
+            .setDisplaySize(displaySize, displaySize)
             .setDepth(0)
             .setAlpha(0.92);
         this.grupoArboles.add(arbol);
@@ -425,6 +432,9 @@ class EscenaDinoRun extends Phaser.Scene {
     }
 
     reiniciar() {
+        if (window.mobileControls && typeof window.mobileControls.clear === 'function') {
+            window.mobileControls.clear();
+        }
         this.obstaculos.clear(true, true);
         this.puntuacion = 0;
         this.velocidad = 300;

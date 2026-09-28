@@ -41,16 +41,18 @@ class EscenaJuego extends Phaser.Scene {
         }
         this.add.image(anchoMundo / 2, altoMundo / 2, 'textura_pasto');
 
-        const mitadArbusto = 75;
+        const tamanoArbusto = 65;
+        const offsetArbusto = tamanoArbusto / 2;
+        const pasoArbusto = 45;
 
-        for (let x = mitadArbusto; x <= anchoMundo - mitadArbusto; x += 90) {
-            this.add.image(x, mitadArbusto, 'arbusto').setDisplaySize(150, 150);
-            this.add.image(x, altoMundo - mitadArbusto, 'arbusto').setDisplaySize(150, 150);
+        for (let x = offsetArbusto; x <= anchoMundo - offsetArbusto; x += pasoArbusto) {
+            this.add.image(x, offsetArbusto, 'arbusto').setDisplaySize(tamanoArbusto, tamanoArbusto);
+            this.add.image(x, altoMundo - offsetArbusto, 'arbusto').setDisplaySize(tamanoArbusto, tamanoArbusto);
         }
 
-        for (let y = mitadArbusto; y <= altoMundo - mitadArbusto; y += 95) {
-            this.add.image(mitadArbusto, y, 'arbusto').setDisplaySize(150, 150);
-            this.add.image(anchoMundo - mitadArbusto, y, 'arbusto').setDisplaySize(150, 150);
+        for (let y = offsetArbusto; y <= altoMundo - offsetArbusto; y += pasoArbusto) {
+            this.add.image(offsetArbusto, y, 'arbusto').setDisplaySize(tamanoArbusto, tamanoArbusto);
+            this.add.image(anchoMundo - offsetArbusto, y, 'arbusto').setDisplaySize(tamanoArbusto, tamanoArbusto);
         }
 
         let edificios = this.add.graphics().setDepth(2);
