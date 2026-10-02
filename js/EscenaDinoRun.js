@@ -139,7 +139,7 @@ class EscenaDinoRun extends Phaser.Scene {
 
     crearJugador() {
         const animKeyRun = `dino-jugador-corriendo-${this.avatarKey}`;
-        this.jugador = this.physics.add.sprite(220, 550, `avatar-${this.avatarKey}`, 12).setDepth(3);
+        this.jugador = this.physics.add.sprite(220, 580, `avatar-${this.avatarKey}`, 12).setOrigin(0.5, 1).setDepth(3);  //Revisar como funciona sprite
         this.jugador.setDisplaySize(58, 58);
         this.jugador.body.setSize(38, 52, true);
         this.jugador.body.setGravityY(1050);
@@ -159,10 +159,12 @@ class EscenaDinoRun extends Phaser.Scene {
             });
         }
 
-        this.perseguidor = this.physics.add.sprite(50, 550, 'dinosaurio-perseguidor', 0)
+        this.perseguidor = this.physics.add.sprite(50, 554, 'dinosaurio-perseguidor', 0) //Revisar setOrigin(0.5, 1)
+            .setOrigin(0.5, 0.95) // Ajusta el origen Y (0.95 = casi el fondo) para que pise bien, dada la transparencia del sprite
             .setDisplaySize(170, 170)
             .setFlipX(true)
             .setDepth(2);
+
         this.perseguidor.body.setAllowGravity(true);
         this.perseguidor.body.setGravityY(1050);
         this.perseguidor.body.setSize(102, 122, true);
@@ -254,8 +256,8 @@ class EscenaDinoRun extends Phaser.Scene {
 
         if (isBajo) {
             obstaculo.setOrigin(0.5, 1);
-            obstaculo.setDisplaySize(56, 56);
-            obstaculo.body.setSize(obstaculo.width * 0.85, obstaculo.height * 0.85, true);
+            obstaculo.setDisplaySize(90, 90);
+            obstaculo.body.setSize(obstaculo.width * 0.5, obstaculo.height * 0.5, true);
         } else {
             obstaculo.setDisplaySize(105, 70);
             obstaculo.body.setSize(300, 100, true);
@@ -394,8 +396,8 @@ class EscenaDinoRun extends Phaser.Scene {
         if (this.terminado || this.capturaIniciada) return;
         this.terminado = true;
         this.capturaIniciada = true;
-        const posicionFinal = this.jugador.x - 30;
-        this.perseguidor.body.enable = false;
+        const posicionFinal = this.jugador.x - 30; // 30 pixeles a la izquierda del jugador
+        this.perseguidor.body.enable = false; // Desactiva la física del perseguidor
         this.jugador.setVelocity(0, 0);
         this.perseguidor.setVelocity(0, 0);
         this.perseguidor.play('dinosaurio-corriendo');
@@ -405,14 +407,17 @@ class EscenaDinoRun extends Phaser.Scene {
             this.mejorPuntuacion = puntuacionFinal;
             localStorage.setItem('muchbits-dino-mejor-puntuacion', puntuacionFinal);
         }
-        this.tweens.add({
-            targets: this.perseguidor,
-            x: posicionFinal,
-            y: this.jugador.y - 15,
-            duration: 600,
-            ease: 'Power2',
-            onComplete: () => {
-                this.textoEstado.setText(`¡EL DINOSAURIO TE ATRAPÓ!\nPuntuación: ${puntuacionFinal}\nMejor: ${this.mejorPuntuacion}\n\nENTER o ESPACIO para reintentar\nESC para volver al mapa`).setVisible(true);
+        this.tweens.add({ // Animación de captura
+            targets: this.perseguidor, // Objeto a animar
+            x: posicionFinal, // Posición final en X
+            y: this.jugador.y, // Posición final en Y
+            duration: 600, // Duración de la animación en milisegundos
+            ease: 'Power2', // Curva de aceleración
+            onComplete: () => { // Función que se ejecuta al completar la animación
+                this.textoEstado.setText
+                    (`¡EL DINOSAURIO TE ATRAPÓ!\nPuntuación: ${puntuacionFinal}\n
+                        Mejor: ${this.mejorPuntuacion}\n\nENTER o ESPACIO para reintentar\n
+                        ESC para volver al mapa`).setVisible(true);
             }
         });
     }
@@ -444,9 +449,9 @@ class EscenaDinoRun extends Phaser.Scene {
         this.pausado = false;
         this.agachado = false;
         this.capturaIniciada = false;
-        this.jugador.setPosition(220, 550);
+        this.jugador.setPosition(220, 554);
         this.jugador.setVelocity(0, 0);
-        this.perseguidor.setPosition(50, 550);
+        this.perseguidor.setPosition(50, 554);
         this.perseguidor.setVelocity(0, 0);
         this.perseguidor.body.enable = true;
         this.perseguidor.play('dinosaurio-corriendo');
