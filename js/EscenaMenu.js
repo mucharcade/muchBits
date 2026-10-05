@@ -60,7 +60,7 @@ class EscenaMenu extends Phaser.Scene {
         }
 
         this.dinoMenu = this.add.sprite(-80, 710, 'dinobit-menu')
-            .setDisplaySize(90, 90)
+            .setDisplaySize(140, 140)
             .setDepth(1);
         this.dinoVaHaciaLaDerecha = true;
         this.moverDinoMenu();
@@ -114,11 +114,13 @@ class EscenaMenu extends Phaser.Scene {
             padding: { x: 20, y: 10 }
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
-        let textoCreditos = this.add.text(500, 700, 'Créditos: Departamento SATA y colaboradores', {
+        let textoCreditos = this.add.text(500, 700, 'Departamento SATA y Colaboradores: \nGabriel Reyes, Leonardo Ruiz, Fatima Bustamante', {
             fontSize: '20px',
-            fill: '#7f8c8d',
-            fontFamily: 'Arial'
-        }).setOrigin(0.5).setVisible(false);
+            fill: '#FFFFFF',
+            fontFamily: 'Arial',
+            backgroundColor: '#2c3e50',
+            padding: { x: 20, y: 10 }
+        }).setOrigin(0.5).setDepth(3).setVisible(false);
 
         let botonCreditos = this.add.text(500, 630, 'VER CRÉDITOS', {
             fontSize: '24px',

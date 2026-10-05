@@ -14,7 +14,7 @@ const config = {
             debug: true
         }
     },
-    scene: [EscenaMenu, EscenaJuego, EscenaDinoRun]
+    scene: [EscenaMenu, EscenaJuego, EscenaDinoRun, EscenaSalaA, EscenaSalaAMenu, EscenaMemoramaAnimales, EscenaMemoramaPlantas, EscenaMemoramaTierra]
 };
 
 const game = new Phaser.Game(config);

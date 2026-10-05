@@ -10,7 +10,8 @@ const publicDirectory = path.dirname(currentFile);
 app.use(express.static(publicDirectory));
 
 app.get('/', (request, response) => {
-    response.sendFile(path.join(publicDirectory, 'ingame.html'));
+    const file = path.join(publicDirectory, 'index.html');
+    response.sendFile(file);
 });
 
 app.listen(port, () => {

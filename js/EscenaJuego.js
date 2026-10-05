@@ -157,7 +157,7 @@ class EscenaJuego extends Phaser.Scene {
         this.add.text(275, 80, 'DINO', { fill: '#ffffff', fontStyle: 'bold', fontFamily: 'Arial' });
 
         let salaA = this.salas.create(1400, 1080, 'textura_sala');
-        salaA.setData({ nombre: 'A', salida: { x: 1400, y: 1000 } }); // SALA A
+        salaA.setData({ nombre: 'A', salida: { x: 1400, y: 900 } }); // SALA A
         this.add.text(1375, 1070, 'SALA A', { fill: '#ffffff', fontStyle: 'bold', fontFamily: 'Arial' });
 
         let salaB = this.salas.create(1840, 450, 'textura_sala');
@@ -240,12 +240,26 @@ class EscenaJuego extends Phaser.Scene {
         if (this.enPortal) {
             this.jugador.setVelocity(0);
 
-            if (this.salaActual && this.salaActual.getData('nombre').toUpperCase() === 'DINO') {
+            const nombreSala = this.salaActual ? this.salaActual.getData('nombre').toUpperCase() : '';
+
+            if (nombreSala === 'DINO') {
                 if (Phaser.Input.Keyboard.JustDown(this.teclaENTER) || enterTactil || Phaser.Input.Keyboard.JustDown(this.teclaS)) {
                     this.textoPortal.setVisible(false);
                     this.enPortal = false;
                     this.scene.sleep('EscenaJuego');
                     this.scene.launch('EscenaDinoRun');
+                } else if (Phaser.Input.Keyboard.JustDown(this.teclaESC) || escapeTactil || Phaser.Input.Keyboard.JustDown(this.teclaN)) {
+                    this.textoPortal.setVisible(false);
+                    this.enPortal = false;
+                    this.reiniciarJugador();
+                }
+            } else if (nombreSala === 'A') {
+                if (Phaser.Input.Keyboard.JustDown(this.teclaENTER) || enterTactil || Phaser.Input.Keyboard.JustDown(this.teclaS)) {
+                    this.textoPortal.setVisible(false);
+                    this.enPortal = false;
+                    this.scene.start('EscenaSalaA', {
+                        avatarKey: this.avatarKey
+                    });
                 } else if (Phaser.Input.Keyboard.JustDown(this.teclaESC) || escapeTactil || Phaser.Input.Keyboard.JustDown(this.teclaN)) {
                     this.textoPortal.setVisible(false);
                     this.enPortal = false;
