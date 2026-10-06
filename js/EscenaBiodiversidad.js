@@ -1414,8 +1414,8 @@ class EscenaBiodiversidad extends Phaser.Scene {
         bgBtnFin.fillRoundedRect(-115, -18, 230, 36, 8);
         bgBtnFin.lineStyle(2, 0xfacc15, 1);
         bgBtnFin.strokeRoundedRect(-115, -18, 230, 36, 8);
-        const txtBtnFin = this.add.text(0, 0, '📖 REVISAR LOGROS Y FINALIZAR', {
-            fontSize: '11px',
+        const txtBtnFin = this.add.text(0, 0, '🏆 FINALIZAR EXPEDICIÓN', {
+            fontSize: '12px',
             fontFamily: 'Arial',
             fontStyle: 'bold',
             color: '#fef08a'
