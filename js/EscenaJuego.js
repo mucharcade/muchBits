@@ -157,15 +157,20 @@ class EscenaJuego extends Phaser.Scene {
         this.add.text(275, 80, 'DINO', { fill: '#ffffff', fontStyle: 'bold', fontFamily: 'Arial' });
 
         let salaA = this.salas.create(1400, 1080, 'textura_sala');
-        salaA.setData({ nombre: 'A', salida: { x: 1400, y: 900 } }); // SALA A
-        this.add.text(1375, 1070, 'SALA A', { fill: '#ffffff', fontStyle: 'bold', fontFamily: 'Arial' });
+        salaA.setData({ nombre: 'BIODIVERSIDAD', salida: { x: 1400, y: 900 } }); // SALA BIODIVERSIDAD
+        this.add.text(1400, 1080, 'BIODIVERSIDAD', {
+            fontSize: '13px',
+            fill: '#ffffff',
+            fontStyle: 'bold',
+            fontFamily: 'Arial'
+        }).setOrigin(0.5);
 
         let salaB = this.salas.create(1840, 450, 'textura_sala');
-        salaB.setData({ nombre: 'B', salida: { x: 1750, y: 450 } }); // SALA B
+        salaB.setData({ nombre: 'B', salida: { x: 1750, y: 450 } }); // SALA B, POR HACER
         this.add.text(1815, 440, 'SALA B', { fill: '#ffffff', fontStyle: 'bold', fontFamily: 'Arial' });
 
         let salaC = this.salas.create(820, 600, 'textura_sala');
-        salaC.setData({ nombre: 'C', salida: { x: 820, y: 510 } }); // SALA C
+        salaC.setData({ nombre: 'C', salida: { x: 820, y: 510 } }); // SALA C, POR HACER
         this.add.text(795, 590, 'SALA C', { fill: '#ffffff', fontStyle: 'bold', fontFamily: 'Arial' });
 
         this.salas.children.iterate((sala) => { sala.body.setCircle(60); });
@@ -253,11 +258,11 @@ class EscenaJuego extends Phaser.Scene {
                     this.enPortal = false;
                     this.reiniciarJugador();
                 }
-            } else if (nombreSala === 'A') {
+            } else if (nombreSala === 'BIODIVERSIDAD') {
                 if (Phaser.Input.Keyboard.JustDown(this.teclaENTER) || enterTactil || Phaser.Input.Keyboard.JustDown(this.teclaS)) {
                     this.textoPortal.setVisible(false);
                     this.enPortal = false;
-                    this.scene.start('EscenaSalaA', {
+                    this.scene.start('EscenaBiodiversidad', {
                         avatarKey: this.avatarKey
                     });
                 } else if (Phaser.Input.Keyboard.JustDown(this.teclaESC) || escapeTactil || Phaser.Input.Keyboard.JustDown(this.teclaN)) {

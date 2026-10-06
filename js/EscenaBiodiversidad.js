@@ -1,10 +1,10 @@
 /**
- * EscenaSalaA.js - Expedición Chiapas: Selva Lacandona y Bosque de Niebla
- * Mapeo completo de Spritesheets para Fauna y Flora con Animaciones 2D
+ * EscenaBiodiversidad.js - Expedición Chiapas: Selva Lacandona, Bosque de Niebla y Capas de la Tierra
+ * Mapeo completo de Spritesheets para Fauna, Flora y Sección Geológica de la Litosfera
  */
-class EscenaSalaA extends Phaser.Scene {
+class EscenaBiodiversidad extends Phaser.Scene {
     constructor() {
-        super({ key: 'EscenaSalaA' });
+        super({ key: 'EscenaBiodiversidad' });
     }
 
     init(data) {
@@ -106,8 +106,8 @@ class EscenaSalaA extends Phaser.Scene {
         this.agachado = false;
         this._transitando = false;
         this.mundoAncho = 4200;
-        this.mundoAlto = 800;
-        this.sueloY = 660;
+        this.mundoAlto = 880;
+        this.sueloY = 670; // Posición Y del suelo
     }
 
     preload() {
@@ -153,6 +153,7 @@ class EscenaSalaA extends Phaser.Scene {
 
     create() {
         this._transitando = false;
+        this.cameras.main.setBackgroundColor('#38bdf8');
         this.physics.world.gravity.y = 1100;
         this.physics.world.setBounds(0, 0, this.mundoAncho, this.mundoAlto);
 
@@ -160,6 +161,7 @@ class EscenaSalaA extends Phaser.Scene {
         this._mapearFramesYAnimaciones();
         this._crearFondoParalaje();
         this._crearPlataformasYSuelo();
+        this._crearCapasDeLaTierra();
         this._crearBiodiversidadViva();
         this._crearAnimacionesJugador();
         this._crearJugador();
@@ -173,7 +175,7 @@ class EscenaSalaA extends Phaser.Scene {
         this._crearModalBitacora();
 
         this.cameras.main.fadeIn(400, 0, 0, 0);
-        this._mostrarNotificacion('🌿 Expedición Chiapas: Spritesheets mapeados con animaciones activas', '#a1e44d', 4500);
+        this._mostrarNotificacion('🌿 Expedición Chiapas: Selva, Biodiversidad y Capas de la Tierra', '#a1e44d', 4500);
     }
 
     /* -------------------------------------------------------------
@@ -237,21 +239,20 @@ class EscenaSalaA extends Phaser.Scene {
             });
         }
 
-        if (!this.anims.exists('quetzal-vuelo')) {
-            this.anims.create({
-                key: 'quetzal-vuelo',
-                frames: [
-                    { key: 'quetzal_volando_raw', frame: 'fly_0' },
-                    { key: 'quetzal_volando_raw', frame: 'fly_1' },
-                    { key: 'quetzal_volando_raw', frame: 'fly_2' },
-                    { key: 'quetzal_volando_raw', frame: 'fly_3' },
-                    { key: 'quetzal_volando_raw', frame: 'fly_4' },
-                    { key: 'quetzal_volando_raw', frame: 'fly_5' }
-                ],
-                frameRate: 8,
-                repeat: -1
-            });
-        }
+        if (this.anims.exists('quetzal-vuelo')) this.anims.remove('quetzal-vuelo');
+        this.anims.create({
+            key: 'quetzal-vuelo',
+            frames: [
+                { key: 'quetzal_volando_raw', frame: 'fly_0' },
+                { key: 'quetzal_volando_raw', frame: 'fly_1' },
+                { key: 'quetzal_volando_raw', frame: 'fly_2' },
+                { key: 'quetzal_volando_raw', frame: 'fly_3' },
+                { key: 'quetzal_volando_raw', frame: 'fly_4' },
+                { key: 'quetzal_volando_raw', frame: 'fly_5' }
+            ],
+            frameRate: 5,
+            repeat: -1
+        });
 
         // --- C. ANIMACIONES DE TAPIR (tapir_sheet: 4 frames) ---
         if (!this.anims.exists('tapir-caminar')) {
@@ -403,47 +404,96 @@ class EscenaSalaA extends Phaser.Scene {
     }
 
     /* -------------------------------------------------------------
-     * PARALAJE MULTICAPA
+     * PARALAJE MULTICAPA (CIELO AZUL Y NUBES FLOTANTES)
      * ------------------------------------------------------------- */
     _crearFondoParalaje() {
-        // Capa 0: Cielo
-        const cielo = this.add.graphics().setScrollFactor(0);
-        cielo.fillGradientStyle(0x193328, 0x193328, 0x3d7055, 0x5a9a7a, 1);
-        cielo.fillRect(0, 0, 1000, 800);
+        // Capa 0: Cielo Azul Turquesa / Celeste Vibrante
+        const cielo = this.add.graphics().setScrollFactor(0).setDepth(-10);
+        cielo.fillGradientStyle(0x0284c7, 0x0284c7, 0x38bdf8, 0xbae6fd, 1);
+        cielo.fillRect(0, 0, 2000, 1200);
 
-        // Rayos de luz
-        const rayos = this.add.graphics().setScrollFactor(0.02).setAlpha(0.18);
-        rayos.fillStyle(0xfff7d6, 1);
-        for (let i = 0; i < 7; i++) {
+        // Sol Radiante en el cielo
+        const sol = this.add.graphics().setScrollFactor(0.01).setDepth(-9);
+        sol.fillStyle(0xfffbeb, 0.95);
+        sol.fillCircle(820, 100, 48);
+        sol.fillStyle(0xfef08a, 0.45);
+        sol.fillCircle(820, 100, 72);
+        sol.fillStyle(0xfde047, 0.22);
+        sol.fillCircle(820, 100, 102);
+
+        // Rayos de luz dorados
+        const rayos = this.add.graphics().setScrollFactor(0.02).setAlpha(0.22).setDepth(-8);
+        rayos.fillStyle(0xfffbeb, 1);
+        for (let i = 0; i < 8; i++) {
             rayos.fillTriangle(
-                120 + i * 160, 0,
-                240 + i * 180, 800,
-                60 + i * 180, 800
+                100 + i * 160, 0,
+                220 + i * 180, this.mundoAlto,
+                40 + i * 180, this.mundoAlto
             );
         }
 
-        // Capa 1: Montañas lejanas
+        // TEXTURA DE NUBES BLANCAS ESPONJOSAS
+        if (!this.textures.exists('textura-nube-esponjosa')) {
+            const nubeG = this.make.graphics({ x: 0, y: 0, add: false });
+            nubeG.fillStyle(0xffffff, 0.94);
+            nubeG.fillCircle(40, 35, 25);
+            nubeG.fillCircle(65, 25, 30);
+            nubeG.fillCircle(95, 25, 28);
+            nubeG.fillCircle(120, 35, 22);
+            nubeG.fillRect(40, 25, 80, 25);
+
+            // Sombra suave en la base de la nube
+            nubeG.fillStyle(0xe2e8f0, 0.55);
+            nubeG.fillRect(35, 42, 90, 8);
+            nubeG.generateTexture('textura-nube-esponjosa', 160, 60);
+            nubeG.destroy();
+        }
+
+        // Instanciar nubes flotantes a lo largo del cielo en la escena
+        this.nubesSky = [];
+        const posicionesNubes = [
+            { x: 180, y: 70, scale: 1.2, alpha: 0.9, speed: 0.8 },
+            { x: 650, y: 110, scale: 0.9, alpha: 0.8, speed: 0.6 },
+            { x: 1200, y: 60, scale: 1.4, alpha: 0.92, speed: 1.0 },
+            { x: 1750, y: 130, scale: 0.85, alpha: 0.75, speed: 0.7 },
+            { x: 2300, y: 80, scale: 1.3, alpha: 0.88, speed: 0.9 },
+            { x: 2900, y: 100, scale: 1.1, alpha: 0.82, speed: 0.75 },
+            { x: 3550, y: 65, scale: 1.5, alpha: 0.9, speed: 1.1 },
+            { x: 4000, y: 120, scale: 0.95, alpha: 0.78, speed: 0.65 }
+        ];
+
+        posicionesNubes.forEach(p => {
+            const nube = this.add.image(p.x, p.y, 'textura-nube-esponjosa')
+                .setScrollFactor(0.12)
+                .setScale(p.scale)
+                .setAlpha(p.alpha)
+                .setDepth(1);
+            nube.speed = p.speed;
+            this.nubesSky.push(nube);
+        });
+
+        // Capa 1: Montañas lejanas (Verde/Azul montañoso)
         const montanasLejanas = this.add.graphics().setScrollFactor(0.08);
-        montanasLejanas.fillStyle(0x1a4030, 0.9);
+        montanasLejanas.fillStyle(0x1e5338, 0.92);
         const puntosMontanas = [{ x: 0, y: 520 }];
         for (let x = 0; x <= this.mundoAncho + 1000; x += 180) {
             const h = 260 + Math.sin(x * 0.003) * 110 + Math.cos(x * 0.007) * 40;
             puntosMontanas.push({ x: x, y: h });
         }
-        puntosMontanas.push({ x: this.mundoAncho + 1000, y: 800 });
-        puntosMontanas.push({ x: 0, y: 800 });
+        puntosMontanas.push({ x: this.mundoAncho + 1000, y: this.mundoAlto });
+        puntosMontanas.push({ x: 0, y: this.mundoAlto });
         montanasLejanas.fillPoints(puntosMontanas, true);
 
         // Capa 2: Colinas medias
         const colinasMedias = this.add.graphics().setScrollFactor(0.2);
-        colinasMedias.fillStyle(0x1c4d35, 0.95);
+        colinasMedias.fillStyle(0x226240, 0.95);
         const puntosColinas = [{ x: 0, y: 560 }];
         for (let x = 0; x <= this.mundoAncho + 600; x += 140) {
             const h = 380 + Math.sin(x * 0.004) * 80;
             puntosColinas.push({ x: x, y: h });
         }
-        puntosColinas.push({ x: this.mundoAncho + 600, y: 800 });
-        puntosColinas.push({ x: 0, y: 800 });
+        puntosColinas.push({ x: this.mundoAncho + 600, y: this.mundoAlto });
+        puntosColinas.push({ x: 0, y: this.mundoAlto });
         colinasMedias.fillPoints(puntosColinas, true);
 
         for (let x = 100; x <= this.mundoAncho; x += 160) {
@@ -452,13 +502,13 @@ class EscenaSalaA extends Phaser.Scene {
                 .setScrollFactor(0.2)
                 .setOrigin(0.5, 1)
                 .setDisplaySize(120, 160)
-                .setTint(0x173e2b)
-                .setAlpha(0.85);
+                .setTint(0x194d32)
+                .setAlpha(0.88);
         }
 
-        // Capa de neblina
-        this.neblina = this.add.graphics().setScrollFactor(0.35).setAlpha(0.28);
-        this.neblina.fillStyle(0xd9ede4, 1);
+        // Capa de neblina blanca selvática
+        this.neblina = this.add.graphics().setScrollFactor(0.35).setAlpha(0.35);
+        this.neblina.fillStyle(0xf1f5f9, 1);
         for (let x = 0; x < this.mundoAncho; x += 320) {
             this.neblina.fillEllipse(x + 160, 480, 360, 70);
         }
@@ -487,7 +537,7 @@ class EscenaSalaA extends Phaser.Scene {
                 'quetzal_volando_raw',
                 'fly_0'
             )
-                .setDisplaySize(90, 68)
+                .setScale(0.16)
                 .setScrollFactor(0.35)
                 .setTint(0x1e4a33)
                 .setAlpha(0.7)
@@ -517,30 +567,129 @@ class EscenaSalaA extends Phaser.Scene {
     }
 
     /* -------------------------------------------------------------
-     * PLATAFORMAS Y SUELO
+     * PLATAFORMAS Y SUELO (ILUSTRACIÓN CROSS-SECTION DE CAPAS DE LA TIERRA A LO LARGO DE TODO EL NIVEL)
      * ------------------------------------------------------------- */
     _crearPlataformasYSuelo() {
         this.plataformas = this.physics.add.staticGroup();
 
-        if (!this.textures.exists('textura-suelo-selva')) {
+        // TEXTURA DE SUELO LITOSFERA (210PX DE ALTO PARA MOSTRAR TODAS LAS CAPAS)
+        if (!this.textures.exists('textura-suelo-litosfera')) {
             const sueloG = this.make.graphics({ x: 0, y: 0, add: false });
-            sueloG.fillStyle(0x2d1e14, 1);
-            sueloG.fillRect(0, 0, 400, 160);
-            sueloG.fillStyle(0x3e6b2c, 1);
-            sueloG.fillRect(0, 0, 400, 24);
-            sueloG.fillStyle(0x5c8e3a, 1);
-            for (let i = 0; i < 400; i += 12) sueloG.fillRect(i, 0, 6, 8);
-            sueloG.generateTexture('textura-suelo-selva', 400, 160);
+            const w = 600;
+            const h = 210;
+
+            // 1. Corteza (Crust 0 - 100 km): 0px a 38px
+            sueloG.fillStyle(0x3d2817, 1);
+            sueloG.fillRect(0, 0, w, 38);
+            sueloG.fillStyle(0x22c55e, 1);
+            sueloG.fillRect(0, 0, w, 9); // Pasto verde superior
+            sueloG.fillStyle(0x15803d, 1);
+            for (let i = 0; i < w; i += 12) sueloG.fillRect(i, 0, 6, 5);
+
+            // 2. Astenosfera (Asthenosphere 100 - 410 km): 38px a 77px
+            sueloG.fillStyle(0x9a3412, 1);
+            sueloG.fillRect(0, 38, w, 39);
+            sueloG.fillStyle(0xc2410c, 1);
+            for (let i = 0; i < w; i += 30) {
+                sueloG.fillTriangle(i, 38, i + 15, 50, i + 30, 38);
+            }
+
+            // 3. Manto (Mantle 100 - 2,900 km): 77px a 117px
+            sueloG.fillStyle(0xd97706, 1);
+            sueloG.fillRect(0, 77, w, 40);
+            sueloG.fillStyle(0xeab308, 0.75);
+            for (let i = 0; i < w; i += 40) {
+                sueloG.fillRect(i, 86, 24, 6);
+            }
+
+            // 4. Núcleo Externo (Outer Core 2,900 - 5,100 km): 117px a 157px
+            sueloG.fillStyle(0xea580c, 1);
+            sueloG.fillRect(0, 117, w, 40);
+            sueloG.fillStyle(0xfb923c, 0.85);
+            for (let i = 0; i < w; i += 50) {
+                sueloG.fillCircle(i + 25, 137, 9);
+            }
+
+            // 5. Núcleo Interno (Inner Core 5,100 - 6,378 km): 157px a 210px
+            sueloG.fillStyle(0xfacc15, 1);
+            sueloG.fillRect(0, 157, w, 53);
+            sueloG.fillStyle(0xfef08a, 1);
+            for (let i = 0; i < w; i += 20) {
+                sueloG.fillRect(i, 157, 10, 53);
+            }
+
+            // Líneas divisoras delgadas entre capas
+            sueloG.lineStyle(2, 0xffffff, 0.5);
+            sueloG.lineBetween(0, 38, w, 38);
+            sueloG.lineBetween(0, 77, w, 77);
+            sueloG.lineBetween(0, 117, w, 117);
+            sueloG.lineBetween(0, 157, w, 157);
+
+            sueloG.generateTexture('textura-suelo-litosfera', w, h);
             sueloG.destroy();
         }
 
-        for (let x = 200; x <= this.mundoAncho + 200; x += 400) {
-            const tile = this.plataformas.create(x, this.sueloY + 80, 'textura-suelo-selva');
-            tile.body.setSize(400, 160);
+        // Crear los tiles de suelo a lo largo de todo el ancho del mundo (4200px)
+        for (let x = 300; x <= this.mundoAncho + 300; x += 600) {
+            const tile = this.plataformas.create(x, this.mundoAlto - 105, 'textura-suelo-litosfera');
+            tile.refreshBody();
             tile.setDepth(3);
         }
 
-        // Rocas y arbustos
+        // ETIQUETAS VISUALES ESPACIOSAS DE LAS 5 CAPAS EN EL SUELO A LO LARGO DE LA ESCENA
+        for (let x = 320; x < this.mundoAncho; x += 750) {
+            // Label Corteza
+            this.add.text(x, this.sueloY + 13, '⛰️ CORTEZA (0 - 100 km)', {
+                fontSize: '11px',
+                fontFamily: 'Arial',
+                fontStyle: 'bold',
+                color: '#ffffff',
+                backgroundColor: 'rgba(0,0,0,0.6)',
+                padding: { x: 6, y: 2 }
+            }).setDepth(4);
+
+            // Label Astenosfera
+            this.add.text(x + 140, this.sueloY + 50, '🔥 ASTENOSFERA (100 - 410 km)', {
+                fontSize: '11px',
+                fontFamily: 'Arial',
+                fontStyle: 'bold',
+                color: '#fdba74',
+                backgroundColor: 'rgba(0,0,0,0.6)',
+                padding: { x: 6, y: 2 }
+            }).setDepth(4);
+
+            // Label Manto
+            this.add.text(x + 300, this.sueloY + 90, '🌋 MANTO (100 - 2,900 km)', {
+                fontSize: '11px',
+                fontFamily: 'Arial',
+                fontStyle: 'bold',
+                color: '#fef08a',
+                backgroundColor: 'rgba(0,0,0,0.6)',
+                padding: { x: 6, y: 2 }
+            }).setDepth(4);
+
+            // Label Núcleo Externo
+            this.add.text(x + 460, this.sueloY + 130, '🌊 NÚCLEO EXTERNO (2,900 - 5,100 km)', {
+                fontSize: '11px',
+                fontFamily: 'Arial',
+                fontStyle: 'bold',
+                color: '#ffedd5',
+                backgroundColor: 'rgba(0,0,0,0.6)',
+                padding: { x: 6, y: 2 }
+            }).setDepth(4);
+
+            // Label Núcleo Interno (CLARAMENTE VISIBLE Y DESTACADO)
+            this.add.text(x + 220, this.sueloY + 170, '⚡ NÚCLEO INTERNO (5,100 - 6,378 km)', {
+                fontSize: '11px',
+                fontFamily: 'Arial',
+                fontStyle: 'bold',
+                color: '#451a03',
+                backgroundColor: 'rgba(254, 240, 138, 0.95)',
+                padding: { x: 8, y: 3 }
+            }).setDepth(4);
+        }
+
+        // Rocas y arbustos decorativos en la superficie
         for (let x = 120; x < this.mundoAncho - 200; x += Phaser.Math.Between(160, 320)) {
             if (Math.random() > 0.4) {
                 this.add.image(x, this.sueloY - 4, 'roca')
@@ -567,20 +716,22 @@ class EscenaSalaA extends Phaser.Scene {
             ramaG.generateTexture('textura-rama', 220, 26);
             ramaG.destroy();
         }
-
+        // RAMAS O SUELO FLOTANTE
         const coordsRamas = [
-            { x: 740, y: 530, w: 220 },
-            { x: 920, y: 410, w: 220 },
-            { x: 1100, y: 310, w: 220 }, // Rama del Quetzal
-            { x: 1950, y: 520, w: 220 },
-            { x: 2180, y: 400, w: 220 }, // Rama del Mono
-            { x: 3000, y: 520, w: 220 },
-            { x: 3220, y: 420, w: 220 }
+            { x: 740, y: 580, w: 160 },
+            { x: 920, y: 490, w: 160 },
+            { x: 1000, y: 390, w: 160 }, // Rama del Quetzal
+            { x: 1950, y: 570, w: 160 },
+            { x: 2180, y: 470, w: 160 }, // Rama del Mono
+            { x: 3000, y: 575, w: 160 },
+            { x: 3220, y: 490, w: 160 }
         ];
 
         coordsRamas.forEach(r => {
             const rama = this.plataformas.create(r.x, r.y, 'textura-rama');
+            rama.setDisplaySize(r.w, 24);
             rama.body.setSize(r.w, 24);
+            rama.refreshBody();
             rama.setDepth(4);
 
             const lianas = this.add.graphics().setDepth(3);
@@ -595,44 +746,470 @@ class EscenaSalaA extends Phaser.Scene {
     }
 
     /* -------------------------------------------------------------
+     * CAPAS DE LA TIERRA (LITOSFERA - INFOGRAFÍA INTERACTIVA)
+     * ------------------------------------------------------------- */
+    _crearCapasDeLaTierra() {
+        const cx = 1450;
+        const groundY = this.sueloY; // 660
+        const container = this.add.container(cx, groundY).setDepth(4);
+        container.setScale(0.60); // Cartel compacto y elegante
+
+        const baseY = -30;
+
+        // Patas de soporte de madera/metal
+        const patasCartel = this.add.graphics();
+        patasCartel.fillStyle(0x271406, 1);
+        patasCartel.fillRect(-192, baseY + 10, 20, 45);
+        patasCartel.fillRect(172, baseY + 10, 20, 45);
+        patasCartel.lineStyle(2, 0x8b5e2e, 1);
+        patasCartel.strokeRect(-192, baseY + 10, 20, 45);
+        patasCartel.strokeRect(172, baseY + 10, 20, 45);
+        container.add(patasCartel);
+
+        // Marco del Cartel Expositivo
+        const bgEstrellas = this.add.graphics();
+        bgEstrellas.fillStyle(0x3b1e08, 1);
+        bgEstrellas.fillRoundedRect(-215, -440, 430, 430, 16);
+        bgEstrellas.lineStyle(4, 0xd4a84b, 1);
+        bgEstrellas.strokeRoundedRect(-215, -440, 430, 430, 16);
+
+        // Fondo de cristal cósmico
+        bgEstrellas.fillStyle(0x0c1e38, 0.98);
+        bgEstrellas.fillRoundedRect(-202, -428, 404, 406, 12);
+        bgEstrellas.lineStyle(2, 0x38bdf8, 0.85);
+        bgEstrellas.strokeRoundedRect(-202, -428, 404, 406, 12);
+
+        // Remaches dorados
+        const esquinasCartel = [
+            [-195, -420], [195, -420],
+            [-195, -30], [195, -30]
+        ];
+        esquinasCartel.forEach(([sx, sy]) => {
+            bgEstrellas.fillStyle(0xd4a84b, 1);
+            bgEstrellas.fillCircle(sx, sy, 5);
+        });
+
+        // Estrellas en el cartel
+        for (let i = 0; i < 30; i++) {
+            const sx = -190 + Math.random() * 380;
+            const sy = -410 + Math.random() * 370;
+            bgEstrellas.fillStyle(0xffffff, 0.4 + Math.random() * 0.6);
+            bgEstrellas.fillCircle(sx, sy, Math.random() > 0.7 ? 2 : 1);
+        }
+        container.add(bgEstrellas);
+
+        // Título del Cartel Informativo
+        const tituloLitosfera = this.add.text(0, -408, 'LITHOSPHERE', {
+            fontSize: '22px',
+            fontFamily: '"Press Start 2P", Arial',
+            fontStyle: '900',
+            color: '#f97316',
+            stroke: '#7c2d12',
+            strokeThickness: 5
+        }).setOrigin(0.5);
+        container.add(tituloLitosfera);
+
+        const subtituloLitosfera = this.add.text(0, -384, '📌 CARTEL EXPOSITIVO: ESTRUCTURA DE LA TIERRA', {
+            fontSize: '10px',
+            fontFamily: 'Arial',
+            fontStyle: 'bold',
+            color: '#fdba74'
+        }).setOrigin(0.5);
+        container.add(subtituloLitosfera);
+
+        // REBANADA TRIDIMENSIONAL DE LA TIERRA
+        const gWedge = this.add.graphics();
+
+        // 1. Núcleo Interno (Inner Core): 5100 - 6378 km
+        gWedge.fillStyle(0xfff500, 1);
+        gWedge.fillTriangle(-25, baseY - 55, 25, baseY - 55, 0, baseY);
+
+        // 2. Núcleo Externo (Outer Core): 2900 - 5100 km
+        gWedge.fillStyle(0xf97316, 1);
+        gWedge.beginPath();
+        gWedge.moveTo(-70, baseY - 135);
+        gWedge.lineTo(70, baseY - 135);
+        gWedge.lineTo(25, baseY - 55);
+        gWedge.lineTo(-25, baseY - 55);
+        gWedge.closePath();
+        gWedge.fillPath();
+
+        gWedge.lineStyle(2, 0xfcb316, 0.75);
+        gWedge.beginPath();
+        gWedge.moveTo(-50, baseY - 110);
+        gWedge.lineTo(50, baseY - 110);
+        gWedge.moveTo(-35, baseY - 85);
+        gWedge.lineTo(35, baseY - 85);
+        gWedge.strokePath();
+
+        // 3. Manto (Mantle): 100 - 2900 km
+        gWedge.fillStyle(0xeab308, 1);
+        gWedge.beginPath();
+        gWedge.moveTo(-120, baseY - 220);
+        gWedge.lineTo(120, baseY - 220);
+        gWedge.lineTo(70, baseY - 135);
+        gWedge.lineTo(-70, baseY - 135);
+        gWedge.closePath();
+        gWedge.fillPath();
+
+        // 4. Astenosfera (Asthenosphere): 100 - 410 km
+        gWedge.fillStyle(0xc2410c, 1);
+        gWedge.beginPath();
+        gWedge.moveTo(-145, baseY - 260);
+        gWedge.lineTo(145, baseY - 260);
+        gWedge.lineTo(120, baseY - 220);
+        gWedge.lineTo(-120, baseY - 220);
+        gWedge.closePath();
+        gWedge.fillPath();
+
+        // 5. Corteza (Crust): 0 - 100 km
+        gWedge.fillStyle(0x3b82f6, 1);
+        gWedge.beginPath();
+        gWedge.moveTo(-160, baseY - 280);
+        gWedge.lineTo(160, baseY - 280);
+        gWedge.lineTo(145, baseY - 260);
+        gWedge.lineTo(-145, baseY - 260);
+        gWedge.closePath();
+        gWedge.fillPath();
+
+        gWedge.fillStyle(0x22c55e, 1);
+        gWedge.beginPath();
+        gWedge.moveTo(-160, baseY - 280);
+        gWedge.lineTo(40, baseY - 286);
+        gWedge.lineTo(40, baseY - 276);
+        gWedge.lineTo(-160, baseY - 274);
+        gWedge.closePath();
+        gWedge.fillPath();
+
+        // Montañas y pinos
+        const montanasCorteza = this.add.graphics();
+        montanasCorteza.fillStyle(0x475569, 1);
+        montanasCorteza.fillTriangle(-110, baseY - 280, -60, baseY - 330, -20, baseY - 280);
+        montanasCorteza.fillStyle(0x334155, 1);
+        montanasCorteza.fillTriangle(-65, baseY - 280, -20, baseY - 345, 20, baseY - 280);
+
+        montanasCorteza.fillStyle(0x15803d, 1);
+        montanasCorteza.fillTriangle(-140, baseY - 280, -130, baseY - 315, -120, baseY - 280);
+        montanasCorteza.fillTriangle(-125, baseY - 280, -115, baseY - 325, -105, baseY - 280);
+        montanasCorteza.fillTriangle(50, baseY - 285, 60, baseY - 320, 70, baseY - 285);
+        montanasCorteza.fillTriangle(70, baseY - 285, 80, baseY - 330, 90, baseY - 285);
+        container.add(montanasCorteza);
+        container.add(gWedge);
+
+        // LÍNEAS INDICADORAS Y ETIQUETAS CON SUS KILÓMETROS
+        const gLineas = this.add.graphics();
+        gLineas.lineStyle(2, 0xffffff, 0.95);
+
+        // 1. Crust
+        gLineas.beginPath();
+        gLineas.moveTo(-175, baseY - 275);
+        gLineas.lineTo(-120, baseY - 275);
+        gLineas.strokePath();
+        gLineas.fillStyle(0xffffff, 1);
+        gLineas.fillCircle(-120, baseY - 275, 5);
+
+        const txtCorteza = this.add.text(-182, baseY - 290, 'Crust\n0-100 km', {
+            fontSize: '13px',
+            fontFamily: 'Arial',
+            fontStyle: 'bold',
+            color: '#ffffff',
+            align: 'right'
+        }).setOrigin(1, 0.5);
+        container.add(txtCorteza);
+
+        // 2. Asthenosphere
+        const txtAstenosfera = this.add.text(10, baseY - 240, 'Asthenosphere', {
+            fontSize: '13px',
+            fontFamily: 'Arial',
+            fontStyle: 'bold',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        container.add(txtAstenosfera);
+
+        // 3. Mantle
+        gLineas.beginPath();
+        gLineas.moveTo(-175, baseY - 180);
+        gLineas.lineTo(-10, baseY - 180);
+        gLineas.strokePath();
+        gLineas.fillCircle(-10, baseY - 180, 5);
+
+        const txtManto = this.add.text(-182, baseY - 180, 'Mantle\n2900 km', {
+            fontSize: '13px',
+            fontFamily: 'Arial',
+            fontStyle: 'bold',
+            color: '#ffffff',
+            align: 'right'
+        }).setOrigin(1, 0.5);
+        container.add(txtManto);
+
+        // 4. Outer Core
+        gLineas.beginPath();
+        gLineas.moveTo(-175, baseY - 95);
+        gLineas.lineTo(-5, baseY - 95);
+        gLineas.strokePath();
+        gLineas.fillCircle(-5, baseY - 95, 5);
+
+        const txtNucleoExt = this.add.text(-182, baseY - 95, 'Outer Core\n5100 km', {
+            fontSize: '13px',
+            fontFamily: 'Arial',
+            fontStyle: 'bold',
+            color: '#ffffff',
+            align: 'right'
+        }).setOrigin(1, 0.5);
+        container.add(txtNucleoExt);
+
+        // 5. Inner Core
+        gLineas.beginPath();
+        gLineas.moveTo(-175, baseY);
+        gLineas.lineTo(0, baseY);
+        gLineas.strokePath();
+        gLineas.fillCircle(0, baseY, 6);
+
+        const txtNucleoInt = this.add.text(-182, baseY, 'Inner Core\n6378 km', {
+            fontSize: '13px',
+            fontFamily: 'Arial',
+            fontStyle: 'bold',
+            color: '#fff500',
+            align: 'right'
+        }).setOrigin(1, 0.5);
+        container.add(txtNucleoInt);
+        container.add(gLineas);
+
+        // Pedestal interactivo al pie del cartel
+        const pedestal = this.add.graphics();
+        pedestal.fillStyle(0x0f172a, 1);
+        pedestal.fillRoundedRect(-110, baseY + 18, 220, 28, 6);
+        pedestal.lineStyle(1.5, 0x38bdf8, 1);
+        pedestal.strokeRoundedRect(-110, baseY + 18, 220, 28, 6);
+        container.add(pedestal);
+
+        const txtPedestal = this.add.text(0, baseY + 32, '🔍 EXAMINAR [ENTER]', {
+            fontSize: '11px',
+            fontFamily: 'Arial',
+            fontStyle: 'bold',
+            color: '#38bdf8'
+        }).setOrigin(0.5);
+        container.add(txtPedestal);
+
+        // Zona interactiva física para aproximación del avatar
+        this.capasZona = this.add.zone(cx, groundY - 60, 240, 180);
+        this.physics.add.existing(this.capasZona, true);
+    }
+
+    _mostrarModalCapasTierra() {
+        if (this.modalCapasAbierto) return;
+        this.modalCapasAbierto = true;
+
+        const modalContainer = this.add.container(0, 0).setScrollFactor(0).setDepth(40);
+
+        const bgOverlay = this.add.rectangle(500, 400, 1000, 800, 0x000000, 0.78).setInteractive();
+        modalContainer.add(bgOverlay);
+
+        const panel = this.add.graphics();
+        panel.fillStyle(0x0f172a, 0.98);
+        panel.fillRoundedRect(90, 60, 820, 680, 16);
+        panel.lineStyle(3, 0x38bdf8, 1);
+        panel.strokeRoundedRect(90, 60, 820, 680, 16);
+        modalContainer.add(panel);
+
+        const txtTitulo = this.add.text(500, 95, '🌍 LITOSFERA Y CAPAS DE LA TIERRA', {
+            fontSize: '22px',
+            fontFamily: 'Arial',
+            fontStyle: 'bold',
+            color: '#38bdf8'
+        }).setOrigin(0.5);
+        modalContainer.add(txtTitulo);
+
+        const txtSubtitulo = this.add.text(500, 124, 'Estructura geológica desde la superficie terrestre hasta el centro del planeta', {
+            fontSize: '13px',
+            fontFamily: 'Arial',
+            color: '#94a3b8'
+        }).setOrigin(0.5);
+        modalContainer.add(txtSubtitulo);
+
+        const capasInfo = [
+            {
+                nombre: '1. CORTEZA (Crust)',
+                rango: '0 — 100 km',
+                color: '#22c55e',
+                bg: '#14532d',
+                desc: 'Capa sólida exterior donde se desarrollan los continentes y los fondos oceánicos. Su grosor varía de 5 km en océanos a 70 km bajo cordilleras.'
+            },
+            {
+                nombre: '2. ASTENOSFERA (Asthenosphere)',
+                rango: '100 — 410 km',
+                color: '#f97316',
+                bg: '#7c2d12',
+                desc: 'Zona plástica y dúctil del manto superior sobre la cual navegan lentamente las placas tectónicas, originando volcanes y sismos.'
+            },
+            {
+                nombre: '3. MANTO (Mantle)',
+                rango: '100 — 2,900 km',
+                color: '#eab308',
+                bg: '#713f12',
+                desc: 'Representa cerca del 84% del volumen terrestre. Compuesto de rocas silicatadas densas ricas en hierro y magnesio a altas temperaturas.'
+            },
+            {
+                nombre: '4. NÚCLEO EXTERNO (Outer Core)',
+                rango: '2,900 — 5,100 km',
+                color: '#fb923c',
+                bg: '#9a3412',
+                desc: 'Capa líquida de hierro y níquel en constante movimiento convectivo. Genera el campo magnético protector de la Tierra.'
+            },
+            {
+                nombre: '5. NÚCLEO INTERNO (Inner Core)',
+                rango: '5,100 — 6,378 km',
+                color: '#fef08a',
+                bg: '#854d0e',
+                desc: 'Esfera metálica sólida en el centro del planeta. Sometida a presiones inmensas y temperaturas extremas superiores a los 5,400 °C.'
+            }
+        ];
+
+        capasInfo.forEach((c, idx) => {
+            const cardY = 160 + idx * 105;
+
+            const cG = this.add.graphics();
+            cG.fillStyle(Phaser.Display.Color.HexStringToColor(c.bg).color, 0.45);
+            cG.fillRoundedRect(120, cardY, 760, 92, 10);
+            cG.lineStyle(1.5, Phaser.Display.Color.HexStringToColor(c.color).color, 0.85);
+            cG.strokeRoundedRect(120, cardY, 760, 92, 10);
+            modalContainer.add(cG);
+
+            const tNombre = this.add.text(140, cardY + 12, c.nombre, {
+                fontSize: '16px',
+                fontFamily: 'Arial',
+                fontStyle: 'bold',
+                color: c.color
+            });
+
+            const tRango = this.add.text(860, cardY + 12, `PROFUNDIDAD: ${c.rango}`, {
+                fontSize: '13px',
+                fontFamily: 'Arial',
+                fontStyle: 'bold',
+                color: '#ffffff',
+                backgroundColor: 'rgba(0,0,0,0.6)',
+                padding: { x: 8, y: 4 }
+            }).setOrigin(1, 0);
+
+            const tDesc = this.add.text(140, cardY + 40, c.desc, {
+                fontSize: '12px',
+                fontFamily: 'Arial',
+                color: '#e2e8f0',
+                wordWrap: { width: 720 }
+            });
+
+            modalContainer.add([tNombre, tRango, tDesc]);
+        });
+
+        const btnCerrar = this.add.container(500, 705);
+        const bgBtn = this.add.graphics();
+        bgBtn.fillStyle(0xef4444, 1);
+        bgBtn.fillRoundedRect(-110, -18, 220, 36, 8);
+        const txtBtn = this.add.text(0, 0, 'CERRAR [ENTER / ESC]', {
+            fontSize: '13px',
+            fontFamily: 'Arial',
+            fontStyle: 'bold',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+        btnCerrar.add([bgBtn, txtBtn]);
+        btnCerrar.setSize(220, 36);
+        btnCerrar.setInteractive({ useHandCursor: true })
+            .on('pointerdown', () => cerrarModal());
+        modalContainer.add(btnCerrar);
+
+        // Cooldown: esperar al menos 350ms antes de permitir cerrar con teclado,
+        // para que el ENTER que abrió el modal no lo cierre inmediatamente.
+        let puedecerrarse = false;
+        this.time.delayedCall(350, () => { puedecerrarse = true; });
+
+        const cerrarModal = () => {
+            if (!puedecerrarse) return;
+            if (this._cerrandoModal) return;
+            this._cerrandoModal = true;
+            if (this._modalCapasUpdater) {
+                this.events.off('postupdate', this._modalCapasUpdater);
+                this._modalCapasUpdater = null;
+            }
+            modalContainer.destroy();
+            this.modalCapasAbierto = false;
+            this._cerrandoModal = false;
+        };
+
+        // Escuchar ESC con el sistema de keys de Phaser (no compite con JustDown)
+        const escKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+
+        // Polling de ENTER/ESC en postupdate (se ejecuta DESPUÉS del update, evitando conflictos)
+        this._modalCapasUpdater = () => {
+            if (!puedecerrarse) return;
+            if (Phaser.Input.Keyboard.JustDown(this.teclaEnter) ||
+                Phaser.Input.Keyboard.JustDown(escKey)) {
+                cerrarModal();
+            }
+        };
+        this.events.on('postupdate', this._modalCapasUpdater);
+    }
+
+    /* -------------------------------------------------------------
      * JUGADOR
      * ------------------------------------------------------------- */
     _crearAnimacionesJugador() {
         const key = this.avatarKey;
-        if (!this.anims.exists(`caminar-der-${key}`)) {
-            this.anims.create({
-                key: `caminar-der-${key}`,
-                frames: this.anims.generateFrameNumbers(`avatar-${key}`, { start: 8, end: 11 }),
-                frameRate: 10,
-                repeat: -1
-            });
-        }
-        if (!this.anims.exists(`caminar-izq-${key}`)) {
-            this.anims.create({
-                key: `caminar-izq-${key}`,
-                frames: this.anims.generateFrameNumbers(`avatar-${key}`, { start: 4, end: 7 }),
-                frameRate: 10,
-                repeat: -1
-            });
-        }
-        if (!this.anims.exists(`quieto-${key}`)) {
-            this.anims.create({
-                key: `quieto-${key}`,
-                frames: [{ key: `avatar-${key}`, frame: 0 }],
-                frameRate: 1
-            });
-        }
+        const avatarTexKey = `avatar-${key}`;
+
+        // Remover animaciones existentes para garantizar la correcta sincronización con EscenaJuego
+        if (this.anims.exists(`caminar-der-${key}`)) this.anims.remove(`caminar-der-${key}`);
+        if (this.anims.exists(`caminar-izq-${key}`)) this.anims.remove(`caminar-izq-${key}`);
+        if (this.anims.exists(`quieto-der-${key}`)) this.anims.remove(`quieto-der-${key}`);
+        if (this.anims.exists(`quieto-izq-${key}`)) this.anims.remove(`quieto-izq-${key}`);
+        if (this.anims.exists(`quieto-${key}`)) this.anims.remove(`quieto-${key}`);
+
+        // Mapeo idéntico al spritesheet 64x64 de EscenaJuego:
+        // Fila 0 (frames 0-3): Abajo / Frente
+        // Fila 1 (frames 4-7): Arriba / Espalda
+        // Fila 2 (frames 8-11): Izquierda
+        // Fila 3 (frames 12-15): Derecha
+        this.anims.create({
+            key: `caminar-der-${key}`,
+            frames: this.anims.generateFrameNumbers(avatarTexKey, { start: 12, end: 15 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: `caminar-izq-${key}`,
+            frames: this.anims.generateFrameNumbers(avatarTexKey, { start: 8, end: 11 }),
+            frameRate: 8,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: `quieto-der-${key}`,
+            frames: [{ key: avatarTexKey, frame: 12 }],
+            frameRate: 1
+        });
+
+        this.anims.create({
+            key: `quieto-izq-${key}`,
+            frames: [{ key: avatarTexKey, frame: 8 }],
+            frameRate: 1
+        });
+
+        this.anims.create({
+            key: `quieto-${key}`,
+            frames: [{ key: avatarTexKey, frame: 0 }],
+            frameRate: 1
+        });
     }
 
     _crearJugador() {
-        this.jugador = this.physics.add.sprite(150, this.sueloY, `avatar-${this.avatarKey}`, 0)
-            .setOrigin(0.5, 1);
-        this.jugador.setDisplaySize(60, 60);
-        this.jugador.body.setSize(34, 52);
-        this.jugador.body.setOffset(15, 12);
+        const avatarTexKey = `avatar-${this.avatarKey}`;
+        this.jugador = this.physics.add.sprite(150, this.sueloY - 40, avatarTexKey, 12);
+        this.jugador.setDisplaySize(58, 58);
+        this.jugador.body.setSize(38, 52, true);
         this.jugador.setCollideWorldBounds(true);
         this.jugador.setDepth(7);
         this.jugador.direccion = 'derecha';
+        this.jugador.play(`quieto-der-${this.avatarKey}`);
 
         this.physics.add.collider(this.jugador, this.plataformas);
     }
@@ -642,21 +1219,24 @@ class EscenaSalaA extends Phaser.Scene {
      * ------------------------------------------------------------- */
     _crearFaunaPacifica() {
         // 1. EL QUETZAL (Posado en rama alta con animación de plumaje)
-        this.quetzal = this.physics.add.sprite(1160, 245, 'quetzal_volando_raw', 'perch_wings_folded');
-        this.quetzal.setDisplaySize(100, 120);
+        this.quetzal = this.physics.add.sprite(1160, 344, 'quetzal_volando_raw', 'perch_wings_folded');
+        this.quetzal.setScale(0.24);
         this.quetzal.body.setAllowGravity(false);
         this.quetzal.body.setImmovable(true);
         this.quetzal.setDepth(5);
         this.quetzal.play('quetzal-posado');
+        this.quetzal.asustado = false;
 
         // Zona de encuadre fotográfico justo bajo la rama
-        this.quetzalFotoZona = this.add.zone(1160, 360, 240, 240);
+        this.quetzalFotoZona = this.add.zone(1160, 430, 240, 200);
         this.physics.add.existing(this.quetzalFotoZona, true);
 
-        this.add.image(1160, 305, 'arbol')
-            .setDisplaySize(200, 240)
+        // Árbol grande y enraizado que sostiene al quetzal
+        this.add.image(1160, this.sueloY, 'arbol_grande')
+            .setDisplaySize(300, 460)
+            .setOrigin(0.5, 1)
             .setDepth(4)
-            .setAlpha(0.9);
+            .setAlpha(0.95);
 
         // 2. EL TAPIR (Con spritesheet de caminar y huir)
         this.tapir = this.physics.add.sprite(1650, this.sueloY - 45, 'tapir_sheet', 0);
@@ -729,10 +1309,10 @@ class EscenaSalaA extends Phaser.Scene {
         }
 
         // 2. EL JAGUAR (Con animación de carrera continua 'jaguar-correr')
-        this.jaguar = this.physics.add.sprite(3600, this.sueloY - 50, 'jaguar_raw', 'run_0');
-        this.jaguar.setDisplaySize(180, 110);
-        this.jaguar.body.setSize(380, 200);
-        this.jaguar.body.setOffset(40, 60);
+        this.jaguar = this.physics.add.sprite(3600, this.sueloY - 40, 'jaguar_raw', 'run_0');
+        this.jaguar.setScale(0.23);
+        this.jaguar.body.setSize(340, 170);
+        this.jaguar.body.setOffset(60, 95);
         this.jaguar.setFlipX(true); // Mirando hacia la izquierda
         this.jaguar.setDepth(6);
         this.jaguar.velocidad = -360;
@@ -820,12 +1400,41 @@ class EscenaSalaA extends Phaser.Scene {
             padding: { x: 6, y: 3 }
         }).setOrigin(0.5).setDepth(5);
 
-        this.add.text(finX, this.sueloY - 115, '🏆 META DE EXPEDICIÓN\nPresiona [S / ENTER] para completar', {
+        this.textoEstacionInfo = this.add.text(finX, this.sueloY - 115, '🏆 META DE EXPEDICIÓN\nDocumenta las 7 especies de la selva', {
             fontSize: '11px',
             fontFamily: 'Arial',
             color: '#dcedc8',
             align: 'center'
         }).setOrigin(0.5).setDepth(5);
+
+        // Botón interactivo para finalizar expedición directamente en la estación
+        this.btnFinalizarEstacion = this.add.container(finX, this.sueloY - 50).setDepth(6).setVisible(false);
+        const bgBtnFin = this.add.graphics();
+        bgBtnFin.fillStyle(0x15803d, 1);
+        bgBtnFin.fillRoundedRect(-115, -18, 230, 36, 8);
+        bgBtnFin.lineStyle(2, 0xfacc15, 1);
+        bgBtnFin.strokeRoundedRect(-115, -18, 230, 36, 8);
+        const txtBtnFin = this.add.text(0, 0, '📖 REVISAR LOGROS Y FINALIZAR', {
+            fontSize: '11px',
+            fontFamily: 'Arial',
+            fontStyle: 'bold',
+            color: '#fef08a'
+        }).setOrigin(0.5);
+        this.btnFinalizarEstacion.add([bgBtnFin, txtBtnFin]);
+        this.btnFinalizarEstacion.setSize(230, 36);
+        this.btnFinalizarEstacion.setInteractive({ useHandCursor: true })
+            .on('pointerdown', () => this._alternarModalBitacora())
+            .on('pointerover', () => this.btnFinalizarEstacion.setScale(1.05))
+            .on('pointerout', () => this.btnFinalizarEstacion.setScale(1.0));
+
+        this.tweens.add({
+            targets: this.btnFinalizarEstacion,
+            scale: 1.04,
+            yoyo: true,
+            repeat: -1,
+            duration: 900,
+            ease: 'Sine.InOut'
+        });
 
         this.estacionZona = this.add.zone(finX, this.sueloY - 50, 160, 120);
         this.physics.add.existing(this.estacionZona, true);
@@ -959,9 +1568,9 @@ class EscenaSalaA extends Phaser.Scene {
         this.promptAccion = this.add.container(500, 720).setScrollFactor(0).setDepth(25).setVisible(false);
         const promptBG = this.add.graphics();
         promptBG.fillStyle(0x064e3b, 0.95);
-        promptBG.fillRoundedRect(-220, -22, 440, 44, 10);
+        promptBG.fillRoundedRect(-240, -22, 480, 44, 10);
         promptBG.lineStyle(2, 0xa7f3d0, 1);
-        promptBG.strokeRoundedRect(-220, -22, 440, 44, 10);
+        promptBG.strokeRoundedRect(-240, -22, 480, 44, 10);
         this.promptTexto = this.add.text(0, 0, '📷 Presiona [ENTER / E / ACEPTAR] para tomar FOTO', {
             fontSize: '14px',
             fontFamily: 'Arial',
@@ -969,6 +1578,11 @@ class EscenaSalaA extends Phaser.Scene {
             color: '#ecfdf5'
         }).setOrigin(0.5);
         this.promptAccion.add([promptBG, this.promptTexto]);
+        this.promptAccion.setSize(480, 44);
+        this.promptAccion.setInteractive({ useHandCursor: true })
+            .on('pointerdown', () => {
+                if (this._callbackPromptAccion) this._callbackPromptAccion();
+            });
 
         this.flashCamara = this.add.rectangle(500, 400, 1000, 800, 0xffffff, 0).setScrollFactor(0).setDepth(30);
 
@@ -1132,11 +1746,11 @@ class EscenaSalaA extends Phaser.Scene {
 
             // Cargar imagen con el frame exacto mapeado
             const imgEspecie = this.add.image(215, -160, det.texturaKey, det.frameKey !== null ? det.frameKey : undefined);
-            if (det.id === 'quetzal') imgEspecie.setDisplaySize(130, 140);
+            if (det.id === 'quetzal') imgEspecie.setDisplaySize(120, 125);
             else if (det.id === 'tapir') imgEspecie.setDisplaySize(160, 110);
             else if (det.id === 'mono') imgEspecie.setDisplaySize(110, 110);
             else if (det.id === 'pecari') imgEspecie.setDisplaySize(140, 100);
-            else if (det.id === 'jaguar') imgEspecie.setDisplaySize(110, 140);
+            else if (det.id === 'jaguar') imgEspecie.setDisplaySize(100, 135);
             else imgEspecie.setDisplaySize(120, 95);
 
             let badgeExtra = det.fotoLegendaria ? ' ⭐ FOTO LEGENDARIA' : '';
@@ -1199,6 +1813,44 @@ class EscenaSalaA extends Phaser.Scene {
 
             this.elementosDetalleBitacora.add([silueta, avisoNoReg]);
         }
+
+        // Si la bitácora está completa (7/7), mostrar botón de Finalizar Expedición
+        const totalReg = Object.values(this.bitacora).filter(e => e.registrada).length;
+        if (totalReg >= Object.values(this.bitacora).length) {
+            const btnFinB = this.add.container(215, 230);
+            const bgFinB = this.add.graphics();
+            bgFinB.fillStyle(0xd97706, 1);
+            bgFinB.fillRoundedRect(-145, -19, 290, 38, 10);
+            bgFinB.lineStyle(2, 0xfef08a, 1);
+            bgFinB.strokeRoundedRect(-145, -19, 290, 38, 10);
+
+            const txtFinB = this.add.text(0, 0, '🏆 FINALIZAR EXPEDICIÓN [ENTER]', {
+                fontSize: '13px',
+                fontFamily: 'Arial',
+                fontStyle: 'bold',
+                color: '#ffffff'
+            }).setOrigin(0.5);
+
+            btnFinB.add([bgFinB, txtFinB]);
+            btnFinB.setSize(290, 38);
+            btnFinB.setInteractive({ useHandCursor: true })
+                .on('pointerdown', () => {
+                    this._removerListenerBitacora();
+                    this._alternarModalBitacora();
+                    this._finalizarExpedicionDirecta();
+                })
+                .on('pointerover', () => btnFinB.setScale(1.04))
+                .on('pointerout', () => btnFinB.setScale(1.0));
+
+            this.elementosDetalleBitacora.add(btnFinB);
+        }
+    }
+
+    _removerListenerBitacora() {
+        if (this._listenerTecladoBitacora) {
+            this.events.off('postupdate', this._listenerTecladoBitacora);
+            this._listenerTecladoBitacora = null;
+        }
     }
 
     _alternarModalBitacora() {
@@ -1213,7 +1865,40 @@ class EscenaSalaA extends Phaser.Scene {
                 duration: 250,
                 ease: 'Back.Out'
             });
+
+            // Permitir finalizar con ENTER cuando la bitácora esté completa
+            const totalReg = Object.values(this.bitacora).filter(e => e.registrada).length;
+            const bitacoraCompleta = totalReg >= Object.values(this.bitacora).length;
+
+            this._removerListenerBitacora();
+
+            let puedeInteractuarTeclado = false;
+            this.time.delayedCall(200, () => { puedeInteractuarTeclado = true; });
+
+            this._listenerTecladoBitacora = () => {
+                if (!this.modalBitacoraAbierto) return;
+                if (!puedeInteractuarTeclado) return;
+
+                if (bitacoraCompleta && (
+                    Phaser.Input.Keyboard.JustDown(this.teclaEnter) ||
+                    Phaser.Input.Keyboard.JustDown(this.teclaE) ||
+                    (window.mobileControls && window.mobileControls.consume('enter'))
+                )) {
+                    this._removerListenerBitacora();
+                    this._alternarModalBitacora();
+                    this._finalizarExpedicionDirecta();
+                } else if (
+                    Phaser.Input.Keyboard.JustDown(this.teclaESC) ||
+                    Phaser.Input.Keyboard.JustDown(this.teclaB) ||
+                    (window.mobileControls && window.mobileControls.consume('escape'))
+                ) {
+                    this._removerListenerBitacora();
+                    this._alternarModalBitacora();
+                }
+            };
+            this.events.on('postupdate', this._listenerTecladoBitacora);
         } else {
+            this._removerListenerBitacora();
             this.tweens.add({
                 targets: this.contenedorBitacora,
                 scale: 0.9,
@@ -1231,6 +1916,11 @@ class EscenaSalaA extends Phaser.Scene {
         if (this._transitando) return;
 
         if (this.modalBitacoraAbierto) {
+            this.jugador.setVelocityX(0);
+            return;
+        }
+
+        if (this.modalCapasAbierto) {
             this.jugador.setVelocityX(0);
             return;
         }
@@ -1257,19 +1947,17 @@ class EscenaSalaA extends Phaser.Scene {
             Phaser.Input.Keyboard.JustDown(this.teclaEspacio) ||
             (window.mobileControls && window.mobileControls.consume('up'));
 
-        // Modo Agachado / Sigilo
+        // Modo Agachado / Sigilo (sin alterar el hitbox físico para evitar atravesar el suelo)
         if (agachar && enSuelo) {
             if (!this.agachado) {
                 this.agachado = true;
-                this.jugador.setDisplaySize(60, 38);
-                this.jugador.body.setSize(34, 32);
-                this.jugador.body.setOffset(15, 32);
+                this.jugador.setTint(0x86efac);
+                this.jugador.setAlpha(0.8);
             }
         } else if (!agachar && this.agachado) {
             this.agachado = false;
-            this.jugador.setDisplaySize(60, 60);
-            this.jugador.body.setSize(34, 52);
-            this.jugador.body.setOffset(15, 12);
+            this.jugador.clearTint();
+            this.jugador.setAlpha(1);
         }
 
         const velocidad = this.agachado ? 95 : 220;
@@ -1284,15 +1972,20 @@ class EscenaSalaA extends Phaser.Scene {
             this.jugador.play(`caminar-der-${this.avatarKey}`, true);
         } else {
             this.jugador.setVelocityX(0);
-            this.jugador.play(`quieto-${this.avatarKey}`, true);
+            if (this.jugador.direccion === 'izquierda') {
+                this.jugador.play(`quieto-izq-${this.avatarKey}`, true);
+            } else if (this.jugador.direccion === 'derecha') {
+                this.jugador.play(`quieto-der-${this.avatarKey}`, true);
+            } else {
+                this.jugador.play(`quieto-${this.avatarKey}`, true);
+            }
         }
 
         if (saltar && enSuelo) {
             if (this.agachado) {
                 this.agachado = false;
-                this.jugador.setDisplaySize(60, 60);
-                this.jugador.body.setSize(34, 52);
-                this.jugador.body.setOffset(15, 12);
+                this.jugador.clearTint();
+                this.jugador.setAlpha(1);
             }
             this.jugador.setVelocityY(-540);
             this._reproducirSonido('salto');
@@ -1300,6 +1993,15 @@ class EscenaSalaA extends Phaser.Scene {
     }
 
     _actualizarBiodiversidadViva(time) {
+        if (this.nubesSky) {
+            this.nubesSky.forEach(nube => {
+                nube.x += (nube.speed || 0.8) * 0.4;
+                if (nube.x > this.mundoAncho + 250) {
+                    nube.x = -200;
+                }
+            });
+        }
+
         this.avesFondo.forEach(ave => {
             ave.x += ave.velocidadX * 0.016;
             ave.y = ave.baseY + Math.sin(time * 0.003 + ave.x * 0.01) * ave.amplitudY;
@@ -1318,6 +2020,70 @@ class EscenaSalaA extends Phaser.Scene {
      * ACTUALIZACIÓN: FAUNA PACÍFICA
      * ------------------------------------------------------------- */
     _actualizarFaunaPacifica(delta) {
+        // 0. QUETZAL — huye al acercarse el jugador (rango más corto: 120px normal, 60px con sigilo agachado)
+        if (this.quetzal && !this.quetzal.asustado) {
+            const distQuetzal = Phaser.Math.Distance.Between(
+                this.jugador.x, this.jugador.y,
+                this.quetzal.x, this.quetzal.y
+            );
+            const rangoDeteccion = this.agachado ? 60 : 120;
+            if (distQuetzal < rangoDeteccion) {
+                this.quetzal.asustado = true;
+                this.quetzal.play('quetzal-vuelo', true);
+                this.quetzal.body.setAllowGravity(false);
+
+                // Ícono de susto
+                const alertaQ = this.add.text(this.quetzal.x, this.quetzal.y - 50, '🐦💨', {
+                    fontSize: '22px'
+                }).setOrigin(0.5).setDepth(9);
+                this.tweens.add({
+                    targets: alertaQ,
+                    y: this.quetzal.y - 90,
+                    alpha: 0,
+                    duration: 800,
+                    onComplete: () => alertaQ.destroy()
+                });
+
+                // Vuelo hacia la derecha y arriba más lento y majestuoso
+                this.tweens.add({
+                    targets: this.quetzal,
+                    x: this.quetzal.x + 550,
+                    y: this.quetzal.y - 170,
+                    alpha: 0,
+                    duration: 3500,
+                    ease: 'Sine.Out',
+                    onComplete: () => {
+                        this.quetzal.setVisible(false);
+
+                        // Quetzal regresa al árbol después de 2 segundos
+                        this.time.delayedCall(3000, () => {
+                            if (!this.quetzal || !this.quetzal.active) return;
+                            // Reposicionar arriba del árbol y descender suavemente
+                            this.quetzal.setPosition(1160, 260);
+                            this.quetzal.setAlpha(0);
+                            this.quetzal.setVisible(true);
+                            this.quetzal.play('quetzal-vuelo', true);
+
+                            this.tweens.add({ // Efecto de que vuele hacia abajo (Regresa al árbol)
+                                targets: this.quetzal,
+                                y: 344,
+                                alpha: 1,
+                                duration: 1500,
+                                ease: 'Sine.Out',
+                                onComplete: () => {
+                                    this.quetzal.play('quetzal-posado', true);
+                                    this.quetzal.asustado = false;
+                                    this._mostrarNotificacion('🐦 ¡El Quetzal regresó al árbol! Ya puedes fotografiarlo', '#86efac', 2800);
+                                }
+                            });
+                        });
+                    }
+                });
+
+                this._mostrarNotificacion('🐦 ¡El Quetzal salió volando! Acércate con más sigilo [ABAJO / S]', '#fef08a', 3000);
+            }
+        }
+
         // 1. TAPIR
         const distTapir = Phaser.Math.Distance.Between(this.jugador.x, this.jugador.y, this.tapir.x, this.tapir.y);
 
@@ -1432,11 +2198,17 @@ class EscenaSalaA extends Phaser.Scene {
         // 1. Quetzal
         const enZonaQuetzal = this.physics.overlap(this.jugador, this.quetzalFotoZona);
         if (enZonaQuetzal && !this.bitacora.quetzal.registrada) {
-            puedeInteractuar = true;
-            mensajeAccion = '📷 Presiona [ENTER / E] para fotografiar al Quetzal';
-            if (accionPresionada) {
-                this._tomarFotoEspecie('quetzal');
-                return;
+            if (this.quetzal.asustado) {
+                // Quetzal huyó — mostrar aviso pero no permitir foto
+                puedeInteractuar = true;
+                mensajeAccion = '🐦 El Quetzal huyó... Espera a que regrese al árbol';
+            } else {
+                puedeInteractuar = true;
+                mensajeAccion = '📷 Presiona [ENTER / E] para fotografiar al Quetzal';
+                if (accionPresionada) {
+                    this._tomarFotoEspecie('quetzal');
+                    return;
+                }
             }
         }
 
@@ -1503,12 +2275,40 @@ class EscenaSalaA extends Phaser.Scene {
             }
         });
 
-        // 7. Estación Final
-        if (this.physics.overlap(this.jugador, this.estacionZona)) {
+        // 6. Capas de la Tierra (Litosfera)
+        if (this.physics.overlap(this.jugador, this.capasZona)) {
             puedeInteractuar = true;
-            mensajeAccion = '🏆 ¡EXPEDICIÓN COMPLETADA! Presiona [ENTER] para revisar tu Bitácora y volver';
+            mensajeAccion = '🌍 Presiona [ENTER / E] para examinar Cartel de la Litosfera';
             if (accionPresionada) {
-                this._alternarModalBitacora();
+                this._mostrarModalCapasTierra();
+                return;
+            }
+        }
+
+        // 7. Estación Final (Zona amplia: desde x=3800 hasta el final del mapa)
+        const enEstacion = (this.jugador.x >= 3800) || (this.estacionZona && this.physics.overlap(this.jugador, this.estacionZona));
+        if (enEstacion) {
+            const totalRegistradas = Object.values(this.bitacora).filter(e => e.registrada).length;
+            const totalEspecies = Object.values(this.bitacora).length;
+            const bitacoraCompleta = totalRegistradas >= totalEspecies;
+
+            if (bitacoraCompleta) {
+                if (this.btnFinalizarEstacion) this.btnFinalizarEstacion.setVisible(true);
+                puedeInteractuar = true;
+                mensajeAccion = '🏆 ¡EXPEDICIÓN COMPLETA (7/7)! Presiona [ENTER / E] para REVISAR LOGROS Y FINALIZAR';
+                this._callbackPromptAccion = () => this._alternarModalBitacora();
+                if (accionPresionada) {
+                    this._alternarModalBitacora();
+                    return;
+                }
+            } else {
+                puedeInteractuar = true;
+                mensajeAccion = `📋 Estación Biológica: Bitácora incompleta (${totalRegistradas}/${totalEspecies} especies). Presiona [ENTER] para revisar`;
+                this._callbackPromptAccion = () => this._alternarModalBitacora();
+                if (accionPresionada) {
+                    this._alternarModalBitacora();
+                    return;
+                }
             }
         }
 
@@ -1516,6 +2316,7 @@ class EscenaSalaA extends Phaser.Scene {
             this.promptTexto.setText(mensajeAccion);
             this.promptAccion.setVisible(true);
         } else {
+            this._callbackPromptAccion = null;
             this.promptAccion.setVisible(false);
         }
     }
@@ -1606,11 +2407,12 @@ class EscenaSalaA extends Phaser.Scene {
         this.time.delayedCall(600, () => {
             this.vidas = 3;
             this.agachado = false;
-            this.jugador.setDisplaySize(60, 60);
-            this.jugador.body.setSize(34, 52);
-            this.jugador.body.setOffset(15, 12);
-            this.jugador.setPosition(150, this.sueloY);
+            this.jugador.clearTint();
+            this.jugador.setAlpha(1);
+            this.jugador.setPosition(150, this.sueloY - 40);
             this.jugador.setVelocity(0, 0);
+            this.jugador.direccion = 'derecha';
+            this.jugador.play(`quieto-der-${this.avatarKey}`, true);
             this.cameras.main.fadeIn(500, 0, 0, 0);
             this.invulnerable = false;
         });
@@ -1618,19 +2420,57 @@ class EscenaSalaA extends Phaser.Scene {
 
     _actualizarContadorHUD() {
         const total = Object.values(this.bitacora).filter(e => e.registrada).length;
-        this.textoContadorEspecies.setText(`📓 ESPECIES: ${total} / 7`);
+        const totalMax = Object.values(this.bitacora).length;
+        this.textoContadorEspecies.setText(`📓 ESPECIES: ${total} / ${totalMax}`);
+
+        if (total >= totalMax) {
+            if (this.btnFinalizarEstacion) this.btnFinalizarEstacion.setVisible(true);
+            if (this.textoEstacionInfo) {
+                this.textoEstacionInfo.setText('⭐ ¡BITÁCORA COMPLETA (7/7)!\nHaz clic en FINALIZAR EXPEDICIÓN');
+                this.textoEstacionInfo.setColor('#fef08a');
+            }
+        }
     }
 
-    _salirDeSala() {
+    _finalizarExpedicionDirecta() {
         if (this._transitando) return;
         this._transitando = true;
 
-        this.cameras.main.fadeOut(300, 0, 0, 0);
+        if (this.modalBitacoraAbierto) {
+            this.contenedorBitacora.setVisible(false);
+            this.modalBitacoraAbierto = false;
+        }
+
+        this._reproducirSonido('foto');
+        this._mostrarNotificacion('🏆 ¡Felicidades! Expedición Chiapas completada (7/7). Volviendo al mapa...', '#facc15', 3500);
+
+        this.cameras.main.fadeOut(600, 0, 0, 0);
         this.cameras.main.once('camerafadeoutcomplete', () => {
             this.scene.start('EscenaJuego', {
                 avatarKey: this.avatarKey,
                 posInicial: { x: 1400, y: 900 },
-                ignoreEscape: true
+                ignoreEscape: true,
+                expedicionCompletada: true
+            });
+        });
+    }
+
+    _salirDeSala(completada = false) {
+        if (this._transitando) return;
+        this._transitando = true;
+
+        if (completada) {
+            this._reproducirSonido('foto');
+            this._mostrarNotificacion('🏆 ¡Felicidades! Expedición completada con éxito. Volviendo...', '#facc15', 3000);
+        }
+
+        this.cameras.main.fadeOut(completada ? 600 : 300, 0, 0, 0);
+        this.cameras.main.once('camerafadeoutcomplete', () => {
+            this.scene.start('EscenaJuego', {
+                avatarKey: this.avatarKey,
+                posInicial: { x: 1400, y: 900 },
+                ignoreEscape: true,
+                expedicionCompletada: completada
             });
         });
     }
