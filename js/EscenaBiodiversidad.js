@@ -82,20 +82,32 @@ class EscenaBiodiversidad extends Phaser.Scene {
                 estado: 'Protección especial (NOM-059)',
                 desc: 'Planta epífita que absorbe agua de la niebla selvática sin parasitar al hospedero. Atrae abejas de las orquídeas altamente especializadas.',
                 registrada: false,
-                texturaKey: 'flora_strip',
-                frameKey: 'orquidea'
+                texturaKey: 'orquidea_sheet',
+                frameKey: 0
             },
-            flora_helecho: {
-                id: 'flora_helecho',
+            flora_cacao: {
+                id: 'flora_cacao',
                 tipo: 'flora',
-                nombre: 'Helecho Arborescente Fósil',
-                cientifico: 'Cyatheales',
-                habitat: 'Barrancas sombrías y laderas de niebla',
-                estado: 'Reliquia milenaria amenazada',
-                desc: 'Verdaderos fósiles vivientes de origen jurásico. Sus troncos retienen toneladas de agua pluvial y regulan el microclima del sotobosque.',
+                nombre: 'Cacao Silvestre',
+                cientifico: 'Theobroma cacao',
+                habitat: 'Sotobosque húmedo de la Selva Lacandona',
+                estado: 'Cultivado y silvestre',
+                desc: 'Árbol sagrado para los mayas, productor del alimento de los dioses. Sus frutos son consumidos por monos, tapires y murciélagos, dispersando las semillas.',
                 registrada: false,
-                texturaKey: 'flora_strip',
-                frameKey: 'helecho'
+                texturaKey: 'cacao_sheet',
+                frameKey: 0
+            },
+            flora_bromelia: {
+                id: 'flora_bromelia',
+                tipo: 'flora',
+                nombre: 'Bromelia Epífita',
+                cientifico: 'Bromeliaceae',
+                habitat: 'Ramas y troncos de árboles emergentes',
+                estado: 'Abundante pero sensible a deforestación',
+                desc: 'Forma microhábitats acuáticos en sus hojas que albergan ranas, insectos y microorganismos únicos. Indicador clave de la salud del ecosistema.',
+                registrada: false,
+                texturaKey: 'bromelia_sheet',
+                frameKey: 0
             }
         };
 
@@ -105,8 +117,8 @@ class EscenaBiodiversidad extends Phaser.Scene {
         this.modalBitacoraAbierto = false;
         this.agachado = false;
         this._transitando = false;
-        this.mundoAncho = 4200;
-        this.mundoAlto = 880;
+        this.mundoAncho = 5800; // En este apartado podemos modificar el tamaño del mapa    
+        this.mundoAlto = 880; // En este apartado podemos modificar el tamaño del mapa
         this.sueloY = 670; // Posición Y del suelo
     }
 
@@ -123,7 +135,6 @@ class EscenaBiodiversidad extends Phaser.Scene {
         this.load.image('arbusto', 'pictures/arbusto.png');
         this.load.image('arbol', 'pictures/arbol.png');
         this.load.image('arbol_grande', 'pictures/arbol_grande.png');
-        this.load.image('roca', 'pictures/roca.png');
 
         // Spritesheets de fauna (mapeo directo)
         // 1. Tapir: 1024x1024 -> 4 frames de 512x512 (2 columnas x 2 filas)
@@ -147,8 +158,22 @@ class EscenaBiodiversidad extends Phaser.Scene {
         // 5. Mono: 170x156 (sprite individual)
         this.load.image('mono_img', 'pictures/salabiodiversidad/fauna/mono.png');
 
-        // 6. Flora: 575x65 (tira botánica con múltiples especímenes: orquídea, helecho, bromelia, etc.)
-        this.load.image('flora_strip', 'pictures/salabiodiversidad/flora/flora.png');
+        // 6. Flora strip heredada
+        // this.load.image('flora_strip', 'pictures/salabiodiversidad/flora/flora.png');
+
+        // 7. Flora animada: cuatro fotogramas horizontales por imagen.
+        this.load.spritesheet('cacao_sheet', 'pictures/salabiodiversidad/flora/Cacao_movimiento.png', {
+            frameWidth: 384,
+            frameHeight: 671
+        });
+        this.load.spritesheet('orquidea_sheet', 'pictures/salabiodiversidad/flora/Orquidia_movimiento.png', {
+            frameWidth: 384,
+            frameHeight: 456
+        });
+        this.load.spritesheet('bromelia_sheet', 'pictures/salabiodiversidad/flora/bromelia_movimiento.png', {
+            frameWidth: 384,
+            frameHeight: 445
+        });
     }
 
     create() {
@@ -282,14 +307,30 @@ class EscenaBiodiversidad extends Phaser.Scene {
             });
         }
 
-        // --- E. MAPEO DE FLORA STRIP (575x65) ---
-        const texFlora = this.textures.get('flora_strip');
-        if (texFlora && !texFlora.has('orquidea')) {
-            texFlora.add('orquidea', 0, 7, 6, 71, 55);
-            texFlora.add('helecho', 0, 93, 14, 50, 47);
-            texFlora.add('bromelia', 0, 162, 19, 50, 42);
-            texFlora.add('hongo', 0, 345, 32, 34, 29);
-            texFlora.add('monstera', 0, 530, 35, 39, 26);
+        // --- E. ANIMACIONES DE FLORA ANIMADA (4 frames: 1536x256 cada uno) ---
+        if (!this.anims.exists('orquidea-balanceo')) {
+            this.anims.create({
+                key: 'orquidea-balanceo',
+                frames: this.anims.generateFrameNumbers('orquidea_sheet', { start: 0, end: 3 }),
+                frameRate: 6,
+                repeat: -1
+            });
+        }
+        if (!this.anims.exists('cacao-balanceo')) {
+            this.anims.create({
+                key: 'cacao-balanceo',
+                frames: this.anims.generateFrameNumbers('cacao_sheet', { start: 0, end: 3 }),
+                frameRate: 5,
+                repeat: -1
+            });
+        }
+        if (!this.anims.exists('bromelia-balanceo')) {
+            this.anims.create({
+                key: 'bromelia-balanceo',
+                frames: this.anims.generateFrameNumbers('bromelia_sheet', { start: 0, end: 3 }),
+                frameRate: 7,
+                repeat: -1
+            });
         }
     }
 
@@ -689,16 +730,10 @@ class EscenaBiodiversidad extends Phaser.Scene {
             }).setDepth(4);
         }
 
-        // Rocas y arbustos decorativos en la superficie
+        // Arbustos decorativos en la superficie
         for (let x = 120; x < this.mundoAncho - 200; x += Phaser.Math.Between(160, 320)) {
-            if (Math.random() > 0.4) {
-                this.add.image(x, this.sueloY - 4, 'roca')
-                    .setDisplaySize(Phaser.Math.Between(35, 55), Phaser.Math.Between(25, 40))
-                    .setOrigin(0.5, 1)
-                    .setDepth(4);
-            }
             if (Math.random() > 0.3) {
-                this.add.image(x + 45, this.sueloY - 2, 'arbusto')
+                this.add.image(x + 45, this.sueloY, 'arbusto')
                     .setDisplaySize(Phaser.Math.Between(50, 75), Phaser.Math.Between(45, 65))
                     .setOrigin(0.5, 1)
                     .setDepth(4)
@@ -706,7 +741,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
             }
         }
 
-        // Ramas escalables
+        // Plataformas escalables
         if (!this.textures.exists('textura-rama')) {
             const ramaG = this.make.graphics({ x: 0, y: 0, add: false });
             ramaG.fillStyle(0x422a1d, 1);
@@ -716,18 +751,31 @@ class EscenaBiodiversidad extends Phaser.Scene {
             ramaG.generateTexture('textura-rama', 220, 26);
             ramaG.destroy();
         }
-        // RAMAS O SUELO FLOTANTE
-        const coordsRamas = [
+        // SUELO FLOTANTE
+        const coordSueloFlotante = [
+            // --- Zona inicial (Quetzal) ---
             { x: 740, y: 580, w: 160 },
             { x: 920, y: 490, w: 160 },
             { x: 1000, y: 390, w: 160 }, // Rama del Quetzal
+            // --- Zona del Mono ---
             { x: 1950, y: 570, w: 160 },
             { x: 2180, y: 470, w: 160 }, // Rama del Mono
-            { x: 3000, y: 575, w: 160 },
-            { x: 3220, y: 490, w: 160 }
+            // --- Escalera hacia la Bromelia (NUEVA — zona 2400-3100) ---
+            { x: 2420, y: 590, w: 150 }, // escalón 1
+            { x: 2590, y: 510, w: 150 }, // escalón 2
+            { x: 2750, y: 430, w: 150 }, // escalón 3
+            { x: 2920, y: 355, w: 150 }, // escalón 4
+            { x: 3100, y: 285, w: 190 }, // plataforma alta — BROMELIA aquí
+            // --- Zona posterior (tramo largo) ---
+            { x: 3600, y: 575, w: 160 },
+            { x: 3820, y: 490, w: 160 },
+            { x: 4300, y: 570, w: 160 },
+            { x: 4550, y: 480, w: 160 },
+            { x: 4900, y: 570, w: 160 },
+            { x: 5150, y: 490, w: 160 }
         ];
 
-        coordsRamas.forEach(r => {
+        coordSueloFlotante.forEach(r => {
             const rama = this.plataformas.create(r.x, r.y, 'textura-rama');
             rama.setDisplaySize(r.w, 24);
             rama.body.setSize(r.w, 24);
@@ -1340,41 +1388,83 @@ class EscenaBiodiversidad extends Phaser.Scene {
      * FLORA RECOLECTABLE (Muestras Mapeadas Individualmente)
      * ------------------------------------------------------------- */
     _crearFloraRecolectable() {
+        // Cada muestra: texturaKey = spritesheet, animKey = animación de balanceo
         this.muestrasFlora = [
             {
                 id: 'flora_orquidea',
                 x: 820,
-                y: this.sueloY - 30,
+                y: this.sueloY,          // al ras del suelo (origin 0.5,1)
                 nombre: 'Orquídea Selva Lacandona',
-                frameKey: 'orquidea',
+                texturaKey: 'orquidea_sheet',
+                animKey: 'orquidea-balanceo',
                 sprite: null,
                 recolectada: false
             },
             {
-                id: 'flora_helecho',
-                x: 1840,
-                y: this.sueloY - 30,
-                nombre: 'Helecho Arborescente Fósil',
-                frameKey: 'helecho',
+                id: 'flora_cacao',
+                x: 1600,
+                y: this.sueloY,          // al ras del suelo
+                nombre: 'Cacao Silvestre',
+                texturaKey: 'cacao_sheet',
+                animKey: 'cacao-balanceo',
                 sprite: null,
                 recolectada: false
+            },
+            {
+                id: 'flora_bromelia',
+                x: 3100,
+                y: 285,                  // encima de la plataforma alta (y=285)
+                nombre: 'Bromelia Epífita',
+                texturaKey: 'bromelia_sheet',
+                animKey: 'bromelia-balanceo',
+                sprite: null,
+                recolectada: false
+            },
+            // === Instancias decorativas en el tramo largo ===
+            {
+                id: 'flora_orquidea',
+                x: 4400,
+                y: this.sueloY,
+                nombre: 'Orquídea Selva Lacandona',
+                texturaKey: 'orquidea_sheet',
+                animKey: 'orquidea-balanceo',
+                sprite: null,
+                recolectada: false,
+                esDecoractiva: false
+            },
+            {
+                id: 'flora_cacao',
+                x: 5100,
+                y: this.sueloY,
+                nombre: 'Cacao Silvestre',
+                texturaKey: 'cacao_sheet',
+                animKey: 'cacao-balanceo',
+                sprite: null,
+                recolectada: false,
+                esDecoractiva: false
             }
         ];
 
         this.muestrasFlora.forEach(m => {
-            m.sprite = this.add.image(m.x, m.y, 'flora_strip', m.frameKey)
-                .setDisplaySize(70, 55)
+            // Usar sprite animado
+            m.sprite = this.add.sprite(m.x, m.y, m.texturaKey, 0)
+                .setDisplaySize(110, 90)
+                .setOrigin(0.5, 1)
                 .setDepth(4);
+            m.sprite.play(m.animKey);
 
-            m.halo = this.add.circle(m.x, m.y - 10, 24, 0xa3e635, 0.45).setDepth(3);
-            this.tweens.add({
-                targets: m.halo,
-                scale: 1.4,
-                alpha: 0.1,
-                duration: 900,
-                yoyo: true,
-                repeat: -1
-            });
+            // Halo de recolección solo en instancias no decorativas
+            if (!m.esDecoractiva) {
+                m.halo = this.add.circle(m.x, m.y - 45, 28, 0xa3e635, 0.45).setDepth(3);
+                this.tweens.add({
+                    targets: m.halo,
+                    scale: 1.5,
+                    alpha: 0.1,
+                    duration: 900,
+                    yoyo: true,
+                    repeat: -1
+                });
+            }
         });
     }
 
@@ -1382,7 +1472,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
      * ESTACIÓN FINAL
      * ------------------------------------------------------------- */
     _crearEstacionFinal() {
-        const finX = 3980;
+        const finX = 5500;
         const estacion = this.add.graphics().setDepth(4);
         estacion.fillStyle(0x3e2723, 1);
         estacion.fillRect(finX - 110, this.sueloY - 140, 220, 140);
@@ -2286,7 +2376,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
         }
 
         // 7. Estación Final (Zona amplia: desde x=3800 hasta el final del mapa)
-        const enEstacion = (this.jugador.x >= 3800) || (this.estacionZona && this.physics.overlap(this.jugador, this.estacionZona));
+        const enEstacion = (this.jugador.x >= 5300) || (this.estacionZona && this.physics.overlap(this.jugador, this.estacionZona));
         if (enEstacion) {
             const totalRegistradas = Object.values(this.bitacora).filter(e => e.registrada).length;
             const totalEspecies = Object.values(this.bitacora).length;
@@ -2345,20 +2435,24 @@ class EscenaBiodiversidad extends Phaser.Scene {
     }
 
     _recolectarMuestraFlora(muestra) {
+        if (muestra.esDecoractiva) return; // no recolectar instancias decorativas
         muestra.recolectada = true;
         this.bitacora[muestra.id].registrada = true;
 
         this._reproducirSonido('muestra');
 
+        const tweenTargets = [muestra.sprite];
+        if (muestra.halo) tweenTargets.push(muestra.halo);
+
         this.tweens.add({
-            targets: [muestra.sprite, muestra.halo],
+            targets: tweenTargets,
             y: muestra.y - 50,
             alpha: 0,
             scale: 1.5,
             duration: 500,
             onComplete: () => {
                 muestra.sprite.setVisible(false);
-                muestra.halo.destroy();
+                if (muestra.halo) muestra.halo.destroy();
             }
         });
 
