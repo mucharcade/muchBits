@@ -32,37 +32,37 @@
 
         <main class="game-card">
             <!--Contenedor para el Canvas del juego-->
-            <div id="game-container" class="canvas-wrapper"></div>
+            <div id="game-container" class="canvas-wrapper">
+                <footer class="controls-bar">
+                    <!-- Cruceta Arcade (D-Pad) -->
+                    <div class="dpad-container" aria-label="Controles de Movimiento">
+                        <button class="dpad-btn arrow-up" type="button" data-control="up" aria-label="Mover o Saltar Arriba">▲</button>
+                        <button class="dpad-btn arrow-left" type="button" data-control="left" aria-label="Mover a la Izquierda">◄</button>
+                        <div class="dpad-center" aria-hidden="true"></div>
+                        <button class="dpad-btn arrow-right" type="button" data-control="right" aria-label="Mover a la Derecha">►</button>
+                        <button class="dpad-btn arrow-down" type="button" data-control="down" aria-label="Mover o Agacharse Abajo">▼</button>
+                    </div>
 
-            <footer class="controls-bar">
-                <!-- Cruceta Arcade (D-Pad) -->
-                <div class="dpad-container" aria-label="Controles de Movimiento">
-                    <button class="dpad-btn arrow-up" type="button" data-control="up" aria-label="Mover o Saltar Arriba">▲</button>
-                    <button class="dpad-btn arrow-left" type="button" data-control="left" aria-label="Mover a la Izquierda">◄</button>
-                    <div class="dpad-center" aria-hidden="true"></div>
-                    <button class="dpad-btn arrow-right" type="button" data-control="right" aria-label="Mover a la Derecha">►</button>
-                    <button class="dpad-btn arrow-down" type="button" data-control="down" aria-label="Mover o Agacharse Abajo">▼</button>
-                </div>
+                    <!-- Botones de Acción Accesibles -->
+                    <div class="action-buttons-container" aria-label="Botones de Acción">
+                        <button class="action-btn btn-confirm" type="button" data-action="enter" aria-label="Aceptar o Entrar (ENTER)">
+                            <span class="btn-badge">✔</span>
+                            <div class="btn-labels">
+                                <span class="main-label">ACEPTAR</span>
+                                <span class="sub-label">ENTER</span>
+                            </div>
+                        </button>
 
-                <!-- Botones de Acción Accesibles -->
-                <div class="action-buttons-container" aria-label="Botones de Acción">
-                    <button class="action-btn btn-confirm" type="button" data-action="enter" aria-label="Aceptar o Entrar (ENTER o S)">
-                        <span class="btn-badge">✔</span>
-                        <div class="btn-labels">
-                            <span class="main-label">ACEPTAR</span>
-                            <span class="sub-label">ENTER / S</span>
-                        </div>
-                    </button>
-
-                    <button class="action-btn btn-cancel" type="button" data-action="escape" aria-label="Menú o Salir (ESC o N)">
-                        <span class="btn-badge">✖</span>
-                        <div class="btn-labels">
-                            <span class="main-label">MENÚ</span>
-                            <span class="sub-label">ESC / N</span>
-                        </div>
-                    </button>
-                </div>
-            </footer>
+                        <button class="action-btn btn-cancel" type="button" data-action="escape" aria-label="Salir o Volver (ESC)">
+                            <span class="btn-badge btn-badge-esc">ESC</span>
+                            <div class="btn-labels">
+                                <span class="main-label">ESC</span>
+                                <span class="sub-label">SALIR / MENÚ</span>
+                            </div>
+                        </button>
+                    </div>
+                </footer>
+            </div>
         </main>
     </div>
 

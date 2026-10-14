@@ -3,6 +3,8 @@ const touchControlState = {
     down: false,
     left: false,
     right: false,
+    enter: false,
+    escape: false,
     queued: new Set()
 };
 
@@ -21,7 +23,34 @@ window.mobileControls = {
         touchControlState.down = false;
         touchControlState.left = false;
         touchControlState.right = false;
+        touchControlState.enter = false;
+        touchControlState.escape = false;
     }
+};
+
+const keyEventMap = {
+    up: { key: 'ArrowUp', code: 'ArrowUp', keyCode: 38 },
+    down: { key: 'ArrowDown', code: 'ArrowDown', keyCode: 40 },
+    left: { key: 'ArrowLeft', code: 'ArrowLeft', keyCode: 37 },
+    right: { key: 'ArrowRight', code: 'ArrowRight', keyCode: 39 },
+    enter: { key: 'Enter', code: 'Enter', keyCode: 13 },
+    escape: { key: 'Escape', code: 'Escape', keyCode: 27 }
+};
+
+const dispatchSyntheticKey = (control, type) => {
+    const k = keyEventMap[control];
+    if (!k) return;
+    try {
+        const ev = new KeyboardEvent(type, {
+            key: k.key,
+            code: k.code,
+            keyCode: k.keyCode,
+            which: k.keyCode,
+            bubbles: true,
+            cancelable: true
+        });
+        window.dispatchEvent(ev);
+    } catch (e) {}
 };
 
 // Prevenir el menú contextual (opciones de clic derecho o pulsación larga en móvil)
@@ -49,12 +78,14 @@ document.querySelectorAll('[data-control], [data-action]').forEach((button) => {
         touchControlState[control] = true;
         touchControlState.queued.add(control);
         button.classList.add('is-pressed');
+        dispatchSyntheticKey(control, 'keydown');
     };
 
     const release = () => {
         touchControlState[control] = false;
         button.classList.remove('is-pressed');
         quitaFocoHtml(button);
+        dispatchSyntheticKey(control, 'keyup');
     };
 
     button.addEventListener('focus', (event) => {

@@ -206,6 +206,7 @@ body {
 }
 
 .canvas-wrapper {
+    position: relative;
     width: 100%;
     max-width: 1000px;
     aspect-ratio: 5 / 4;
@@ -226,34 +227,41 @@ body {
     border-radius: 16px;
 }
 
-/* Controls Footer Bar */
-/* Controls Footer Bar */
+/* Barra de Controles en la parte baja del contenedor del juego */
 .controls-bar {
-    margin-top: 14px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
     width: 100%;
+    z-index: 20;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-end;
     gap: 16px;
-    padding: 12px 24px;
-    background: rgba(10, 15, 26, 0.75);
-    backdrop-filter: blur(12px);
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 8px 24px rgba(0, 0, 0, 0.4);
+    padding: 12px 20px;
+    background: linear-gradient(180deg, transparent 0%, rgba(4, 7, 15, 0.25) 30%, rgba(4, 7, 15, 0.65) 100%);
+    pointer-events: none;
+    box-sizing: border-box;
+    border: none;
+    box-shadow: none;
+    margin: 0;
 }
 
-/* Cruceta Arcade D-PAD */
+/* Cruceta Arcade D-PAD con Transparencia Glassmorphism */
 .dpad-container {
+    pointer-events: auto;
     display: grid;
     grid-template-columns: repeat(3, 44px);
     grid-template-rows: repeat(3, 44px);
     gap: 4px;
     padding: 6px;
-    background: rgba(0, 0, 0, 0.4);
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
+    background: rgba(10, 15, 26, 0.35);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 18px;
+    border: 1px solid rgba(0, 242, 254, 0.25);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .dpad-btn {
@@ -265,24 +273,26 @@ body {
     font-family: 'Press Start 2P', monospace;
     font-size: 14px;
     color: var(--accent-cyan);
-    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    background: rgba(15, 23, 42, 0.42);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     border: 1px solid rgba(0, 242, 254, 0.35);
-    border-bottom: 3px solid rgba(0, 0, 0, 0.8);
+    border-bottom: 2px solid rgba(0, 242, 254, 0.6);
     border-radius: 10px;
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-    transition: transform 0.08s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3), inset 0 0 8px rgba(0, 242, 254, 0.1);
+    transition: transform 0.08s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
 }
 
 .dpad-btn:hover,
 .dpad-btn.is-pressed {
-    transform: translateY(2px);
-    background: linear-gradient(180deg, #00f2fe 0%, #0284c7 100%);
+    transform: translateY(2px) scale(0.96);
+    background: rgba(0, 242, 254, 0.5);
     color: #ffffff;
     border-color: #00f2fe;
-    box-shadow: 0 0 14px rgba(0, 242, 254, 0.6);
+    box-shadow: 0 0 18px rgba(0, 242, 254, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
 .arrow-up { grid-column: 2; grid-row: 1; }
@@ -290,18 +300,26 @@ body {
 .dpad-center {
     grid-column: 2;
     grid-row: 2;
-    background: radial-gradient(circle, #334155 0%, #1e293b 100%);
+    background: radial-gradient(circle, rgba(51, 65, 85, 0.4) 0%, rgba(15, 23, 42, 0.3) 100%);
     border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.12);
 }
 .arrow-right { grid-column: 3; grid-row: 2; }
 .arrow-down { grid-column: 2; grid-row: 3; }
 
-/* Botones de Acción Accesibles */
+/* Botones de Acción con Transparencia Glassmorphism */
 .action-buttons-container {
+    pointer-events: auto;
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
+    padding: 6px;
+    background: rgba(10, 15, 26, 0.35);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 .action-btn {
@@ -315,41 +333,67 @@ body {
     gap: 12px;
     padding: 10px 18px;
     border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-bottom: 4px solid rgba(0, 0, 0, 0.6);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-    transition: transform 0.08s ease, filter 0.15s ease, box-shadow 0.15s ease;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+    transition: transform 0.08s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
 }
 
 .btn-confirm {
-    background: linear-gradient(180deg, #2ecc71 0%, #27ae60 100%);
-    border-color: rgba(126, 217, 87, 0.6);
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.38) 0%, rgba(39, 174, 96, 0.22) 100%);
+    border: 1px solid rgba(126, 217, 87, 0.55);
+    border-bottom: 2px solid rgba(126, 217, 87, 0.8);
     color: #ffffff;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3), inset 0 0 10px rgba(126, 217, 87, 0.15);
+}
+
+.btn-confirm:hover,
+.btn-confirm.is-pressed {
+    transform: translateY(2px) scale(0.96);
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.65) 0%, rgba(39, 174, 96, 0.5) 100%);
+    border-color: #7ed957;
+    box-shadow: 0 0 20px rgba(126, 217, 87, 0.8), inset 0 0 12px rgba(255, 255, 255, 0.4);
 }
 
 .btn-cancel {
-    background: linear-gradient(180deg, #e74c3c 0%, #c0392b 100%);
-    border-color: rgba(231, 76, 60, 0.6);
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.38) 0%, rgba(192, 57, 43, 0.22) 100%);
+    border: 1px solid rgba(231, 76, 60, 0.55);
+    border-bottom: 2px solid rgba(231, 76, 60, 0.8);
     color: #ffffff;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3), inset 0 0 10px rgba(231, 76, 60, 0.15);
 }
 
-.action-btn:hover,
-.action-btn.is-pressed {
-    transform: translateY(2px);
-    filter: brightness(1.15);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+.btn-cancel:hover,
+.btn-cancel.is-pressed {
+    transform: translateY(2px) scale(0.96);
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.65) 0%, rgba(192, 57, 43, 0.5) 100%);
+    border-color: #ff6b6b;
+    box-shadow: 0 0 20px rgba(231, 76, 60, 0.8), inset 0 0 12px rgba(255, 255, 255, 0.4);
 }
 
 .btn-badge {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 800;
-    width: 28px;
-    height: 28px;
-    background: rgba(0, 0, 0, 0.25);
+    width: 26px;
+    height: 26px;
+    background: rgba(0, 0, 0, 0.3);
     border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.15);
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.btn-badge-esc {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    width: 34px;
+    height: 24px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(231, 76, 60, 0.4);
+    color: #ff9999;
 }
 
 .btn-labels {
@@ -453,7 +497,7 @@ body {
 
     .canvas-wrapper {
         width: 100%;
-        max-height: calc(100dvh - 175px);
+        max-height: calc(100dvh - 95px);
         aspect-ratio: 5 / 4;
         border-radius: 10px;
     }
@@ -463,11 +507,17 @@ body {
     }
 
     .controls-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
         justify-content: space-between;
+        align-items: flex-end;
         gap: 6px;
-        margin-top: 6px;
-        padding: 8px 10px;
-        border-radius: 14px;
+        margin: 0;
+        padding: 6px 8px;
+        background: linear-gradient(180deg, transparent 0%, rgba(4, 7, 15, 0.25) 30%, rgba(4, 7, 15, 0.65) 100%);
     }
 
     .dpad-container {
@@ -483,12 +533,13 @@ body {
     }
 
     .action-buttons-container {
-        gap: 8px;
+        gap: 6px;
+        padding: 4px;
     }
 
     .action-btn {
-        padding: 8px 10px;
-        gap: 8px;
+        padding: 6px 10px;
+        gap: 6px;
         border-radius: 10px;
     }
 
@@ -571,17 +622,17 @@ body {
         padding: 4px;
         border-radius: 12px;
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
-        gap: 8px;
+        gap: 0;
     }
 
     .canvas-wrapper {
         height: 100%;
         max-height: 100%;
         width: auto;
-        max-width: calc(100% - 170px);
+        max-width: 100%;
         flex: 0 1 auto;
         aspect-ratio: 5 / 4;
         border-radius: 8px;
@@ -595,18 +646,21 @@ body {
     }
 
     .controls-bar {
-        width: 160px;
-        flex: 0 0 160px;
-        height: 100%;
-        max-height: 100%;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: auto;
+        max-height: none;
         margin: 0;
-        padding: 8px 6px;
+        padding: 6px 14px;
         gap: 8px;
-        border-radius: 12px;
         display: flex;
-        flex-direction: column;
-        justify-content: space-around;
-        align-items: center;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-end;
+        background: linear-gradient(180deg, transparent 0%, rgba(4, 7, 15, 0.25) 30%, rgba(4, 7, 15, 0.65) 100%);
     }
 
     .dpad-container {
@@ -614,6 +668,7 @@ body {
         grid-template-rows: repeat(3, 34px);
         gap: 3px;
         padding: 4px;
+        border-radius: 14px;
     }
 
     .dpad-btn {
@@ -621,16 +676,19 @@ body {
     }
 
     .action-buttons-container {
-        flex-direction: column;
-        width: 100%;
-        gap: 6px;
+        flex-direction: row;
+        width: auto;
+        gap: 8px;
+        padding: 4px;
+        border-radius: 14px;
     }
 
     .action-btn {
-        width: 100%;
+        width: auto;
         justify-content: center;
-        padding: 6px 8px;
+        padding: 6px 10px;
         gap: 6px;
+        border-radius: 10px;
     }
 
     .btn-badge {
@@ -678,4 +736,17 @@ body {
     min-height: 0;
     width: 100%;
     height: calc(100vh - 54px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+:fullscreen .canvas-wrapper,
+:-webkit-full-screen .canvas-wrapper,
+:-moz-full-screen .canvas-wrapper {
+    height: 100%;
+    max-height: 100%;
+    width: auto;
+    max-width: 100%;
+    aspect-ratio: 5 / 4;
 }

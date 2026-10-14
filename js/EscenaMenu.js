@@ -132,14 +132,32 @@ class EscenaMenu extends Phaser.Scene {
         botonIniciar.on('pointerover', () => botonIniciar.setStyle({ fill: '#f1c40f' }));
         botonIniciar.on('pointerout', () => botonIniciar.setStyle({ fill: '#ffffff' }));
 
-        botonIniciar.on('pointerdown', () => {
+        const accionIniciar = () => {
             localStorage.setItem('muchbits-avatar', this.avatarSeleccionado);
             this.scene.start('EscenaJuego', { avatarKey: this.avatarSeleccionado });
-        });
+        };
 
-        botonCreditos.on('pointerdown', () => {
+        const accionCreditos = () => {
             textoCreditos.setVisible(!textoCreditos.visible);
-        });
+        };
+
+        botonIniciar.on('pointerdown', accionIniciar);
+        botonCreditos.on('pointerdown', accionCreditos);
+
+        this.input.keyboard.on('keydown-ENTER', accionIniciar);
+        this.input.keyboard.on('keydown-SPACE', accionIniciar);
+        this.input.keyboard.on('keydown-ESC', accionCreditos);
+    }
+
+    update() {
+        if (window.mobileControls?.consume('enter')) {
+            localStorage.setItem('muchbits-avatar', this.avatarSeleccionado);
+            this.scene.start('EscenaJuego', { avatarKey: this.avatarSeleccionado });
+        }
+        if (window.mobileControls?.consume('escape')) {
+            const textoCreditos = this.children.getChildren().find(c => c.text && c.text.includes('Departamento SATA'));
+            if (textoCreditos) textoCreditos.setVisible(!textoCreditos.visible);
+        }
     }
 
     seleccionarAvatar(avatarKey) {

@@ -256,7 +256,7 @@ class EscenaDinoRun extends Phaser.Scene {
 
         if (isBajo) {
             obstaculo.setOrigin(0.5, 1);
-            obstaculo.setDisplaySize(90, 90);
+            obstaculo.setDisplaySize(64, 64);
             obstaculo.body.setSize(obstaculo.width * 0.5, obstaculo.height * 0.5, true);
         } else {
             obstaculo.setDisplaySize(105, 70);
