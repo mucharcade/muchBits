@@ -135,6 +135,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
         this.load.image('arbusto', 'pictures/arbusto.png');
         this.load.image('arbol', 'pictures/arbol.png');
         this.load.image('arbol_grande', 'pictures/arbol_grande.png');
+        this.load.image('arbusto_escondite', 'pictures/salabiodiversidad/fauna/arbusto_escondite.png');
 
         // Spritesheets de fauna (mapeo directo)
         // 1. Tapir: 1024x1024 -> 4 frames de 512x512 (2 columnas x 2 filas)
@@ -732,6 +733,8 @@ class EscenaBiodiversidad extends Phaser.Scene {
 
         // Arbustos decorativos en la superficie
         for (let x = 120; x < this.mundoAncho - 200; x += Phaser.Math.Between(160, 320)) {
+            // Evitar solaparse con las zonas de arbusto_escondite (2860 y 3850)
+            if (Math.abs(x - 2860) < 140 || Math.abs(x - 3850) < 140) continue;
             if (Math.random() > 0.3) {
                 this.add.image(x + 45, this.sueloY, 'arbusto')
                     .setDisplaySize(Phaser.Math.Between(50, 75), Phaser.Math.Between(45, 65))
@@ -1334,30 +1337,51 @@ class EscenaBiodiversidad extends Phaser.Scene {
     }
 
     /* -------------------------------------------------------------
-     * FAUNA SALVAJE (Con Spritesheets Mapeados)
+     * FAUNA SALVAJE (Con Spritesheets Mapeados y Escondites)
      * ------------------------------------------------------------- */
     _crearFaunaSalvaje() {
         this.grupoSalvajes = this.physics.add.group();
 
-        // 1. MANADA DE PECARÍES (Con animación de trote en manada)
+        // --- ARBUSTO ESCONDITE DE PECARÍES ---
+        this.posXEsconditePecari = 2860;
+        this.arbustoEsconditePecari = this.add.image(this.posXEsconditePecari, this.sueloY, 'arbusto_escondite')
+            .setDisplaySize(200, 120)
+            .setOrigin(0.5, 1)
+            .setDepth(6.8); // En frente de los pecaríes (depth 5) para que salgan detrás de él
+
+        // 1. MANADA DE PECARÍES
         this.pecaries = [];
-        const posXBasePecari = 2650;
+        this.pecariesActivos = false;
+        this.pecariesEnCooldown = false;
+        this.cooldownPecaries = 7000; // Reaparición más lenta (7 segundos de descanso)
+
         for (let i = 0; i < 2; i++) {
-            const pecari = this.physics.add.sprite(posXBasePecari + i * 160, this.sueloY - 30, 'pecari_sheet', 0);
+            const pecari = this.physics.add.sprite(this.posXEsconditePecari, this.sueloY - 30, 'pecari_sheet', 0);
             pecari.setDisplaySize(110, 80);
             pecari.body.setSize(380, 220);
             pecari.body.setOffset(50, 80);
             pecari.setDepth(5);
             pecari.velocidad = -190;
-            pecari.baseX = posXBasePecari + i * 160;
+            pecari.baseX = this.posXEsconditePecari;
+            pecari.corriendo = false;
+            pecari.activo = false;
+            pecari.setVisible(false);
+            pecari.body.enable = false;
             pecari.play('pecari-correr');
             this.physics.add.collider(pecari, this.plataformas);
             this.grupoSalvajes.add(pecari);
             this.pecaries.push(pecari);
         }
 
-        // 2. EL JAGUAR (Con animación de carrera continua 'jaguar-correr')
-        this.jaguar = this.physics.add.sprite(3600, this.sueloY - 40, 'jaguar_raw', 'run_0');
+        // --- ARBUSTO ESCONDITE DEL JAGUAR ---
+        this.posXEsconditeJaguar = 3850;
+        this.arbustoEsconditeJaguar = this.add.image(this.posXEsconditeJaguar, this.sueloY, 'arbusto_escondite')
+            .setDisplaySize(210, 126)
+            .setOrigin(0.5, 1)
+            .setDepth(6.8); // En frente del jaguar (depth 6) para que salga detrás de él
+
+        // 2. EL JAGUAR
+        this.jaguar = this.physics.add.sprite(this.posXEsconditeJaguar, this.sueloY - 40, 'jaguar_raw', 'run_0');
         this.jaguar.setScale(0.23);
         this.jaguar.body.setSize(340, 170);
         this.jaguar.body.setOffset(60, 95);
@@ -1365,9 +1389,13 @@ class EscenaBiodiversidad extends Phaser.Scene {
         this.jaguar.setDepth(6);
         this.jaguar.velocidad = -360;
         this.jaguar.activo = false;
+        this.jaguar.enCooldown = false;
+        this.jaguar.cooldownTiempo = 8500; // Reaparición más lenta (8.5 segundos)
         this.jaguar.distanciaActivacion = 580;
         this.jaguar.saltado = false;
         this.jaguar.fotoTomada = false;
+        this.jaguar.setVisible(false);
+        this.jaguar.body.enable = false;
         this.jaguar.play('jaguar-correr');
         this.physics.add.collider(this.jaguar, this.plataformas);
         this.grupoSalvajes.add(this.jaguar);
@@ -1382,6 +1410,53 @@ class EscenaBiodiversidad extends Phaser.Scene {
         }).setOrigin(0.5).setDepth(8).setVisible(false);
 
         this.physics.add.overlap(this.jugador, this.grupoSalvajes, this._alColisionarSalvaje, null, this);
+    }
+
+    _estremecerArbusto(arbusto) {
+        if (!arbusto) return;
+        this.tweens.add({
+            targets: arbusto,
+            angle: { from: -4, to: 4 },
+            duration: 75,
+            yoyo: true,
+            repeat: 3,
+            onComplete: () => {
+                arbusto.angle = 0;
+            }
+        });
+    }
+
+    _lanzarManadaPecaries() {
+        if (this.pecariesActivos || this.pecariesEnCooldown) return;
+        this.pecariesActivos = true;
+
+        // Estremecer el arbusto antes de que salgan corriendo de detrás
+        this._estremecerArbusto(this.arbustoEsconditePecari);
+
+        // Pecarí 1 sale del arbusto
+        const p1 = this.pecaries[0];
+        if (p1) {
+            p1.setPosition(this.posXEsconditePecari, this.sueloY - 30);
+            p1.setVisible(true);
+            p1.body.enable = true;
+            p1.corriendo = true;
+            p1.activo = true;
+            p1.setVelocityX(p1.velocidad);
+        }
+
+        // Pecarí 2 sale detrás con un ligero desfase de manada
+        this.time.delayedCall(650, () => {
+            if (!this.pecariesActivos) return;
+            const p2 = this.pecaries[1];
+            if (p2) {
+                p2.setPosition(this.posXEsconditePecari, this.sueloY - 30);
+                p2.setVisible(true);
+                p2.body.enable = true;
+                p2.corriendo = true;
+                p2.activo = true;
+                p2.setVelocityX(p2.velocidad);
+            }
+        });
     }
 
     /* -------------------------------------------------------------
@@ -2240,22 +2315,56 @@ class EscenaBiodiversidad extends Phaser.Scene {
      * ACTUALIZACIÓN: FAUNA SALVAJE
      * ------------------------------------------------------------- */
     _actualizarFaunaSalvaje(delta) {
-        // 1. PECARÍES
-        this.pecaries.forEach(p => {
-            p.setVelocityX(p.velocidad);
-            if (p.x < 2250) {
-                p.x = p.baseX;
+        // 1. MANADA DE PECARÍES
+        // Activar salida desde el arbusto cuando el jugador entra al sector (x entre 1800 y 3300)
+        const cercaSectorPecaries = this.jugador.x > 1800 && this.jugador.x < 3300;
+        if (cercaSectorPecaries && !this.pecariesActivos && !this.pecariesEnCooldown) {
+            this._lanzarManadaPecaries();
+        }
+
+        if (this.pecariesActivos) {
+            let todosTerminaron = true;
+            this.pecaries.forEach(p => {
+                if (p.corriendo) {
+                    p.setVelocityX(p.velocidad);
+                    if (p.x < 2180) {
+                        p.corriendo = false;
+                        p.activo = false;
+                        p.setVelocityX(0);
+                        p.setVisible(false);
+                        p.body.enable = false;
+                        p.setPosition(this.posXEsconditePecari, this.sueloY - 30);
+                    } else {
+                        todosTerminaron = false;
+                    }
+                }
+            });
+
+            // Si ambos ya corrieron y desaparecieron al fondo izquierdo, inicia la reaparición lenta
+            if (todosTerminaron) {
+                this.pecariesActivos = false;
+                this.pecariesEnCooldown = true;
+                this.time.delayedCall(this.cooldownPecaries, () => {
+                    this.pecariesEnCooldown = false;
+                });
             }
-        });
+        }
 
         // 2. JAGUAR
-        const distJugadorJaguar = this.jaguar.x - this.jugador.x;
+        const distJugadorJaguar = this.posXEsconditeJaguar - this.jugador.x;
 
-        if (!this.jaguar.activo && distJugadorJaguar > 0 && distJugadorJaguar < this.jaguar.distanciaActivacion) {
+        if (!this.jaguar.activo && !this.jaguar.enCooldown && distJugadorJaguar > 0 && distJugadorJaguar < this.jaguar.distanciaActivacion) {
             this.jaguar.activo = true;
+            this._estremecerArbusto(this.arbustoEsconditeJaguar);
             this.avisoJaguar.setVisible(true);
             this._reproducirSonido('rugido');
             this.time.delayedCall(2200, () => this.avisoJaguar.setVisible(false));
+
+            // Sale detrás del arbusto escondite
+            this.jaguar.setPosition(this.posXEsconditeJaguar, this.sueloY - 40);
+            this.jaguar.setVisible(true);
+            this.jaguar.body.enable = true;
+            this.jaguar.setVelocityX(this.jaguar.velocidad);
         }
 
         if (this.jaguar.activo) {
@@ -2267,9 +2376,18 @@ class EscenaBiodiversidad extends Phaser.Scene {
             }
 
             if (this.jaguar.x < 3100) {
-                this.jaguar.x = 3850;
+                // Se esconde de vuelta tras el arbusto y activa la reaparición lenta (cooldown)
+                this.jaguar.setVelocityX(0);
+                this.jaguar.setPosition(this.posXEsconditeJaguar, this.sueloY - 40);
+                this.jaguar.setVisible(false);
+                this.jaguar.body.enable = false;
                 this.jaguar.activo = false;
                 this.jaguar.saltado = false;
+                this.jaguar.enCooldown = true;
+
+                this.time.delayedCall(this.jaguar.cooldownTiempo, () => {
+                    this.jaguar.enCooldown = false;
+                });
             }
         }
     }
@@ -2325,9 +2443,9 @@ class EscenaBiodiversidad extends Phaser.Scene {
         }
 
         // 4. Jaguar (Foto Legendaria)
-        if (this.jaguar.saltado && !this.jaguar.fotoTomada) {
+        if (this.jaguar.activo && this.jaguar.visible && this.jaguar.saltado && !this.jaguar.fotoTomada) {
             const distJaguar = Phaser.Math.Distance.Between(this.jugador.x, this.jugador.y, this.jaguar.x, this.jaguar.y);
-            if (distJaguar < 300) {
+            if (distJaguar < 320) {
                 puedeInteractuar = true;
                 mensajeAccion = '⭐ ¡FOTO LEGENDARIA! Presiona [ENTER / E] AHORA';
                 if (accionPresionada) {
@@ -2341,8 +2459,9 @@ class EscenaBiodiversidad extends Phaser.Scene {
 
         // 5. Pecaríes
         this.pecaries.forEach(p => {
+            if (!p.visible || !p.activo) return;
             const distP = Phaser.Math.Distance.Between(this.jugador.x, this.jugador.y, p.x, p.y);
-            if (distP < 140 && !this.bitacora.pecari.registrada) {
+            if (distP < 170 && !this.bitacora.pecari.registrada) {
                 puedeInteractuar = true;
                 mensajeAccion = '📷 Presiona [ENTER / E] para fotografiar la manada de Pecaríes';
                 if (accionPresionada) {
@@ -2498,6 +2617,37 @@ class EscenaBiodiversidad extends Phaser.Scene {
     _manejarDerrota() {
         this._mostrarNotificacion('⚠️ ¡Fuiste embestido! Descansando en el campamento...', '#f87171', 3000);
         this.cameras.main.fadeOut(500, 0, 0, 0);
+
+        // Resetear animales salvajes a sus escondites
+        if (this.pecaries) {
+            this.pecariesActivos = false;
+            this.pecariesEnCooldown = true;
+            this.pecaries.forEach(p => {
+                p.corriendo = false;
+                p.activo = false;
+                p.setVelocity(0, 0);
+                p.setVisible(false);
+                p.body.enable = false;
+                p.setPosition(this.posXEsconditePecari, this.sueloY - 30);
+            });
+            this.time.delayedCall(this.cooldownPecaries, () => {
+                this.pecariesEnCooldown = false;
+            });
+        }
+
+        if (this.jaguar) {
+            this.jaguar.setVelocity(0, 0);
+            this.jaguar.setPosition(this.posXEsconditeJaguar, this.sueloY - 40);
+            this.jaguar.setVisible(false);
+            this.jaguar.body.enable = false;
+            this.jaguar.activo = false;
+            this.jaguar.saltado = false;
+            this.jaguar.enCooldown = true;
+            this.time.delayedCall(this.jaguar.cooldownTiempo, () => {
+                this.jaguar.enCooldown = false;
+            });
+        }
+
         this.time.delayedCall(600, () => {
             this.vidas = 3;
             this.agachado = false;
