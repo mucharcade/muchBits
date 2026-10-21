@@ -39,6 +39,12 @@ class EscenaEnergia extends Phaser.Scene {
         this.load.image('arbol_1_sala_b', 'pictures/sala_energia/Arbol_1_sala_B.png');
         this.load.image('arbol_2_sala_b', 'pictures/sala_energia/Arbol_2_sala_B.png');
         this.load.image('arbol_3_sala_b', 'pictures/sala_energia/Arbol_3_sala_B.png');
+
+        // Spritesheet de Turbina Eólica (se intentará cargar pictures/sala_energia/turbina.png)
+        this.load.spritesheet('turbina_eolica', 'pictures/sala_energia/turbina.png', {
+            frameWidth: 64,
+            frameHeight: 128
+        });
     }
 
     create() {
@@ -53,7 +59,7 @@ class EscenaEnergia extends Phaser.Scene {
         this.ultimoClickTiempo = 0;
         this.tiempoSegundos = 0;
         this.juegoTerminado = false;
-        this.juegoPausado = false;
+        this.juegoPausado = true; // Inicia pausado hasta que el jugador haga click en el banner de bienvenida
         this.mostrarGuiaZonas = false; // Modo guía visual de las 3 zonas
 
         // Coordenadas y delimitaciones calibradas para el canvas de 1000x800
@@ -64,17 +70,14 @@ class EscenaEnergia extends Phaser.Scene {
         this.limitesRio = {
             yMin: 350,
             yMax: 620,
-            // Zona de generación: izquierda (X: 10 a 135)
+            // Zona de generación: izquierda (X: -40 a 90)
             spawnXMin: -40,
             spawnXMax: 90,
-            // Área de juego (clickeable): centro (X: 100 a 745)
+            // Área de juego (clickeable): centro
             juegoXMin: 100,
-            juegoXMax: 745,
-            // Zona de llegada (no clickeable / peligro): derecha antes del vertedero (X: 745 a 830)
-            llegadaXMin: 745,
-            llegadaXMax: 830,
-            // Vertedero / Caída de agua a las turbinas (X >= 830)
-            caidaX: 830
+            // La zona de llegada y el vertedero ahora son diagonales según la inclinación de la presa:
+            // Arriba (Y menor) la pared está mucho más a la izquierda (x~695),
+            // Abajo (Y mayor) la pared llega más a la derecha (x~870).
         };
 
         // Inicializar generador de audio por síntesis Web Audio
@@ -272,6 +275,65 @@ class EscenaEnergia extends Phaser.Scene {
             c.generateTexture('chispa_energia', 16, 16);
             c.destroy();
         }
+
+        // 9. Textura Fallback para Turbina Eólica (si turbina.png no existe todavía)
+        if (!this.textures.exists('turbina_eolica')) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64 * 4;
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+
+            for (let f = 0; f < 4; f++) {
+                const ox = f * 64;
+                const angBase = (f * Math.PI) / 6;
+
+                // Torre blanca cónica
+                ctx.fillStyle = '#dfe6e9';
+                ctx.beginPath();
+                ctx.moveTo(ox + 30, 48);
+                ctx.lineTo(ox + 34, 48);
+                ctx.lineTo(ox + 36, 126);
+                ctx.lineTo(ox + 28, 126);
+                ctx.closePath();
+                ctx.fill();
+
+                // Detalle sombra de la torre
+                ctx.fillStyle = '#b2bec3';
+                ctx.fillRect(ox + 32, 48, 2, 78);
+
+                // Buje / Eje central
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(ox + 32, 48, 5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 3 Aspas giratorias
+                ctx.fillStyle = '#f5f6fa';
+                ctx.strokeStyle = '#636e72';
+                ctx.lineWidth = 1;
+
+                for (let b = 0; b < 3; b++) {
+                    const ang = angBase + (b * 2 * Math.PI) / 3;
+                    const cosA = Math.cos(ang);
+                    const sinA = Math.sin(ang);
+                    const len = 38;
+
+                    ctx.beginPath();
+                    ctx.moveTo(ox + 32, 48);
+                    ctx.lineTo(ox + 32 + cosA * len - sinA * 3, 48 + sinA * len + cosA * 3);
+                    ctx.lineTo(ox + 32 + cosA * (len + 4), 48 + sinA * (len + 4));
+                    ctx.lineTo(ox + 32 + cosA * len + sinA * 3, 48 + sinA * len - cosA * 3);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                }
+            }
+
+            this.textures.addSpriteSheet('turbina_eolica', canvas, {
+                frameWidth: 64,
+                frameHeight: 128
+            });
+        }
     }
     // FIN GENERACIÓN DE TEXTURAS DE BASURA PIXEL-ART
 
@@ -295,6 +357,19 @@ class EscenaEnergia extends Phaser.Scene {
                 frameRate: 4,
                 repeat: -1
             });
+        }
+
+        // Animación de rotación de la turbina eólica
+        if (this.textures.exists('turbina_eolica') && !this.anims.exists('anim_turbina_girando')) {
+            const numFrames = this.textures.get('turbina_eolica').frameTotal;
+            if (numFrames > 1) {
+                this.anims.create({
+                    key: 'anim_turbina_girando',
+                    frames: this.anims.generateFrameNumbers('turbina_eolica', { start: 0, end: Math.max(0, numFrames - 2) }),
+                    frameRate: 8,
+                    repeat: -1
+                });
+            }
         }
     }
     // FIN ANIMACIONES DE SPRITESHEETS
@@ -332,55 +407,126 @@ class EscenaEnergia extends Phaser.Scene {
             'arbol_3_sala_b'
         ];
 
+        // Determinar exactamente entre 3 y 4 posiciones aleatorias para las turbinas en total
+        const totalTurbinas = Phaser.Math.Between(3, 4);
+        const posicionesXPosibles = [];
+        for (let x = 230; x <= 720; x += 55) {
+            posicionesXPosibles.push(x + Phaser.Math.Between(-15, 15));
+        }
+        Phaser.Utils.Array.Shuffle(posicionesXPosibles);
+        const posicionesTurbinas = posicionesXPosibles.slice(0, totalTurbinas);
+        let turbinasRestantes = totalTurbinas;
+
         // Capa 1: Colina lejana y alta (Y: 204 a 226) - Máxima densidad en la línea del horizonte
         for (let x = 200; x <= 750; x += Phaser.Math.Between(10, 45)) {
-            const clave = Phaser.Utils.Array.GetRandom(clavesArboles);
             const y = Phaser.Math.Between(225, 255);
-            const ancho = Phaser.Math.Between(34, 48);
-            const alto = Phaser.Math.Between(44, 64);
             const flip = Phaser.Math.Between(0, 1) === 1;
-            const alpha = Phaser.Math.FloatBetween(0.75, 0.88);
+            const alpha = Phaser.Math.FloatBetween(0.85, 0.95);
 
-            const arbol = this.add.image(x, y, clave)
-                .setDisplaySize(ancho, alto)
-                .setOrigin(0.5, 1)
-                .setFlipX(flip)
-                .setAlpha(alpha)
-                .setDepth(1 + y * 0.001);
+            // Verificar si este punto coincide con una de las turbinas elegidas (máximo 4 en total)
+            const indexTurbina = posicionesTurbinas.findIndex(tx => Math.abs(tx - x) < 26);
+            const esTurbina = indexTurbina !== -1 && turbinasRestantes > 0 && this.textures.exists('turbina_eolica');
 
-            this.grupoArbolesFondo.add(arbol);
+            if (esTurbina) {
+                posicionesTurbinas.splice(indexTurbina, 1);
+                turbinasRestantes--;
+
+                const anchoT = Phaser.Math.Between(38, 50);
+                const altoT = Phaser.Math.Between(78, 102);
+                const turbina = this.add.sprite(x, y + 4, 'turbina_eolica')
+                    .setDisplaySize(anchoT, altoT)
+                    .setOrigin(0.5, 1)
+                    .setAlpha(alpha)
+                    .setDepth(1 + y * 0.001);
+
+                if (this.anims.exists('anim_turbina_girando')) {
+                    turbina.play('anim_turbina_girando');
+                }
+
+                this.grupoArbolesFondo.add(turbina);
+            } else {
+                const clave = Phaser.Utils.Array.GetRandom(clavesArboles);
+                const ancho = Phaser.Math.Between(34, 48);
+                const alto = Phaser.Math.Between(44, 64);
+
+                const arbol = this.add.image(x, y, clave)
+                    .setDisplaySize(ancho, alto)
+                    .setOrigin(0.5, 1)
+                    .setFlipX(flip)
+                    .setAlpha(alpha)
+                    .setDepth(1 + y * 0.001);
+
+                // Oscilación suave en colina lejana
+                if (Phaser.Math.Between(0, 1) === 0) {
+                    const anguloMax = Phaser.Math.FloatBetween(1.8, 3.2);
+                    this.tweens.add({
+                        targets: arbol,
+                        angle: { from: -anguloMax, to: anguloMax },
+                        duration: Phaser.Math.Between(1800, 2800),
+                        yoyo: true,
+                        repeat: -1,
+                        ease: 'Sine.easeInOut',
+                        delay: Phaser.Math.Between(0, 1200)
+                    });
+                }
+
+                this.grupoArbolesFondo.add(arbol);
+            }
         }
 
         // Capa 2: Pendiente intermedia (Y: 226 a 250) - Gran densidad de follaje con suave oscilación
         for (let x = 220; x <= 730; x += Phaser.Math.Between(15, 45)) {
-            const clave = Phaser.Utils.Array.GetRandom(clavesArboles);
             const y = Phaser.Math.Between(260, 285);
-            const ancho = Phaser.Math.Between(50, 72);
-            const alto = Phaser.Math.Between(64, 90);
             const flip = Phaser.Math.Between(0, 1) === 1;
             const alpha = Phaser.Math.FloatBetween(0.88, 0.98);
 
-            const arbol = this.add.image(x, y, clave)
-                .setDisplaySize(ancho, alto)
-                .setOrigin(0.5, 1)
-                .setFlipX(flip)
-                .setAlpha(alpha)
-                .setDepth(1 + y * 0.001);
+            // Si aún quedan turbinas pendientes por colocar de las 4 máximas
+            const indexTurbina = posicionesTurbinas.findIndex(tx => Math.abs(tx - x) < 26);
+            const esTurbina = indexTurbina !== -1 && turbinasRestantes > 0 && this.textures.exists('turbina_eolica');
 
-            // Brisa suave en árboles
-            if (Phaser.Math.Between(0, 2) === 0) {
+            if (esTurbina) {
+                posicionesTurbinas.splice(indexTurbina, 1);
+                turbinasRestantes--;
+
+                const anchoT = Phaser.Math.Between(46, 58);
+                const altoT = Phaser.Math.Between(92, 118);
+                const turbina = this.add.sprite(x, y + 6, 'turbina_eolica')
+                    .setDisplaySize(anchoT, altoT)
+                    .setOrigin(0.5, 1)
+                    .setAlpha(alpha)
+                    .setDepth(1 + y * 0.001);
+
+                if (this.anims.exists('anim_turbina_girando')) {
+                    turbina.play('anim_turbina_girando');
+                }
+
+                this.grupoArbolesFondo.add(turbina);
+            } else {
+                const clave = Phaser.Utils.Array.GetRandom(clavesArboles);
+                const ancho = Phaser.Math.Between(50, 72);
+                const alto = Phaser.Math.Between(64, 90);
+
+                const arbol = this.add.image(x, y, clave)
+                    .setDisplaySize(ancho, alto)
+                    .setOrigin(0.5, 1)
+                    .setFlipX(flip)
+                    .setAlpha(alpha)
+                    .setDepth(1 + y * 0.001);
+
+                // Brisa visible en árboles intermedios
+                const anguloMax = Phaser.Math.FloatBetween(2.5, 4.5);
                 this.tweens.add({
                     targets: arbol,
-                    angle: { from: -1.5, to: 1.5 },
-                    duration: Phaser.Math.Between(2200, 3600),
+                    angle: { from: -anguloMax, to: anguloMax },
+                    duration: Phaser.Math.Between(1600, 2400),
                     yoyo: true,
                     repeat: -1,
                     ease: 'Sine.easeInOut',
-                    delay: Phaser.Math.Between(0, 1200)
+                    delay: Phaser.Math.Between(0, 1000)
                 });
-            }
 
-            this.grupoArbolesFondo.add(arbol);
+                this.grupoArbolesFondo.add(arbol);
+            }
         }
 
         // Capa 3: Ribera cercana al agua (Y: 250 a 275) - Árboles frondosos de primer plano
@@ -402,17 +548,17 @@ class EscenaEnergia extends Phaser.Scene {
                 .setAlpha(1.0)
                 .setDepth(1 + y * 0.001);
 
-            if (Phaser.Math.Between(0, 2) === 0) {
-                this.tweens.add({
-                    targets: arbol,
-                    angle: { from: -1.2, to: 1.2 },
-                    duration: Phaser.Math.Between(2400, 4000),
-                    yoyo: true,
-                    repeat: -1,
-                    ease: 'Sine.easeInOut',
-                    delay: Phaser.Math.Between(0, 1500)
-                });
-            }
+            // Viento natural más evidente en árboles de primer plano
+            const anguloMax = Phaser.Math.FloatBetween(3.0, 5.0);
+            this.tweens.add({
+                targets: arbol,
+                angle: { from: -anguloMax, to: anguloMax },
+                duration: Phaser.Math.Between(1500, 2200),
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut',
+                delay: Phaser.Math.Between(0, 900)
+            });
 
             this.grupoArbolesFondo.add(arbol);
         }
@@ -420,7 +566,23 @@ class EscenaEnergia extends Phaser.Scene {
     // FIN BOSQUE DE FONDO
 
     /* =========================================================================
-     * ESPUMA DEL VERTEDERO
+     * CÁLCULO DE LÍMITES DIAGONALES DE LA PRESA
+     * ========================================================================= */
+    obtenerLimiteCaidaX(y) {
+        // La pared diagonal de la presa (arriba desplazado un poco más a la derecha, abajo intacto):
+        // Arriba (y = 350, donde Y es menor): x ≈ 742
+        // Abajo (y = 620, donde Y es mayor): x ≈ 895
+        const t = (y - 350) / (620 - 350);
+        return 742 + t * (895 - 742);
+    }
+
+    obtenerLimiteLlegadaX(y) {
+        // La zona de peligro / advertencia (no clickeable) está 60px antes de la pared diagonal
+        return this.obtenerLimiteCaidaX(y) - 60;
+    }
+
+    /* =========================================================================
+     * ESPUMA DEL VERTEDERO - Rectangulo blanco que simula la espuma del vertedero
      * ========================================================================= */
     animarEspumaVertedero() {
         this.tweens.addCounter({
@@ -433,12 +595,12 @@ class EscenaEnergia extends Phaser.Scene {
                 const val = tween.getValue();
                 this.espumaVertedero.clear();
                 this.espumaVertedero.fillStyle(0xffffff, 0.15 + (val / 10) * 0.15);
-                // Zona espumosa al pie del vertedero
+                // Zona espumosa al pie del vertedero coincidiendo con la pared diagonal
                 this.espumaVertedero.fillPoints([
-                    { x: 760, y: 350 },
-                    { x: 800, y: 320 },
-                    { x: 990, y: 650 },
-                    { x: 840, y: 680 }
+                    { x: 712, y: 345 },
+                    { x: 752, y: 340 },
+                    { x: 915, y: 630 },
+                    { x: 855, y: 645 }
                 ], true);
             }
         });
@@ -659,14 +821,27 @@ class EscenaEnergia extends Phaser.Scene {
         }).setOrigin(0.5, 0);
 
         // 2. ÁREA DE JUEGO (Clickeable) (Cyan punteado)
-        // X: 135 a 745
-        const juegoW = this.limitesRio.juegoXMax - 155;
-        g.fillStyle(0x00f2fe, 0.12);
-        g.fillRoundedRect(155, yTop, juegoW, yHeight, 10);
-        g.lineStyle(3, 0x00f2fe, 0.95);
-        this.dibujarRectanguloPunteado(g, 155, yTop, juegoW, yHeight, 10);
+        // Delimitada por la diagonal real de la presa
+        const yBot = this.limitesRio.yMax + 10;
+        const xLlegadaTop = this.obtenerLimiteLlegadaX(yTop);
+        const xLlegadaBot = this.obtenerLimiteLlegadaX(yBot);
 
-        const etiquetaJuego = this.add.text(155 + juegoW / 2, yTop - 24, 'ÁREA DE JUEGO (CLICKEABLE)', {
+        g.fillStyle(0x00f2fe, 0.12);
+        g.fillPoints([
+            { x: 155, y: yTop },
+            { x: xLlegadaTop, y: yTop },
+            { x: xLlegadaBot, y: yBot },
+            { x: 155, y: yBot }
+        ], true);
+        g.lineStyle(3, 0x00f2fe, 0.95);
+        this.dibujarPoligonoPunteado(g, [
+            { x: 155, y: yTop },
+            { x: xLlegadaTop, y: yTop },
+            { x: xLlegadaBot, y: yBot },
+            { x: 155, y: yBot }
+        ]);
+
+        const etiquetaJuego = this.add.text((155 + (xLlegadaTop + xLlegadaBot) / 2) / 2, yTop - 24, 'ÁREA DE JUEGO (CLICKEABLE)', {
             fontFamily: '"Press Start 2P", monospace',
             fontSize: '9px',
             color: '#00f2fe',
@@ -674,15 +849,26 @@ class EscenaEnergia extends Phaser.Scene {
             padding: { x: 8, y: 4 }
         }).setOrigin(0.5, 0);
 
-        // 3. ZONA DE LLEGADA (No clickeable / Resta energía) (Rojo punteado)
-        // X: 745 a 830
-        const llegadaW = 85;
-        g.fillStyle(0xe74c3c, 0.28);
-        g.fillRoundedRect(740, yTop, llegadaW, yHeight, 10);
-        g.lineStyle(3, 0xe74c3c, 0.95);
-        this.dibujarRectanguloPunteado(g, 740, yTop, llegadaW, yHeight, 10);
+        // 3. ZONA DE LLEGADA (No clickeable / Resta energía) (Rojo punteado diagonal)
+        const xCaidaTop = this.obtenerLimiteCaidaX(yTop);
+        const xCaidaBot = this.obtenerLimiteCaidaX(yBot);
 
-        const etiquetaLlegada = this.add.text(740 + llegadaW / 2, yTop - 24, 'ZONA DE LLEGADA\n(NO CLICKEABLE)', {
+        g.fillStyle(0xe74c3c, 0.28);
+        g.fillPoints([
+            { x: xLlegadaTop, y: yTop },
+            { x: xCaidaTop, y: yTop },
+            { x: xCaidaBot, y: yBot },
+            { x: xLlegadaBot, y: yBot }
+        ], true);
+        g.lineStyle(3, 0xe74c3c, 0.95);
+        this.dibujarPoligonoPunteado(g, [
+            { x: xLlegadaTop, y: yTop },
+            { x: xCaidaTop, y: yTop },
+            { x: xCaidaBot, y: yBot },
+            { x: xLlegadaBot, y: yBot }
+        ]);
+
+        const etiquetaLlegada = this.add.text((xLlegadaTop + xCaidaTop) / 2, yTop - 24, 'ZONA DE LLEGADA\n(NO CLICKEABLE)', {
             fontFamily: '"Press Start 2P", monospace',
             fontSize: '7px',
             color: '#ff4757',
@@ -716,6 +902,31 @@ class EscenaEnergia extends Phaser.Scene {
             panelLeyenda,
             textoLeyenda
         ]);
+    }
+
+    dibujarPoligonoPunteado(g, puntos) {
+        const segmento = 10;
+        const espacio = 6;
+        for (let i = 0; i < puntos.length; i++) {
+            const p1 = puntos[i];
+            const p2 = puntos[(i + 1) % puntos.length];
+            const dist = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y);
+            const dx = (p2.x - p1.x) / dist;
+            const dy = (p2.y - p1.y) / dist;
+
+            let cur = 0;
+            while (cur < dist) {
+                const startX = p1.x + dx * cur;
+                const startY = p1.y + dy * cur;
+                const endLen = Math.min(cur + segmento, dist);
+                const endX = p1.x + dx * endLen;
+                const endY = p1.y + dy * endLen;
+                g.moveTo(startX, startY);
+                g.lineTo(endX, endY);
+                cur += segmento + espacio;
+            }
+        }
+        g.strokePath();
     }
 
     dibujarRectanguloPunteado(g, x, y, width, height, radius) {
@@ -842,10 +1053,10 @@ class EscenaEnergia extends Phaser.Scene {
         if (this.juegoTerminado || this.juegoPausado) return;
         if (sprite.estado === 'recogida' || sprite.estado === 'atascada') return;
 
-        // Comprobación de Zona según las especificaciones de la Tercera Imagen:
-        // "Área de juego: Solo esta zona es clickeable y permite recoger la basura."
-        // "Zona de llegada: Si la basura llega aquí, resta energía (no clickeable)."
-        if (sprite.x >= this.limitesRio.llegadaXMin) {
+        // Comprobación de Zona Diagonal:
+        // Si ya cruzó la línea diagonal de la zona de llegada según su coordenada Y actual:
+        const limiteLlegadaX = this.obtenerLimiteLlegadaX(sprite.y);
+        if (sprite.x >= limiteLlegadaX) {
             // Ya está en la zona de llegada! NO es clickeable
             this.reproducirSonido('rechazo');
             this.mostrarTextoFlotante(sprite.x, sprite.y - 20, '¡NO CLICKEABLE!', '#ff4757');
@@ -958,11 +1169,23 @@ class EscenaEnergia extends Phaser.Scene {
     }
 
     activarSupercargaLimpia() {
-        this.reproducirSonido('supercarga');
         this.nivel++;
         this.puntuacion += 1000;
         this.textoScore.setText(this.puntuacion.toString().padStart(5, '0'));
         this.textoNivel.setText(`NIVEL: ${this.nivel} - PRESA HIDROELÉCTRICA`);
+
+        // Verificar si se alcanzó el nivel máximo (10)
+        if (this.nivel >= 10) {
+            this.juegoTerminado = true;
+            this.reproducirSonido('victoria_final');
+            // Pequeña pausa dramática antes de mostrar la pantalla de victoria
+            this.time.delayedCall(800, () => {
+                this.mostrarPantallaMaximoRendimiento();
+            });
+            return;
+        }
+
+        this.reproducirSonido('supercarga');
 
         // Destello dorado de felicitación
         this.mostrarTextoFlotante(500, 200, `¡100% ENERGÍA LIMPIA! NIVEL ${this.nivel} ⚡⚡⚡`, '#00f2fe', '18px');
@@ -977,6 +1200,151 @@ class EscenaEnergia extends Phaser.Scene {
             const nuevoDelay = Math.max(600, 1600 - (this.nivel - 1) * 150);
             this.temporizadorGeneracion.delay = nuevoDelay;
         }
+    }
+
+    mostrarPantallaMaximoRendimiento() {
+        // Overlay oscuro de fondo
+        const overlay = this.add.graphics().setDepth(195);
+        overlay.fillStyle(0x000a18, 0);
+        overlay.fillRect(0, 0, 1000, 800);
+        this.tweens.add({
+            targets: overlay,
+            alpha: 1,
+            duration: 600,
+            onUpdate: (tween) => {
+                overlay.clear();
+                overlay.fillStyle(0x000a18, 0.82 * tween.progress);
+                overlay.fillRect(0, 0, 1000, 800);
+            }
+        });
+
+        // Partículas de energía doradas flotando
+        for (let i = 0; i < 30; i++) {
+            this.time.delayedCall(i * 80, () => {
+                const px = Phaser.Math.Between(50, 950);
+                const py = Phaser.Math.Between(100, 750);
+                const chispa = this.add.graphics().setDepth(196);
+                chispa.fillStyle(Phaser.Utils.Array.GetRandom([0xf1c40f, 0x00f2fe, 0x2ecc71, 0xffffff]), 1);
+                chispa.fillCircle(0, 0, Phaser.Math.Between(3, 7));
+                chispa.x = px;
+                chispa.y = py;
+                this.tweens.add({
+                    targets: chispa,
+                    y: py - Phaser.Math.Between(60, 140),
+                    alpha: 0,
+                    duration: Phaser.Math.Between(1200, 2200),
+                    ease: 'Cubic.easeOut',
+                    onComplete: () => chispa.destroy()
+                });
+            });
+        }
+
+        // Contenedor del modal de victoria
+        const modal = this.add.container(500, 400).setDepth(200).setAlpha(0);
+
+        // Caja principal del modal
+        const cajaModal = this.add.graphics();
+        cajaModal.fillStyle(0x061525, 0.97);
+        cajaModal.fillRoundedRect(-320, -230, 640, 460, 20);
+        // Borde dorado brillante
+        cajaModal.lineStyle(4, 0xf1c40f, 1);
+        cajaModal.strokeRoundedRect(-320, -230, 640, 460, 20);
+        // Acento interior cyan
+        cajaModal.lineStyle(2, 0x00f2fe, 0.5);
+        cajaModal.strokeRoundedRect(-310, -220, 620, 440, 16);
+
+        // Icono de trofeo / rayo
+        const iconoTexto = this.add.text(0, -190, '⚡🏆⚡', {
+            fontSize: '40px'
+        }).setOrigin(0.5);
+
+        // Título principal
+        const titulo = this.add.text(0, -140, '¡MÁXIMO RENDIMIENTO!', {
+            fontFamily: '"Press Start 2P", monospace',
+            fontSize: '20px',
+            color: '#f1c40f',
+            stroke: '#7d6000',
+            strokeThickness: 4,
+            align: 'center'
+        }).setOrigin(0.5);
+
+        // Subtítulo de la presa
+        const subtitulo = this.add.text(0, -98, 'PRESA HIDROELÉCTRICA', {
+            fontFamily: '"Press Start 2P", monospace',
+            fontSize: '13px',
+            color: '#00f2fe',
+            align: 'center'
+        }).setOrigin(0.5);
+
+        // Mensaje descriptivo
+        const mensaje = this.add.text(0, -48,
+            '\nHEMOS ALCANZADO EL MÁXIMO RENDIMIENTO DE ENERGÍA.\n\n' +
+            'Las turbinas operan a plena capacidad.\nEl suministro de energía limpia\nalimenta a toda la ciudad.', {
+            fontFamily: 'Outfit, sans-serif',
+            fontSize: '15px',
+            color: '#e2e8f0',
+            align: 'center',
+            lineSpacing: 6
+        }).setOrigin(0.5);
+
+        // Estadísticas finales
+        const stats = this.add.text(0, 100,
+            `PUNTUACIÓN FINAL: ${this.puntuacion.toString().padStart(6, '0')}\n` +
+            `BASURA RETIRADA: ${this.basuraRecogida} piezas   TIEMPO: ${Math.floor(this.tiempoSegundos / 60)}m ${this.tiempoSegundos % 60}s`, {
+            fontFamily: '"Press Start 2P", monospace',
+            fontSize: '9px',
+            color: '#94a3b8',
+            align: 'center',
+            lineSpacing: 8
+        }).setOrigin(0.5);
+
+        // Divisor decorativo
+        const divisor = this.add.graphics();
+        divisor.lineStyle(2, 0xf1c40f, 0.6);
+        divisor.lineBetween(-260, 140, 260, 140);
+
+        // Botón "VOLVER AL MAPA"
+        const botonMapa = this.add.text(0, 180, '🗺️  VOLVER AL MAPA', {
+            fontFamily: '"Press Start 2P", monospace',
+            fontSize: '14px',
+            color: '#000000',
+            backgroundColor: '#f1c40f',
+            padding: { x: 28, y: 16 }
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+        botonMapa.on('pointerdown', () => this.salirAlMapa());
+        botonMapa.on('pointerover', () => {
+            botonMapa.setStyle({ backgroundColor: '#ffd32a', color: '#000000' });
+            this.tweens.add({ targets: botonMapa, scaleX: 1.05, scaleY: 1.05, duration: 100, ease: 'Back.easeOut' });
+        });
+        botonMapa.on('pointerout', () => {
+            botonMapa.setStyle({ backgroundColor: '#f1c40f', color: '#000000' });
+            this.tweens.add({ targets: botonMapa, scaleX: 1, scaleY: 1, duration: 100 });
+        });
+
+        modal.add([cajaModal, iconoTexto, titulo, subtitulo, mensaje, stats, divisor, botonMapa]);
+
+        // Animación de entrada del modal
+        this.tweens.add({
+            targets: modal,
+            alpha: 1,
+            scaleX: { from: 0.7, to: 1 },
+            scaleY: { from: 0.7, to: 1 },
+            duration: 500,
+            ease: 'Back.easeOut',
+            delay: 300
+        });
+
+        // Efecto de pulso dorado en el borde del modal
+        this.tweens.add({
+            targets: modal,
+            alpha: { from: 1, to: 0.92 },
+            duration: 1200,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut',
+            delay: 900
+        });
     }
 
     crearEfectoSalpicadura(x, y) {
@@ -1028,7 +1396,8 @@ class EscenaEnergia extends Phaser.Scene {
         // Actualizar partículas de corriente
         this.lineasCorriente.forEach((linea) => {
             linea.x += linea.speed * dtSegundos;
-            if (linea.x > 840) {
+            const limiteDerecho = this.obtenerLimiteCaidaX(linea.y);
+            if (linea.x > limiteDerecho) {
                 linea.x = -60;
                 linea.y = Phaser.Math.Between(this.limitesRio.yMin + 20, this.limitesRio.yMax - 20);
             }
@@ -1040,10 +1409,13 @@ class EscenaEnergia extends Phaser.Scene {
             const b = basuras[i];
             if (!b.active || b.estado === 'recogida' || b.estado === 'atascada') continue;
 
+            const limiteLlegadaX = this.obtenerLimiteLlegadaX(b.y);
+            const limiteCaidaX = this.obtenerLimiteCaidaX(b.y);
+
             // Movimiento hacia la derecha arrastrado por la corriente
-            // Al acercarse al vertedero, la corriente lo atrae más rápido
+            // Al acercarse a la zona de llegada, la corriente lo atrae más rápido
             let velocidadActual = b.velocidadX;
-            if (b.x >= this.limitesRio.llegadaXMin) {
+            if (b.x >= limiteLlegadaX) {
                 velocidadActual *= 1.4;
             }
             b.x += velocidadActual * dtSegundos;
@@ -1052,15 +1424,15 @@ class EscenaEnergia extends Phaser.Scene {
             const wobble = Math.sin((time / 1000) * b.wobbleSpeed + b.wobblePhase) * b.wobbleAmp;
             b.y = Phaser.Math.Clamp(b.baseY + wobble, this.limitesRio.yMin - 5, this.limitesRio.yMax + 5);
 
-            // Transición a Zona de Llegada (No clickeable)
-            if (b.x >= this.limitesRio.llegadaXMin && b.estado === 'en_juego') {
+            // Transición a Zona de Llegada (No clickeable) según límite diagonal
+            if (b.x >= limiteLlegadaX && b.estado === 'en_juego') {
                 b.estado = 'en_llegada';
                 // Tinte rojizo de peligro
                 b.setTint(0xff7675);
             }
 
-            // Si alcanza el vertedero de la presa -> Atasque en turbina
-            if (b.x >= this.limitesRio.caidaX) {
+            // Si alcanza la pared diagonal de la presa -> Atasque en turbina
+            if (b.x >= limiteCaidaX) {
                 this.basuraAtascadaEnPresa(b);
             }
         }
@@ -1192,26 +1564,16 @@ class EscenaEnergia extends Phaser.Scene {
 
         banner.add([fondo, t1, t2, t3]);
 
-        // Cerrar banner al hacer click
+        // INICIAR EL JUEGO
+        // Cerrar banner y comenzar el juego al hacer click
         this.input.once('pointerdown', () => {
+            this.juegoPausado = false;
             this.tweens.add({
                 targets: banner,
                 alpha: 0,
                 duration: 250,
                 onComplete: () => banner.destroy()
             });
-        });
-
-        // O auto-cerrar a los 4 segundos
-        this.time.delayedCall(4500, () => {
-            if (banner && banner.active) {
-                this.tweens.add({
-                    targets: banner,
-                    alpha: 0,
-                    duration: 300,
-                    onComplete: () => banner.destroy()
-                });
-            }
         });
     }
 
@@ -1352,6 +1714,36 @@ class EscenaEnergia extends Phaser.Scene {
             gain.connect(ctx.destination);
             osc.start(now);
             osc.stop(now + 0.6);
+        } else if (tipo === 'victoria_final') {
+            // Fanfarria épica de victoria: arpeggio ascendente + acorde final
+            const notas = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98];
+            notas.forEach((freq, idx) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                const noteTime = now + idx * 0.10;
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, noteTime);
+                gain.gain.setValueAtTime(0.22, noteTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, noteTime + 0.25);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(noteTime);
+                osc.stop(noteTime + 0.25);
+            });
+            // Acorde final sostenido
+            [523.25, 659.25, 783.99].forEach((freq) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                const startTime = now + 0.70;
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, startTime);
+                gain.gain.setValueAtTime(0.15, startTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, startTime + 1.2);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(startTime);
+                osc.stop(startTime + 1.2);
+            });
         }
     }
 }
