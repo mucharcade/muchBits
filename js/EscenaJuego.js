@@ -166,8 +166,14 @@ class EscenaJuego extends Phaser.Scene {
         }).setOrigin(0.5);
 
         let salaB = this.salas.create(1840, 450, 'textura_sala');
-        salaB.setData({ nombre: 'B', salida: { x: 1750, y: 450 } }); // SALA B, POR HACER
-        this.add.text(1815, 440, 'SALA B', { fill: '#ffffff', fontStyle: 'bold', fontFamily: 'Arial' });
+        salaB.setData({ nombre: 'ENERGÍA (Presa)', salida: { x: 1750, y: 450 } }); // SALA B: ENERGÍA
+        this.add.text(1840, 450, 'SALA B\nENERGÍA', {
+            fontSize: '13px',
+            fill: '#ffffff',
+            fontStyle: 'bold',
+            fontFamily: 'Arial',
+            align: 'center'
+        }).setOrigin(0.5);
 
         let salaC = this.salas.create(820, 600, 'textura_sala');
         salaC.setData({ nombre: 'C', salida: { x: 820, y: 510 } }); // SALA C, POR HACER
@@ -263,6 +269,18 @@ class EscenaJuego extends Phaser.Scene {
                     this.textoPortal.setVisible(false);
                     this.enPortal = false;
                     this.scene.start('EscenaBiodiversidad', {
+                        avatarKey: this.avatarKey
+                    });
+                } else if (Phaser.Input.Keyboard.JustDown(this.teclaESC) || escapeTactil || Phaser.Input.Keyboard.JustDown(this.teclaN)) {
+                    this.textoPortal.setVisible(false);
+                    this.enPortal = false;
+                    this.reiniciarJugador();
+                }
+            } else if (nombreSala.includes('ENERGÍA') || nombreSala === 'B') {
+                if (Phaser.Input.Keyboard.JustDown(this.teclaENTER) || enterTactil || Phaser.Input.Keyboard.JustDown(this.teclaS)) {
+                    this.textoPortal.setVisible(false);
+                    this.enPortal = false;
+                    this.scene.start('EscenaEnergia', {
                         avatarKey: this.avatarKey
                     });
                 } else if (Phaser.Input.Keyboard.JustDown(this.teclaESC) || escapeTactil || Phaser.Input.Keyboard.JustDown(this.teclaN)) {

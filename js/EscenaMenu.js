@@ -105,25 +105,41 @@ class EscenaMenu extends Phaser.Scene {
             avatarImage.on('pointerdown', () => this.seleccionarAvatar(avatarKey));
         });
 
-        let botonIniciar = this.add.text(500, 560, 'INICIAR JUEGO', {
-            fontSize: '32px',
+        let botonIniciar = this.add.text(500, 545, 'INICIAR JUEGO', {
+            fontSize: '30px',
             fill: '#ffffff',
             fontStyle: 'bold',
             fontFamily: 'Arial',
             backgroundColor: '#27ae60',
-            padding: { x: 20, y: 10 }
+            padding: { x: 20, y: 8 }
         }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
-        let textoCreditos = this.add.text(500, 700, 'Departamento SATA y Colaboradores: \nGabriel Reyes, Leonardo Ruiz, Fatima Bustamante', {
-            fontSize: '20px',
+        let botonSalaEnergia = this.add.text(500, 605, '⚡ JUGAR SALA ENERGÍA (PRESA)', {
+            fontSize: '17px',
+            fill: '#00f2fe',
+            fontStyle: 'bold',
+            fontFamily: 'Arial',
+            backgroundColor: '#0a3d62',
+            padding: { x: 16, y: 7 }
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+        botonSalaEnergia.on('pointerover', () => botonSalaEnergia.setStyle({ fill: '#ffffff', backgroundColor: '#0984e3' }));
+        botonSalaEnergia.on('pointerout', () => botonSalaEnergia.setStyle({ fill: '#00f2fe', backgroundColor: '#0a3d62' }));
+        botonSalaEnergia.on('pointerdown', () => {
+            localStorage.setItem('muchbits-avatar', this.avatarSeleccionado);
+            this.scene.start('EscenaEnergia', { avatarKey: this.avatarSeleccionado });
+        });
+
+        let textoCreditos = this.add.text(500, 740, 'Departamento SATA y Colaboradores: \nGabriel Reyes, Leonardo Ruiz, Fatima Bustamante', {
+            fontSize: '18px',
             fill: '#FFFFFF',
             fontFamily: 'Arial',
             backgroundColor: '#2c3e50',
-            padding: { x: 20, y: 10 }
+            padding: { x: 15, y: 8 }
         }).setOrigin(0.5).setDepth(3).setVisible(false);
 
-        let botonCreditos = this.add.text(500, 630, 'VER CRÉDITOS', {
-            fontSize: '24px',
+        let botonCreditos = this.add.text(500, 655, 'VER CRÉDITOS', {
+            fontSize: '18px',
             fill: '#3498db',
             fontStyle: 'bold',
             fontFamily: 'Arial'
