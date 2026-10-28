@@ -60,10 +60,10 @@ class EscenaEnergia extends Phaser.Scene {
         this.load.image('arbol_2_sala_b', 'pictures/sala_energia/Arbol_2_sala_B.png');
         this.load.image('arbol_3_sala_b', 'pictures/sala_energia/Arbol_3_sala_B.png');
 
-        // Spritesheet de Turbina Eólica (se intentará cargar pictures/sala_energia/turbina.png)
-        this.load.spritesheet('turbina_eolica', 'pictures/sala_energia/turbina.png', {
-            frameWidth: 64,
-            frameHeight: 128
+        // Spritesheet de Turbina Eólica
+        this.load.spritesheet('turbina_eolica', 'pictures/sala_energia/Turbina_ SpriteSheet.png', {
+            frameWidth: 384,
+            frameHeight: 384
         });
     }
 
@@ -487,11 +487,10 @@ class EscenaEnergia extends Phaser.Scene {
                 posicionesTurbinas.splice(indexTurbina, 1);
                 turbinasRestantes--;
 
-                const anchoT = Phaser.Math.Between(38, 50);
-                const altoT = Phaser.Math.Between(78, 102);
+                const tamanoT = Phaser.Math.Between(85, 105);
                 const turbina = this.add.sprite(x, y + 4, 'turbina_eolica')
-                    .setDisplaySize(anchoT, altoT)
-                    .setOrigin(0.5, 1)
+                    .setDisplaySize(tamanoT, tamanoT)
+                    .setOrigin(0.5, 0.87)
                     .setAlpha(alpha)
                     .setDepth(1 + y * 0.001);
 
@@ -544,11 +543,10 @@ class EscenaEnergia extends Phaser.Scene {
                 posicionesTurbinas.splice(indexTurbina, 1);
                 turbinasRestantes--;
 
-                const anchoT = Phaser.Math.Between(46, 58);
-                const altoT = Phaser.Math.Between(92, 118);
+                const tamanoT = Phaser.Math.Between(110, 130);
                 const turbina = this.add.sprite(x, y + 6, 'turbina_eolica')
-                    .setDisplaySize(anchoT, altoT)
-                    .setOrigin(0.5, 1)
+                    .setDisplaySize(tamanoT, tamanoT)
+                    .setOrigin(0.5, 0.87)
                     .setAlpha(alpha)
                     .setDepth(1 + y * 0.001);
 
