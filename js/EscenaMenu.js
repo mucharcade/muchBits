@@ -5,7 +5,7 @@ class EscenaMenu extends Phaser.Scene {
 
     preload() {
         this.load.image('arbusto', 'pictures/arbusto.png');
-        this.load.image('letrero_much', 'pictures/Letrero_MUICH.png');
+        this.load.image('letrero_much', 'pictures/Letrero_MUCH.png');
         this.load.spritesheet('dinobit-menu', 'pictures/dinosaur-run.png', {
             frameWidth: 396,
             frameHeight: 396
@@ -215,44 +215,46 @@ class EscenaMenu extends Phaser.Scene {
     // ==========================================
     crearLetreroSobreAvatares() {
         // Creamos un contenedor para animar de forma sincronizada el letrero y sus efectos suspendidos
-        this.contenedorLetrero = this.add.container(475, 235).setDepth(6);
+        // Centrado respecto al arco de avatares (507, 235) para equilibrar los postes a los laterales
+        this.contenedorLetrero = this.add.container(507, 235).setDepth(6);
 
         // Cadenas o tensores de suspensión desde el techo que sostienen el letrero sobre los personajes
         const tensores = this.add.graphics();
         tensores.lineStyle(3, 0x4b6584, 0.7);
-        tensores.strokeLineShape(new Phaser.Geom.Line(290, 0, 290, 85));
-        tensores.strokeLineShape(new Phaser.Geom.Line(660, 0, 660, 85));
+        tensores.strokeLineShape(new Phaser.Geom.Line(280, 0, 280, 80));
+        tensores.strokeLineShape(new Phaser.Geom.Line(720, 0, 720, 80));
         tensores.lineStyle(2, 0xd1d8e0, 0.9);
-        for (let y = 10; y < 80; y += 14) {
-            tensores.strokeCircle(290, y, 3);
-            tensores.strokeCircle(660, y, 3);
+        for (let y = 10; y < 75; y += 14) {
+            tensores.strokeCircle(280, y, 3);
+            tensores.strokeCircle(720, y, 3);
         }
         tensores.setDepth(3);
 
-        // Sombra proyectada del letrero sobre el fondo y los avatares
+        // Sombra proyectada del letrero sobre el fondo y los avatares (alineada con la textura 1024x512)
         this.sombraLetrero = this.add.graphics();
         this.sombraLetrero.fillStyle(0x000000, 0.35);
-        this.sombraLetrero.fillRoundedRect(-380, -90, 820, 105, 20); // Sombra de la viga MUCH
-        this.sombraLetrero.fillEllipse(-230, 180, 80, 22);          // Sombra poste izquierdo
-        this.sombraLetrero.fillEllipse(315, 180, 75, 22);           // Sombra poste derecho
+        this.sombraLetrero.fillRoundedRect(-335, -155, 680, 115, 18); // Sombra de la viga MUCH
+        this.sombraLetrero.fillEllipse(-268, 175, 80, 22);            // Sombra poste izquierdo
+        this.sombraLetrero.fillEllipse(255, 175, 75, 22);             // Sombra poste derecho (columna grabada)
         this.contenedorLetrero.add(this.sombraLetrero);
 
-        // Resplandor neón suave detrás del letrero para resaltar las letras MUCH
+        // Resplandor neón suave detrás del letrero para resaltar las letras MUCH centradas
         this.brilloLetrero = this.add.graphics();
         this.brilloLetrero.fillStyle(0xff3838, 0.12);
-        this.brilloLetrero.fillRoundedRect(-320, -100, 680, 90, 18);
+        this.brilloLetrero.fillRoundedRect(-185, -145, 325, 75, 16);
         this.brilloLetrero.fillStyle(0x00f2fe, 0.15);
-        this.brilloLetrero.fillCircle(-10, -55, 95);
+        this.brilloLetrero.fillCircle(-18, -108, 80);
         this.contenedorLetrero.add(this.brilloLetrero);
 
-        // Imagen del letrero con proporciones exactas (1774 x 887 -> 800 x 400)
-        // La viga superior con "MUCH" queda encima de los personajes y los postes enmarcan los laterales
+        // Imagen del letrero con proporciones exactas para la nueva textura (1024 x 512 -> 910 x 416)
+        // La viga superior con "MUCH" queda encima de los personajes y los postes enmarcan los laterales simétricamente
         this.spriteLetrero = this.add.image(0, 0, 'letrero_much')
-            .setDisplaySize(800, 400);
+            .setDisplaySize(910, 416);
         this.contenedorLetrero.add(this.spriteLetrero);
 
         // Placa arcade suplementaria que complementa el letrero con el nombre "MuchBits"
-        const placaBits = this.add.container(260, -90);
+        // Ubicada en la viga entre la letra H y el poste derecho tallado
+        const placaBits = this.add.container(180, -108);
         const fondoPlaca = this.add.graphics();
         fondoPlaca.fillStyle(0x130f40, 0.95);
         fondoPlaca.fillRoundedRect(-45, -14, 90, 28, 8);
