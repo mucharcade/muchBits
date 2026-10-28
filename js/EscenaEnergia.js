@@ -25,12 +25,32 @@ class EscenaEnergia extends Phaser.Scene {
         this.load.image('fondo_presa', 'pictures/sala_energia/fondo_presa.png');
 
         // Cargar spritesheets animados de basura proporcionados en sala_energia/basura
-        this.load.spritesheet('basura_llanta', 'pictures/sala_energia/basura/llanta.png', {
-            frameWidth: 418,
-            frameHeight: 271
+        this.load.spritesheet('basura_barril', 'pictures/sala_energia/basura/Barril_ SpriteSheet.png', {
+            frameWidth: 256,
+            frameHeight: 256
         });
 
-        this.load.spritesheet('basura_tronco', 'pictures/sala_energia/basura/tronco.png', {
+        this.load.spritesheet('basura_bolsa_anim', 'pictures/sala_energia/basura/Bolsa_basura_ SpriteSheet.png', {
+            frameWidth: 256,
+            frameHeight: 256
+        });
+
+        this.load.spritesheet('basura_botella_anim', 'pictures/sala_energia/basura/Botella_SpriteSheet.png', {
+            frameWidth: 256,
+            frameHeight: 256
+        });
+
+        this.load.spritesheet('basura_lata_anim', 'pictures/sala_energia/basura/Lata_ SpriteSheet.png', {
+            frameWidth: 256,
+            frameHeight: 256
+        });
+
+        this.load.spritesheet('basura_llanta', 'pictures/sala_energia/basura/Llanta_ SpriteSheet.png', {
+            frameWidth: 256,
+            frameHeight: 256
+        });
+
+        this.load.spritesheet('basura_tronco', 'pictures/sala_energia/basura/Tronco_SpriteSheet.png', {
             frameWidth: 256,
             frameHeight: 131
         });
@@ -341,7 +361,43 @@ class EscenaEnergia extends Phaser.Scene {
      * ANIMACIONES DE SPRITESHEETS
      * ========================================================================= */
     crearAnimaciones() {
-        if (!this.anims.exists('anim_llanta_flotando')) {
+        if (!this.anims.exists('anim_barril_flotando') && this.textures.exists('basura_barril')) {
+            this.anims.create({
+                key: 'anim_barril_flotando',
+                frames: this.anims.generateFrameNumbers('basura_barril', { start: 0, end: 3 }),
+                frameRate: 4,
+                repeat: -1
+            });
+        }
+
+        if (!this.anims.exists('anim_bolsa_flotando') && this.textures.exists('basura_bolsa_anim')) {
+            this.anims.create({
+                key: 'anim_bolsa_flotando',
+                frames: this.anims.generateFrameNumbers('basura_bolsa_anim', { start: 0, end: 3 }),
+                frameRate: 4,
+                repeat: -1
+            });
+        }
+
+        if (!this.anims.exists('anim_botella_flotando') && this.textures.exists('basura_botella_anim')) {
+            this.anims.create({
+                key: 'anim_botella_flotando',
+                frames: this.anims.generateFrameNumbers('basura_botella_anim', { start: 0, end: 3 }),
+                frameRate: 4,
+                repeat: -1
+            });
+        }
+
+        if (!this.anims.exists('anim_lata_flotando') && this.textures.exists('basura_lata_anim')) {
+            this.anims.create({
+                key: 'anim_lata_flotando',
+                frames: this.anims.generateFrameNumbers('basura_lata_anim', { start: 0, end: 3 }),
+                frameRate: 4,
+                repeat: -1
+            });
+        }
+
+        if (!this.anims.exists('anim_llanta_flotando') && this.textures.exists('basura_llanta')) {
             this.anims.create({
                 key: 'anim_llanta_flotando',
                 frames: this.anims.generateFrameNumbers('basura_llanta', { start: 0, end: 3 }),
@@ -350,7 +406,7 @@ class EscenaEnergia extends Phaser.Scene {
             });
         }
 
-        if (!this.anims.exists('anim_tronco_flotando')) {
+        if (!this.anims.exists('anim_tronco_flotando') && this.textures.exists('basura_tronco')) {
             this.anims.create({
                 key: 'anim_tronco_flotando',
                 frames: this.anims.generateFrameNumbers('basura_tronco', { start: 0, end: 3 }),
@@ -985,10 +1041,17 @@ class EscenaEnergia extends Phaser.Scene {
         // LIMITE DE LA CANTIDAD DE BASURA EN PANTALLA.
         if (basurasActivas >= 6) return;
 
-        // Catálogo de basura disponible
+        // Catálogo de basura disponible (SpriteSheets animados de sala_energia/basura + Objetos de respaldo)
         const tiposBasura = [
-            { clave: 'basura_llanta', esSpriteSheet: true, anim: 'anim_llanta_flotando', escala: 0.22, valorEnergia: 7, puntos: 250, nombre: 'Neumático' },
+            // 1. Nuevos SpriteSheets animados de basura oficial
+            { clave: 'basura_barril', esSpriteSheet: true, anim: 'anim_barril_flotando', escala: 0.28, valorEnergia: 7, puntos: 250, nombre: 'Barril' },
+            { clave: 'basura_bolsa_anim', esSpriteSheet: true, anim: 'anim_bolsa_flotando', escala: 0.26, valorEnergia: 5, puntos: 150, nombre: 'Bolsa' },
+            { clave: 'basura_botella_anim', esSpriteSheet: true, anim: 'anim_botella_flotando', escala: 0.28, valorEnergia: 5, puntos: 130, nombre: 'Botella' },
+            { clave: 'basura_lata_anim', esSpriteSheet: true, anim: 'anim_lata_flotando', escala: 0.26, valorEnergia: 4, puntos: 110, nombre: 'Lata' },
+            { clave: 'basura_llanta', esSpriteSheet: true, anim: 'anim_llanta_flotando', escala: 0.28, valorEnergia: 7, puntos: 250, nombre: 'Neumático' },
             { clave: 'basura_tronco', esSpriteSheet: true, anim: 'anim_tronco_flotando', escala: 0.35, valorEnergia: 6, puntos: 200, nombre: 'Tronco' },
+
+            // 2. Objetos de respaldo / procedurales preservados
             { clave: 'basura_lata_roja', esSpriteSheet: false, escala: 1.3, valorEnergia: 4, puntos: 100, nombre: 'Lata' },
             { clave: 'basura_lata_amarilla', esSpriteSheet: false, escala: 1.3, valorEnergia: 4, puntos: 100, nombre: 'Lata' },
             { clave: 'basura_botella_azul', esSpriteSheet: false, escala: 1.3, valorEnergia: 5, puntos: 120, nombre: 'Botella' },
@@ -1006,9 +1069,11 @@ class EscenaEnergia extends Phaser.Scene {
         const posY = Phaser.Math.Between(this.limitesRio.yMin, this.limitesRio.yMax);
 
         let sprite;
-        if (item.esSpriteSheet) {
+        if (item.esSpriteSheet && this.anims.exists(item.anim)) {
             sprite = this.add.sprite(posX, posY, item.clave).setScale(item.escala);
             sprite.play(item.anim);
+        } else if (item.esSpriteSheet) {
+            sprite = this.add.sprite(posX, posY, item.clave, 0).setScale(item.escala);
         } else {
             sprite = this.add.image(posX, posY, item.clave).setScale(item.escala);
         }
