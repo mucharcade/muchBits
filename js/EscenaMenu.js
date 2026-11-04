@@ -530,26 +530,26 @@ class EscenaMenu extends Phaser.Scene {
     // ==========================================
     crearBotonesMenu() {
         // --- BOTÓN 1: INICIAR JUEGO (Arcade Principal) ---
-        const btnIniciar = this.add.container(500, 475).setDepth(7);
+        const btnIniciar = this.add.container(500, 464).setDepth(7);
         const bgIniciar = this.add.graphics();
-        this.dibujarBotonArcade(bgIniciar, 300, 52, 0x27ae60, 0x2ecc71, 0x1abc9c);
+        this.dibujarBotonArcade(bgIniciar, 300, 48, 0x27ae60, 0x2ecc71, 0x1abc9c);
 
         const txtIniciar = this.add.text(0, -5, '▶ INICIAR JUEGO', {
-            fontSize: '18px',
+            fontSize: '17px',
             fontFamily: '"Press Start 2P", monospace',
             fill: '#ffffff',
             stroke: '#1b4d3e',
             strokeThickness: 3
         }).setOrigin(0.5);
 
-        const subTxtIniciar = this.add.text(0, 14, '[ENTER / ESPACIO]', {
-            fontSize: '10px',
+        const subTxtIniciar = this.add.text(0, 13, '[ENTER / ESPACIO]', {
+            fontSize: '9px',
             fontFamily: '"Press Start 2P", monospace',
             fill: '#a3e4d7'
         }).setOrigin(0.5);
 
         btnIniciar.add([bgIniciar, txtIniciar, subTxtIniciar]);
-        btnIniciar.setSize(300, 52);
+        btnIniciar.setSize(300, 48);
         btnIniciar.setInteractive({ useHandCursor: true });
 
         // Pulso de respiración para llamar a la acción
@@ -575,12 +575,12 @@ class EscenaMenu extends Phaser.Scene {
         btnIniciar.on('pointerdown', () => this.iniciarJuego());
 
         // --- BOTÓN 2: SALA ENERGÍA (PRESA) ---
-        const btnEnergia = this.add.container(500, 542).setDepth(7);
+        const btnEnergia = this.add.container(500, 516).setDepth(7);
         const bgEnergia = this.add.graphics();
-        this.dibujarBotonArcade(bgEnergia, 360, 42, 0x0c2461, 0x1e3799, 0x00f2fe);
+        this.dibujarBotonArcade(bgEnergia, 360, 36, 0x0c2461, 0x1e3799, 0x00f2fe);
 
-        const txtEnergia = this.add.text(0, 0, '⚡ JUGAR SALA ENERGÍA', {
-            fontSize: '13px',
+        const txtEnergia = this.add.text(0, 0, '⚡ JUGAR SALA B: ENERGÍA', {
+            fontSize: '11px',
             fontFamily: '"Press Start 2P", monospace',
             fill: '#00f2fe',
             stroke: '#081c3c',
@@ -588,7 +588,7 @@ class EscenaMenu extends Phaser.Scene {
         }).setOrigin(0.5);
 
         btnEnergia.add([bgEnergia, txtEnergia]);
-        btnEnergia.setSize(360, 42);
+        btnEnergia.setSize(360, 36);
         btnEnergia.setInteractive({ useHandCursor: true });
 
         btnEnergia.on('pointerover', () => {
@@ -603,12 +603,44 @@ class EscenaMenu extends Phaser.Scene {
 
         btnEnergia.on('pointerdown', () => {
             localStorage.setItem('muchbits-avatar', this.avatarSeleccionado);
-            this.scene.start('EscenaEnergia', { avatarKey: this.avatarSeleccionado });
+            this.scene.start('EscenaEnergia', { avatarKey: this.avatarSeleccionado, origen: 'EscenaMenu' });
         });
 
-        // --- BOTÓN 3: VER CRÉDITOS ---
-        const btnCreditos = this.add.text(500, 604, '★ VER CRÉDITOS [ESC] ★', {
-            fontSize: '12px',
+        // --- BOTÓN 3: SALA C: DESARROLLO SUSTENTABLE ---
+        const btnSustentable = this.add.container(500, 564).setDepth(7);
+        const bgSustentable = this.add.graphics();
+        this.dibujarBotonArcade(bgSustentable, 360, 36, 0xd35400, 0xe67e22, 0xf1c40f);
+
+        const txtSustentable = this.add.text(0, 0, '☀️ JUGAR SALA C: SUSTENTABLE', {
+            fontSize: '11px',
+            fontFamily: '"Press Start 2P", monospace',
+            fill: '#ffffff',
+            stroke: '#6e2c00',
+            strokeThickness: 3
+        }).setOrigin(0.5);
+
+        btnSustentable.add([bgSustentable, txtSustentable]);
+        btnSustentable.setSize(360, 36);
+        btnSustentable.setInteractive({ useHandCursor: true });
+
+        btnSustentable.on('pointerover', () => {
+            btnSustentable.setScale(1.05);
+            txtSustentable.setStyle({ fill: '#f1c40f' });
+        });
+
+        btnSustentable.on('pointerout', () => {
+            btnSustentable.setScale(1);
+            txtSustentable.setStyle({ fill: '#ffffff' });
+        });
+
+        btnSustentable.on('pointerdown', () => {
+            localStorage.setItem('muchbits-avatar', this.avatarSeleccionado);
+            this.scene.start('EscenaSustentable', { avatarKey: this.avatarSeleccionado, origen: 'EscenaMenu' });
+        });
+
+        // --- BOTÓN 4: VER CRÉDITOS ---
+        const btnCreditos = this.add.text(500, 612, '★ VER CRÉDITOS [ESC] ★', {
+            fontSize: '11px',
             fontFamily: '"Press Start 2P", monospace',
             fill: '#74b9ff',
             stroke: '#0984e3',

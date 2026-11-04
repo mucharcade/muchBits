@@ -176,8 +176,14 @@ class EscenaJuego extends Phaser.Scene {
         }).setOrigin(0.5);
 
         let salaC = this.salas.create(820, 600, 'textura_sala');
-        salaC.setData({ nombre: 'C', salida: { x: 820, y: 510 } }); // SALA C, POR HACER
-        this.add.text(795, 590, 'SALA C', { fill: '#ffffff', fontStyle: 'bold', fontFamily: 'Arial' });
+        salaC.setData({ nombre: 'SUSTENTABILIDAD', salida: { x: 820, y: 510 } }); // SALA C: DESARROLLO SUSTENTABLE
+        this.add.text(820, 600, 'SALA C\nDESARROLLO\nSUSTENTABLE', {
+            fontSize: '11px',
+            fill: '#ffffff',
+            fontStyle: 'bold',
+            fontFamily: 'Arial',
+            align: 'center'
+        }).setOrigin(0.5);
 
         this.salas.children.iterate((sala) => { sala.body.setCircle(60); });
 
@@ -282,6 +288,19 @@ class EscenaJuego extends Phaser.Scene {
                     this.enPortal = false;
                     this.scene.start('EscenaEnergia', {
                         avatarKey: this.avatarKey
+                    });
+                } else if (Phaser.Input.Keyboard.JustDown(this.teclaESC) || escapeTactil || Phaser.Input.Keyboard.JustDown(this.teclaN)) {
+                    this.textoPortal.setVisible(false);
+                    this.enPortal = false;
+                    this.reiniciarJugador();
+                }
+            } else if (nombreSala.includes('SUSTENTAB') || nombreSala === 'C') {
+                if (Phaser.Input.Keyboard.JustDown(this.teclaENTER) || enterTactil || Phaser.Input.Keyboard.JustDown(this.teclaS)) {
+                    this.textoPortal.setVisible(false);
+                    this.enPortal = false;
+                    this.scene.start('EscenaSustentable', {
+                        avatarKey: this.avatarKey,
+                        origen: 'EscenaJuego'
                     });
                 } else if (Phaser.Input.Keyboard.JustDown(this.teclaESC) || escapeTactil || Phaser.Input.Keyboard.JustDown(this.teclaN)) {
                     this.textoPortal.setVisible(false);
