@@ -26,6 +26,11 @@ class EscenaSustentable extends Phaser.Scene {
         // Fondo oficial del Nivel 1 (Cañón del Sumidero / Paneles Solares)
         this.load.image('fondo_sustentable_n1', 'pictures/sala_desarrollo_sustentable/Paisaje_Panel_Canon.png');
 
+        // Texturas oficiales de plataformas flotantes (diseñadas por los artistas)
+        this.load.image('plat_estable', 'pictures/sala_desarrollo_sustentable/plataforma_estable.png');
+        this.load.image('plat_movimiento', 'pictures/sala_desarrollo_sustentable/plataforma_movimiento.png');
+        this.load.image('plat_fragil', 'pictures/sala_desarrollo_sustentable/plataforma_fragil.png');
+
         // Spritesheet del avatar seleccionado (4x4 frames de 64x64)
         this.load.spritesheet(`avatar-${this.avatarKey}`, `pictures/${this.avatarKey}.png`, {
             frameWidth: 64,
@@ -97,8 +102,35 @@ class EscenaSustentable extends Phaser.Scene {
      * TEXTURAS PROCEDURALES RETRO PIXEL-ART
      * ========================================================================= */
     generarTexturasSustentables() {
-        // --- 1. Plataforma de roca flotante con césped (120x65) ---
-        if (!this.textures.exists('plataforma_flotante_med')) {
+        // --- Generar texturas de resolución nativa de juego (escala 1:1) a partir de los assets oficiales ---
+        if (this.textures.exists('plat_estable') && !this.textures.exists('plat_estable_game')) {
+            const src = this.textures.get('plat_estable').getSourceImage();
+            const canvas = this.textures.createCanvas('plat_estable_game', 135, 52);
+            if (canvas && canvas.context) {
+                canvas.context.drawImage(src, 0, 0, 135, 52);
+                canvas.refresh();
+            }
+        }
+
+        if (this.textures.exists('plat_movimiento') && !this.textures.exists('plat_movimiento_game')) {
+            const src = this.textures.get('plat_movimiento').getSourceImage();
+            // Versión mediana para plataformas horizontales (135x52)
+            const canvasMed = this.textures.createCanvas('plat_movimiento_game', 135, 52);
+            if (canvasMed && canvasMed.context) {
+                canvasMed.context.drawImage(src, 0, 0, 135, 52);
+                canvasMed.refresh();
+            }
+
+            // Versión para plataformas verticales elevadizas (100x44)
+            const canvasSm = this.textures.createCanvas('plat_movimiento_sm_game', 100, 44);
+            if (canvasSm && canvasSm.context) {
+                canvasSm.context.drawImage(src, 0, 0, 100, 44);
+                canvasSm.refresh();
+            }
+        }
+
+        // --- 1. Plataforma de roca flotante con césped (120x65) — Respaldo si no hay textura oficial ---
+        if (!this.textures.exists('plat_estable') && !this.textures.exists('plataforma_flotante_med')) {
             const c = this.make.graphics({ x: 0, y: 0, add: false });
             // Sombra inferior suave
             c.fillStyle(0x1e1510, 0.5);
@@ -145,8 +177,8 @@ class EscenaSustentable extends Phaser.Scene {
             c.destroy();
         }
 
-        // --- 2. Plataforma de roca flotante pequeña (80x55) ---
-        if (!this.textures.exists('plataforma_flotante_sm')) {
+        // --- 2. Plataforma de roca flotante pequeña (80x55) — Respaldo si no hay textura oficial ---
+        if (!this.textures.exists('plat_movimiento') && !this.textures.exists('plataforma_flotante_sm')) {
             const c = this.make.graphics({ x: 0, y: 0, add: false });
             c.fillStyle(0x794628, 1);
             c.beginPath();
@@ -471,35 +503,35 @@ class EscenaSustentable extends Phaser.Scene {
         // -------------------------------------------------------------
         const acantiladoDer = this.add.graphics();
         acantiladoDer.fillStyle(0x5c331a, 1);
-        acantiladoDer.fillRoundedRect(790, 550, 220, 290, 14);
+        acantiladoDer.fillRoundedRect(815, 550, 180, 290, 14);
         acantiladoDer.fillStyle(0x794628, 1);
-        acantiladoDer.fillRect(800, 550, 210, 270);
+        acantiladoDer.fillRect(840, 550, 170, 270);
         // Césped en la cima del acantilado derecho
         acantiladoDer.fillStyle(0x2ecc71, 1);
-        acantiladoDer.fillRoundedRect(790, 542, 220, 18, 6);
+        acantiladoDer.fillRoundedRect(810, 542, 180, 18, 6);
         acantiladoDer.fillStyle(0x7bed9f, 1);
-        acantiladoDer.fillRoundedRect(795, 544, 215, 6, 2);
+        acantiladoDer.fillRoundedRect(835, 544, 175, 6, 2);
         acantiladoDer.setDepth(3);
 
-        // Colisionador físico del acantilado derecho (superficie plana sólida)
-        const colisionadorDer = this.add.rectangle(895, 560, 220, 36, 0x000000, 0);
+        // Colisionador físico del acantilado derecho (superficie plana sólida y segura)
+        const colisionadorDer = this.add.rectangle(915, 560, 170, 36, 0x000000, 0);
         this.physics.add.existing(colisionadorDer, true);
         this.plataformasEstaticas.add(colisionadorDer);
 
-        // Estación Receptora de Energía Solar (situada en la parte derecha de la base)
-        this.estacionSolar = this.add.image(925, 492, 'estacion_solar')
+        // Estación Receptora de Energía Solar (ubicada hacia la derecha para dejar espacio libre de parada)
+        this.estacionSolar = this.add.image(935, 492, 'estacion_solar')
             .setDisplaySize(140, 110)
             .setDepth(5);
 
         // Punto exacto de enchufe de la máquina solar (meta del cable)
-        this.posicionEnchufeMeta = { x: 875, y: 518 };
+        this.posicionEnchufeMeta = { x: 885, y: 518 };
 
         // Zona interactiva del receptor para conectar el cable al llegar
-        this.zonaConexionTerminal = this.add.zone(870, 515, 50, 70);
+        this.zonaConexionTerminal = this.add.zone(875, 515, 45, 70);
         this.physics.add.existing(this.zonaConexionTerminal, true);
 
         // Flecha animada / pulso en la terminal de destino
-        this.marcadorMeta = this.add.text(875, 435, '⚡ CONECTA AQUÍ', {
+        this.marcadorMeta = this.add.text(885, 435, '⚡ CONECTA AQUÍ', {
             fontSize: '11px',
             fontFamily: '"Press Start 2P", monospace',
             fill: '#f1c40f',
@@ -522,47 +554,69 @@ class EscenaSustentable extends Phaser.Scene {
         this.listaPlataformasMoviles = [];
 
         // Plataforma 1 (ESTÁTICA): Escalonada baja cerca del acantilado izquierdo
-        this.crearPlataformaEstatica(235, 600, 'plataforma_flotante_med');
+        this.crearPlataformaEstatica(235, 600, 'plat_estable');
 
         // Plataforma 2 (MÓVIL HORIZONTAL): Patrulla suave de izquierda a derecha
-        this.crearPlataformaMovilHorizontal(370, 515, 'plataforma_flotante_med', 300, 440, 75);
+        this.crearPlataformaMovilHorizontal(370, 515, 'plat_movimiento', 300, 440, 75);
 
         // Plataforma 3 (ELEVADIZA VERTICAL): Sube y baja entre niveles
-        this.crearPlataformaElevadizaVertical(510, 450, 'plataforma_flotante_sm', 360, 530, 65);
+        this.crearPlataformaElevadizaVertical(510, 450, 'plat_movimiento', 360, 530, 65);
 
         // Plataforma 4 (ESTÁTICA ELEVADA): Punto de apoyo alto en medio del cañón
-        this.crearPlataformaEstatica(635, 420, 'plataforma_flotante_med');
+        this.crearPlataformaEstatica(635, 420, 'plat_estable');
 
         // Plataforma 5 (ELEVADIZA VERTICAL): Escalonamiento intermedio
-        this.crearPlataformaElevadizaVertical(645, 580, 'plataforma_flotante_sm', 520, 640, 55);
+        this.crearPlataformaElevadizaVertical(645, 580, 'plat_movimiento', 520, 640, 55);
 
-        // Plataforma 6 (MÓVIL HORIZONTAL): Enlace final hacia el acantilado solar
-        this.crearPlataformaMovilHorizontal(740, 490, 'plataforma_flotante_sm', 690, 775, 75);
+        // Plataforma 6 (MÓVIL HORIZONTAL): Enlace final hacia el acantilado solar (patrulla hasta 765 px)
+        this.crearPlataformaMovilHorizontal(735, 490, 'plat_movimiento', 685, 765, 75);
     }
 
     crearPlataformaEstatica(x, y, textura) {
-        const plat = this.plataformasEstaticas.create(x, y, textura);
+        // Usar versión de resolución de juego nativa si existe, o el asset original, o el respaldo
+        const keyUsada = this.textures.exists('plat_estable_game') ? 'plat_estable_game' : (this.textures.exists('plat_estable') ? 'plat_estable' : textura);
+        const plat = this.plataformasEstaticas.create(x, y, keyUsada);
         plat.setDepth(4);
+
+        // Ancho ampliado (135x52) para que no se vea aplastada y brinde excelente área de salto
+        plat.setDisplaySize(135, 52);
         plat.refreshBody();
-        // Ajustar caja de colisión para que el jugador se apoye en la superficie de césped
-        plat.body.setSize(plat.width * 0.9, 14);
-        plat.body.setOffset(plat.width * 0.05, 6);
+
+        // Hitbox plano sólido sobre la parte superior del césped
+        plat.body.setSize(124, 20);
+        plat.body.setOffset(5, 4);
         plat.body.checkCollision.down = false;
         plat.body.checkCollision.left = false;
         plat.body.checkCollision.right = false;
+        plat.body.checkCollision.up = true;
         return plat;
     }
 
     crearPlataformaMovilHorizontal(x, y, textura, minX, maxX, velocidad) {
-        const plat = this.plataformasMoviles.create(x, y, textura);
+        const keyUsada = this.textures.exists('plat_movimiento_game') ? 'plat_movimiento_game' : (this.textures.exists('plat_movimiento') ? 'plat_movimiento' : textura);
+        const plat = this.plataformasMoviles.create(x, y, keyUsada);
         plat.setDepth(4);
         plat.setImmovable(true);
         plat.body.allowGravity = false;
-        plat.body.setSize(plat.width * 0.9, 14);
-        plat.body.setOffset(plat.width * 0.05, 6);
+
+        // Ancho ampliado (135x52)
+        plat.setDisplaySize(135, 52);
+
+        // Piso sólido garantizado: Si usa plat_movimiento_game, scaleX y scaleY son 1 (sin distorsión)
+        if (plat.scaleX === 1) {
+            plat.body.setSize(124, 20);
+            plat.body.setOffset(5, 4);
+        } else {
+            // Factor de escala de respaldo para que en cualquier caso el hitbox mida 124x20 px reales
+            plat.body.setSize(124 / plat.scaleX, 20 / plat.scaleY);
+            plat.body.setOffset(5 / plat.scaleX, 4 / plat.scaleY);
+        }
+
+        // Colisión superior sólida para que el jugador nunca caiga al vacío
         plat.body.checkCollision.down = false;
         plat.body.checkCollision.left = false;
         plat.body.checkCollision.right = false;
+        plat.body.checkCollision.up = true;
 
         plat.minX = minX;
         plat.maxX = maxX;
@@ -575,15 +629,27 @@ class EscenaSustentable extends Phaser.Scene {
     }
 
     crearPlataformaElevadizaVertical(x, y, textura, minY, maxY, velocidad) {
-        const plat = this.plataformasMoviles.create(x, y, textura);
+        const keyUsada = this.textures.exists('plat_movimiento_sm_game') ? 'plat_movimiento_sm_game' : (this.textures.exists('plat_movimiento') ? 'plat_movimiento' : textura);
+        const plat = this.plataformasMoviles.create(x, y, keyUsada);
         plat.setDepth(4);
         plat.setImmovable(true);
         plat.body.allowGravity = false;
-        plat.body.setSize(plat.width * 0.9, 14);
-        plat.body.setOffset(plat.width * 0.05, 6);
+
+        // Plataforma elevadiza vertical ampliada a 100x44 px
+        plat.setDisplaySize(100, 44);
+
+        if (plat.scaleX === 1) {
+            plat.body.setSize(92, 18);
+            plat.body.setOffset(4, 3);
+        } else {
+            plat.body.setSize(92 / plat.scaleX, 18 / plat.scaleY);
+            plat.body.setOffset(4 / plat.scaleX, 3 / plat.scaleY);
+        }
+
         plat.body.checkCollision.down = false;
         plat.body.checkCollision.left = false;
         plat.body.checkCollision.right = false;
+        plat.body.checkCollision.up = true;
 
         plat.minY = minY;
         plat.maxY = maxY;
@@ -988,6 +1054,9 @@ class EscenaSustentable extends Phaser.Scene {
             window.mobileControls?.consume('up');
 
         const enSuelo = this.jugador.body.blocked.down || this.jugador.body.touching.down;
+        if (!enSuelo) {
+            this.jugadorEnPlataforma = null;
+        }
 
         // Movimiento Horizontal
         if (moverIzq) {
@@ -1193,8 +1262,8 @@ class EscenaSustentable extends Phaser.Scene {
             this.jugador.body.enable = false;
         }
 
-        // Posicionar firmemente al jugador de pie sobre el césped del acantilado derecho frente a la estación solar
-        this.jugador.setPosition(840, 516);
+        // Posicionar firmemente al jugador de pie sobre el césped del acantilado derecho frente a la estación solar (a 25px seguros del borde)
+        this.jugador.setPosition(855, 516);
         this.jugador.setFlipX(false);
         this.mirandoDerecha = true;
         this.jugador.play(`avatar-${this.avatarKey}-quieto`);
