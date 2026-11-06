@@ -46,7 +46,7 @@ class EscenaSustentable extends Phaser.Scene {
         this.vidas = 3;
         this.maxVidas = 3;
         this.puntuacion = 0;
-        this.tiempoRestante = 45; // 45 segundos para el Nivel 1
+        this.tiempoRestante = 55; // 55 segundos para el Nivel 1 extendido
         this.juegoTerminado = false;
         this.juegoPausado = false;
         this.nivelCompletado = false;
@@ -56,7 +56,12 @@ class EscenaSustentable extends Phaser.Scene {
 
         // Longitud del cable en pies
         this.longitudCableFT = 0;
-        this.maxLongitudCableFT = 120; // Límite amplio para el Nivel 1
+        this.maxLongitudCableFT = 140; // Límite amplio para el Nivel 1 extendido
+
+        // Dimensiones extendidas del mundo (proporcional al fondo original 1698x926)
+        this.anchoMundo = 1500;
+        this.altoMundo = 800;
+        this.physics.world.setBounds(0, 0, this.anchoMundo, this.altoMundo);
 
         // 2. Generar texturas procedurales auxiliares (Plataformas, Generador, Estación Solar, Espectros, HUD)
         this.generarTexturasSustentables();
@@ -72,6 +77,11 @@ class EscenaSustentable extends Phaser.Scene {
 
         // 6. Crear jugador con arnés/mochila de cable
         this.crearJugador();
+
+        // Configuración de la cámara y seguimiento suave al jugador
+        this.cameras.main.setBounds(0, 0, this.anchoMundo, this.altoMundo);
+        this.cameras.main.startFollow(this.jugador, true, 0.08, 0.08);
+        this.cameras.main.setDeadzone(100, 120);
 
         // 7. Colisiones y físicas
         this.configurarColisiones();
@@ -420,20 +430,20 @@ class EscenaSustentable extends Phaser.Scene {
      * FONDO DEL ESCENARIO
      * ========================================================================= */
     crearFondo() {
-        // Imagen oficial del Cañón con Paneles Solares
-        this.fondo = this.add.image(500, 400, 'fondo_sustentable_n1')
-            .setDisplaySize(1000, 800)
+        // Imagen oficial del Cañón con Paneles Solares extendida en proporción natural (1500x800)
+        this.fondo = this.add.image(this.anchoMundo / 2, this.altoMundo / 2, 'fondo_sustentable_n1')
+            .setDisplaySize(this.anchoMundo, this.altoMundo)
             .setDepth(0);
 
         // Capa ambiental sutil de puesta de sol cálida
         const filtroAtardecer = this.add.graphics().setDepth(1);
         filtroAtardecer.fillStyle(0xff7675, 0.08);
-        filtroAtardecer.fillRect(0, 0, 1000, 800);
+        filtroAtardecer.fillRect(0, 0, this.anchoMundo, this.altoMundo);
 
         // Nubes decorativas lejanas que se desplazan suavemente en el horizonte
         this.nubesLejanas = [];
-        for (let i = 0; i < 4; i++) {
-            const x = Phaser.Math.Between(50, 950);
+        for (let i = 0; i < 6; i++) {
+            const x = Phaser.Math.Between(50, this.anchoMundo - 50);
             const y = Phaser.Math.Between(70, 220);
             const nube = this.add.graphics().setDepth(1).setAlpha(0.5);
             nube.fillStyle(0xffffff, 0.7);
@@ -503,35 +513,35 @@ class EscenaSustentable extends Phaser.Scene {
         // -------------------------------------------------------------
         const acantiladoDer = this.add.graphics();
         acantiladoDer.fillStyle(0x5c331a, 1);
-        acantiladoDer.fillRoundedRect(815, 550, 180, 290, 14);
+        acantiladoDer.fillRoundedRect(1330, 550, 180, 290, 14);
         acantiladoDer.fillStyle(0x794628, 1);
-        acantiladoDer.fillRect(840, 550, 170, 270);
+        acantiladoDer.fillRect(1340, 550, 170, 270);
         // Césped en la cima del acantilado derecho
         acantiladoDer.fillStyle(0x2ecc71, 1);
-        acantiladoDer.fillRoundedRect(810, 542, 180, 18, 6);
+        acantiladoDer.fillRoundedRect(1330, 542, 180, 18, 6);
         acantiladoDer.fillStyle(0x7bed9f, 1);
-        acantiladoDer.fillRoundedRect(835, 544, 175, 6, 2);
+        acantiladoDer.fillRoundedRect(1335, 544, 175, 6, 2);
         acantiladoDer.setDepth(3);
 
         // Colisionador físico del acantilado derecho (superficie plana sólida y segura)
-        const colisionadorDer = this.add.rectangle(915, 560, 170, 36, 0x000000, 0);
+        const colisionadorDer = this.add.rectangle(1415, 560, 170, 36, 0x000000, 0);
         this.physics.add.existing(colisionadorDer, true);
         this.plataformasEstaticas.add(colisionadorDer);
 
         // Estación Receptora de Energía Solar (ubicada hacia la derecha para dejar espacio libre de parada)
-        this.estacionSolar = this.add.image(935, 492, 'estacion_solar')
+        this.estacionSolar = this.add.image(1435, 492, 'estacion_solar')
             .setDisplaySize(140, 110)
             .setDepth(5);
 
         // Punto exacto de enchufe de la máquina solar (meta del cable)
-        this.posicionEnchufeMeta = { x: 885, y: 518 };
+        this.posicionEnchufeMeta = { x: 1385, y: 518 };
 
         // Zona interactiva del receptor para conectar el cable al llegar
-        this.zonaConexionTerminal = this.add.zone(875, 515, 45, 70);
+        this.zonaConexionTerminal = this.add.zone(1375, 515, 45, 70);
         this.physics.add.existing(this.zonaConexionTerminal, true);
 
         // Flecha animada / pulso en la terminal de destino
-        this.marcadorMeta = this.add.text(885, 435, '⚡ CONECTA AQUÍ', {
+        this.marcadorMeta = this.add.text(1385, 435, '⚡ CONECTA AQUÍ', {
             fontSize: '11px',
             fontFamily: '"Press Start 2P", monospace',
             fill: '#f1c40f',
@@ -554,22 +564,25 @@ class EscenaSustentable extends Phaser.Scene {
         this.listaPlataformasMoviles = [];
 
         // Plataforma 1 (ESTÁTICA): Escalonada baja cerca del acantilado izquierdo
-        this.crearPlataformaEstatica(235, 600, 'plat_estable');
+        this.crearPlataformaEstatica(260, 590, 'plat_estable');
 
         // Plataforma 2 (MÓVIL HORIZONTAL): Patrulla suave de izquierda a derecha
-        this.crearPlataformaMovilHorizontal(370, 515, 'plat_movimiento', 300, 440, 75);
+        this.crearPlataformaMovilHorizontal(430, 515, 'plat_movimiento', 360, 500, 75);
 
         // Plataforma 3 (ELEVADIZA VERTICAL): Sube y baja entre niveles
-        this.crearPlataformaElevadizaVertical(510, 450, 'plat_movimiento', 360, 530, 65);
+        this.crearPlataformaElevadizaVertical(600, 460, 'plat_movimiento', 370, 540, 65);
 
         // Plataforma 4 (ESTÁTICA ELEVADA): Punto de apoyo alto en medio del cañón
-        this.crearPlataformaEstatica(635, 420, 'plat_estable');
+        this.crearPlataformaEstatica(780, 420, 'plat_estable');
 
-        // Plataforma 5 (ELEVADIZA VERTICAL): Escalonamiento intermedio
-        this.crearPlataformaElevadizaVertical(645, 580, 'plat_movimiento', 520, 640, 55);
+        // Plataforma 5 (MÓVIL HORIZONTAL): Patrulla horizontal en el segundo tramo
+        this.crearPlataformaMovilHorizontal(960, 510, 'plat_movimiento', 890, 1030, 75);
 
-        // Plataforma 6 (MÓVIL HORIZONTAL): Enlace final hacia el acantilado solar (patrulla hasta 765 px)
-        this.crearPlataformaMovilHorizontal(735, 490, 'plat_movimiento', 685, 765, 75);
+        // Plataforma 6 (ELEVADIZA VERTICAL): Segunda plataforma elevadiza que sube y baja
+        this.crearPlataformaElevadizaVertical(1120, 470, 'plat_movimiento', 380, 550, 65);
+
+        // Plataforma 7 (MÓVIL HORIZONTAL): Enlace final hacia el acantilado solar (patrulla hasta 1265 px)
+        this.crearPlataformaMovilHorizontal(1245, 490, 'plat_movimiento', 1180, 1265, 75);
     }
 
     crearPlataformaEstatica(x, y, textura) {
@@ -720,10 +733,13 @@ class EscenaSustentable extends Phaser.Scene {
         });
 
         // Espectro 1: Patrullando sobre el primer abismo (entre plataforma 1 y 2)
-        this.crearEspectro(290, 420, 260, 340, 45, 12);
+        this.crearEspectro(350, 430, 310, 410, 45, 12);
 
-        // Espectro 2: Patrullando en la zona media alta (entre plataforma 3 y 4)
-        this.crearEspectro(570, 360, 520, 620, 55, 16);
+        // Espectro 2: Patrullando en la zona media (entre plataforma 3 y 4)
+        this.crearEspectro(690, 370, 630, 750, 55, 16);
+
+        // Espectro 3: Patrullando en la zona final (entre plataforma 5 y 6)
+        this.crearEspectro(1040, 430, 980, 1100, 50, 14);
 
         // Colisión / impacto con el jugador
         this.physics.add.overlap(this.jugador, this.grupoEspectros, (jugador, espectro) => {
@@ -770,12 +786,14 @@ class EscenaSustentable extends Phaser.Scene {
             immovable: true
         });
 
-        // Orbes colocados en rutas aéreas sobre las plataformas
+        // Orbes colocados en rutas aéreas sobre las plataformas a lo largo del cañón extendido
         const posicionesOrbes = [
-            { x: 300, y: 550 },
-            { x: 440, y: 460 },
-            { x: 575, y: 390 },
-            { x: 700, y: 440 }
+            { x: 340, y: 550 },
+            { x: 515, y: 440 },
+            { x: 780, y: 350 },
+            { x: 960, y: 440 },
+            { x: 1120, y: 390 },
+            { x: 1245, y: 420 }
         ];
 
         posicionesOrbes.forEach((pos) => {
@@ -829,7 +847,7 @@ class EscenaSustentable extends Phaser.Scene {
      * HUD RETRO ARCADE (Monitor CRT, Cable FT, Distancia %, Vidas, Tiempo)
      * ========================================================================= */
     crearHUDArcade() {
-        this.hudContainer = this.add.container(0, 0).setDepth(20);
+        this.hudContainer = this.add.container(0, 0).setDepth(20).setScrollFactor(0);
 
         // Barra superior negra con borde dorado brillante (idéntica al boceto)
         const barraSuperior = this.add.graphics();
@@ -874,7 +892,7 @@ class EscenaSustentable extends Phaser.Scene {
         // -------------------------------------------------------------
         // Barra Inferior Derecha: DISTANCE: XX% con Mini-Corredor
         // -------------------------------------------------------------
-        this.contenedorProgreso = this.add.container(770, 720).setDepth(20);
+        this.contenedorProgreso = this.add.container(770, 720).setDepth(20).setScrollFactor(0);
 
         this.textoDistancia = this.add.text(0, -22, 'DISTANCE: 0%', {
             fontSize: '14px',
@@ -975,7 +993,7 @@ class EscenaSustentable extends Phaser.Scene {
         const dist = Math.sqrt(dx * dx + dy * dy);
 
         // Convertir la distancia en píxeles a unidades FT para el HUD retro
-        this.longitudCableFT = (dist / 800) * 85;
+        this.longitudCableFT = (dist / 1280) * 115;
 
         // Curvatura del cable: cuelga más cuando está cerca, se tensa cuando el jugador salta o se aleja
         const mitadX = (origX + destX) / 2;
@@ -1167,7 +1185,7 @@ class EscenaSustentable extends Phaser.Scene {
         this.nubesLejanas.forEach((nube) => {
             nube.x -= nube.velocidad;
             if (nube.x < -60) {
-                nube.x = 1060;
+                nube.x = this.anchoMundo + 60;
                 nube.y = Phaser.Math.Between(70, 220);
             }
         });
@@ -1263,7 +1281,7 @@ class EscenaSustentable extends Phaser.Scene {
         }
 
         // Posicionar firmemente al jugador de pie sobre el césped del acantilado derecho frente a la estación solar (a 25px seguros del borde)
-        this.jugador.setPosition(855, 516);
+        this.jugador.setPosition(1355, 516);
         this.jugador.setFlipX(false);
         this.mirandoDerecha = true;
         this.jugador.play(`avatar-${this.avatarKey}-quieto`);
@@ -1353,9 +1371,9 @@ class EscenaSustentable extends Phaser.Scene {
      * ========================================================================= */
     crearModalesFinDeJuego() {
         // -------------------------------------------------------------
-        // Modal de Victoria
+        // Modal de Victoria — visual en container (scrollFactor 0)
         // -------------------------------------------------------------
-        this.modalVictoria = this.add.container(500, 400).setDepth(30).setVisible(false).setAlpha(0);
+        this.modalVictoria = this.add.container(500, 400).setDepth(30).setVisible(false).setAlpha(0).setScrollFactor(0);
 
         const telonV = this.add.graphics();
         telonV.fillStyle(0x000000, 0.75);
@@ -1388,17 +1406,20 @@ class EscenaSustentable extends Phaser.Scene {
             lineSpacing: 14
         }).setOrigin(0.5);
 
-        // Botón Reintentar
-        const btnReintentar = this.crearBotonModal(-140, 140, 'REINTENTAR', 0xe67e22, () => this.reiniciarNivel());
-        // Botón Salir al Mapa / Menú
-        const btnSalir = this.crearBotonModal(140, 140, 'SALIR', 0x27ae60, () => this.volverAlOrigen());
+        this.modalVictoria.add([telonV, cardV, tituloV, subV, this.textoDetalleVictoria]);
 
-        this.modalVictoria.add([telonV, cardV, tituloV, subV, this.textoDetalleVictoria, btnReintentar, btnSalir]);
+        // Botones de victoria — GameObjects independientes con setScrollFactor(0)
+        // para que el input del puntero funcione aunque la cámara haya hecho scroll.
+        // El container visual está en (500,400); coordenadas absolutas = 500+dx, 400+dy
+        this.botonesVictoria = [
+            this.crearBotonModalAbs(360, 540, 'REINTENTAR', 0xe67e22, () => this.reiniciarNivel()),
+            this.crearBotonModalAbs(640, 540, 'SALIR',       0x27ae60, () => this.volverAlOrigen())
+        ];
 
         // -------------------------------------------------------------
-        // Modal de Game Over
+        // Modal de Game Over — mismo patrón
         // -------------------------------------------------------------
-        this.modalGameOver = this.add.container(500, 400).setDepth(30).setVisible(false).setAlpha(0);
+        this.modalGameOver = this.add.container(500, 400).setDepth(30).setVisible(false).setAlpha(0).setScrollFactor(0);
 
         const telonGO = this.add.graphics();
         telonGO.fillStyle(0x000000, 0.82);
@@ -1430,35 +1451,70 @@ class EscenaSustentable extends Phaser.Scene {
             fill: '#f1c40f'
         }).setOrigin(0.5);
 
-        const btnReintentarGO = this.crearBotonModal(-120, 110, 'REINTENTAR', 0xe74c3c, () => this.reiniciarNivel());
-        const btnSalirGO = this.crearBotonModal(120, 110, 'SALIR', 0x747d8c, () => this.volverAlOrigen());
+        this.modalGameOver.add([telonGO, cardGO, tituloGO, this.textoCausaGameOver, this.textoScoreGameOver]);
 
-        this.modalGameOver.add([telonGO, cardGO, tituloGO, this.textoCausaGameOver, this.textoScoreGameOver, btnReintentarGO, btnSalirGO]);
+        // Botones de game over — GameObjects independientes con setScrollFactor(0)
+        this.botonesGameOver = [
+            this.crearBotonModalAbs(380, 510, 'REINTENTAR', 0xe74c3c, () => this.reiniciarNivel()),
+            this.crearBotonModalAbs(620, 510, 'SALIR',       0x747d8c, () => this.volverAlOrigen())
+        ];
     }
 
-    crearBotonModal(x, y, texto, colorHex, accion) {
-        const btn = this.add.container(x, y);
-        const bg = this.add.graphics();
-        bg.fillStyle(colorHex, 1);
-        bg.fillRoundedRect(-100, -20, 200, 40, 8);
-        bg.lineStyle(2, 0xffffff, 0.8);
-        bg.strokeRoundedRect(-100, -20, 200, 40, 8);
+    /**
+     * Crea un botón interactivo como GameObjects de primer nivel (NO dentro de container)
+     * con setScrollFactor(0), para que el input se calcule en coordenadas de pantalla
+     * independientemente de cuánto haya scrolleado la cámara.
+     * @param {number} absX  Coordenada X absoluta en pantalla (viewport)
+     * @param {number} absY  Coordenada Y absoluta en pantalla (viewport)
+     */
+    crearBotonModalAbs(absX, absY, texto, colorHex, accion) {
+        const W = 200, H = 40;
 
-        const txt = this.add.text(0, 0, texto, {
+        // Fondo del botón
+        const bg = this.add.graphics()
+            .setScrollFactor(0).setDepth(31).setAlpha(0).setVisible(true);
+        const dibujarBg = (escala) => {
+            bg.clear();
+            const w = W * escala, h = H * escala;
+            bg.fillStyle(colorHex, 1);
+            bg.fillRoundedRect(absX - w / 2, absY - h / 2, w, h, 8);
+            bg.lineStyle(2, 0xffffff, 0.8);
+            bg.strokeRoundedRect(absX - w / 2, absY - h / 2, w, h, 8);
+        };
+        dibujarBg(1);
+
+        // Texto del botón
+        const txt = this.add.text(absX, absY, texto, {
             fontSize: '12px',
             fontFamily: '"Press Start 2P", monospace',
             fill: '#ffffff'
-        }).setOrigin(0.5);
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(32).setAlpha(0);
 
-        btn.add([bg, txt]);
-        btn.setSize(200, 40);
-        btn.setInteractive({ useHandCursor: true });
+        // Zona de interacción invisible encima
+        const zone = this.add.zone(absX, absY, W, H)
+            .setScrollFactor(0).setDepth(33);
+        zone.setInteractive({ useHandCursor: true });
 
-        btn.on('pointerover', () => btn.setScale(1.05));
-        btn.on('pointerout', () => btn.setScale(1));
-        btn.on('pointerdown', accion);
+        zone.on('pointerover', () => { dibujarBg(1.06); txt.setScale(1.06); });
+        zone.on('pointerout',  () => { dibujarBg(1);    txt.setScale(1); });
+        zone.on('pointerdown', accion);
 
-        return btn;
+        // Devuelve los tres objetos para poder mostrarlos/ocultarlos juntos
+        return { bg, txt, zone };
+    }
+
+    /** Muestra u oculta un array de botones creados con crearBotonModalAbs */
+    _setBotonesVisible(botones, visible, alpha) {
+        for (const b of botones) {
+            b.bg.setAlpha(alpha);
+            b.txt.setAlpha(alpha);
+            // zone no tiene alpha, pero necesitamos activar/desactivar su input
+            if (visible) {
+                b.zone.setInteractive({ useHandCursor: true });
+            } else {
+                b.zone.disableInteractive();
+            }
+        }
     }
 
     mostrarModalVictoria(bonusNivel, bonusTiempo, bonusCable) {
@@ -1469,12 +1525,14 @@ class EscenaSustentable extends Phaser.Scene {
             `PUNTUACIÓN TOTAL : ${this.puntuacion}`
         );
 
+        this._setBotonesVisible(this.botonesVictoria, false, 0);
         this.modalVictoria.setVisible(true);
         this.tweens.add({
             targets: this.modalVictoria,
             alpha: 1,
             duration: 300,
-            ease: 'Quad.easeOut'
+            ease: 'Quad.easeOut',
+            onComplete: () => this._setBotonesVisible(this.botonesVictoria, true, 1)
         });
     }
 
@@ -1486,12 +1544,14 @@ class EscenaSustentable extends Phaser.Scene {
         this.textoCausaGameOver.setText(causa);
         this.textoScoreGameOver.setText(`SCORE FINAL: ${this.puntuacion}`);
 
+        this._setBotonesVisible(this.botonesGameOver, false, 0);
         this.modalGameOver.setVisible(true);
         this.tweens.add({
             targets: this.modalGameOver,
             alpha: 1,
             duration: 300,
-            ease: 'Quad.easeOut'
+            ease: 'Quad.easeOut',
+            onComplete: () => this._setBotonesVisible(this.botonesGameOver, true, 1)
         });
     }
 
