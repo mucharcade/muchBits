@@ -16,6 +16,27 @@
 <body>
     <div class="page-overlay"></div>
 
+    <!-- Bloqueador exclusivo: Solo permite acceso en modo horizontal -->
+    <div id="orientation-blocker" class="orientation-blocker" role="alert" aria-live="assertive">
+        <div class="orientation-card">
+            <div class="rotate-phone-anim">
+                <div class="phone-body">
+                    <div class="phone-screen-glow"></div>
+                </div>
+                <div class="rotate-arrows">
+                    <svg viewBox="0 0 24 24" class="svg-rotate-icon">
+                        <path fill="currentColor"
+                            d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z" />
+                    </svg>
+                </div>
+            </div>
+            <h2 class="orientation-title">GIRA TU DISPOSITIVO</h2>
+            <p class="orientation-subtitle">MuchBits Arcade Universe solo permite jugar en <strong>modo
+                    horizontal</strong>.</p>
+            <div class="orientation-pill">🔄 MODO HORIZONTAL REQUERIDO</div>
+        </div>
+    </div>
+
     <div class="main-wrapper">
         <header class="game-header">
             <div class="brand">
@@ -31,38 +52,45 @@
         </header>
 
         <main class="game-card">
-            <!--Contenedor para el Canvas del juego-->
-            <div id="game-container" class="canvas-wrapper">
-                <footer class="controls-bar">
-                    <!-- Cruceta Arcade (D-Pad) -->
-                    <div class="dpad-container" aria-label="Controles de Movimiento">
-                        <button class="dpad-btn arrow-up" type="button" data-control="up" aria-label="Mover o Saltar Arriba">▲</button>
-                        <button class="dpad-btn arrow-left" type="button" data-control="left" aria-label="Mover a la Izquierda">◄</button>
-                        <div class="dpad-center" aria-hidden="true"></div>
-                        <button class="dpad-btn arrow-right" type="button" data-control="right" aria-label="Mover a la Derecha">►</button>
-                        <button class="dpad-btn arrow-down" type="button" data-control="down" aria-label="Mover o Agacharse Abajo">▼</button>
-                    </div>
+            <!--Contenedor para el Canvas del juego en el centro-->
+            <div id="game-container" class="canvas-wrapper"></div>
 
-                    <!-- Botones de Acción Accesibles -->
-                    <div class="action-buttons-container" aria-label="Botones de Acción">
-                        <button class="action-btn btn-confirm" type="button" data-action="enter" aria-label="Aceptar o Entrar (ENTER)">
-                            <span class="btn-badge">✔</span>
-                            <div class="btn-labels">
-                                <span class="main-label">ACEPTAR</span>
-                                <span class="sub-label">ENTER</span>
-                            </div>
-                        </button>
+            <!--Controles táctiles posicionados a los lados del canvas-->
+            <footer class="controls-bar">
+                <!-- Lado Izquierdo: Cruceta Arcade (D-Pad) -->
+                <div class="dpad-container" aria-label="Controles de Movimiento">
+                    <button class="dpad-btn arrow-up" type="button" data-control="up"
+                        aria-label="Mover o Saltar Arriba">▲</button>
+                    <button class="dpad-btn arrow-left" type="button" data-control="left"
+                        aria-label="Mover a la Izquierda">◄</button>
+                    <div class="dpad-center" aria-hidden="true"></div>
+                    <button class="dpad-btn arrow-right" type="button" data-control="right"
+                        aria-label="Mover a la Derecha">►</button>
+                    <button class="dpad-btn arrow-down" type="button" data-control="down"
+                        aria-label="Mover o Agacharse Abajo">▼</button>
+                </div>
 
-                        <button class="action-btn btn-cancel" type="button" data-action="escape" aria-label="Salir o Volver (ESC)">
-                            <span class="btn-badge btn-badge-esc">ESC</span>
-                            <div class="btn-labels">
-                                <span class="main-label">ESC</span>
-                                <span class="sub-label">SALIR / MENÚ</span>
-                            </div>
-                        </button>
-                    </div>
-                </footer>
-            </div>
+                <!-- Lado Derecho: Botones de Acción Accesibles (verticales) -->
+                <div class="action-buttons-container" aria-label="Botones de Acción">
+                    <button class="action-btn btn-cancel" type="button" data-action="escape"
+                        aria-label="Salir o Volver (ESC)">
+                        <span class="btn-badge btn-badge-esc">X</span>
+                        <div class="btn-labels">
+                            <span class="main-label">SALIR</span>
+                            <span class="sub-label">ESC</span>
+                        </div>
+                    </button>
+
+                    <button class="action-btn btn-confirm" type="button" data-action="enter"
+                        aria-label="Aceptar o Entrar (ENTER)">
+                        <span class="btn-badge">✔</span>
+                        <div class="btn-labels">
+                            <span class="main-label">ACEPTAR</span>
+                            <span class="sub-label">ENTER</span>
+                        </div>
+                    </button>
+                </div>
+            </footer>
         </main>
     </div>
 
