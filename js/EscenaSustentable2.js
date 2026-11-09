@@ -771,23 +771,34 @@ class EscenaSustentable2 extends Phaser.Scene {
     }
 
     actualizarHUD() {
+        // Formato de Score con ceros a la izquierda
         this.textoScore.setText(`SCORE: ${this.puntuacion.toString().padStart(6, '0')}`);
+
+        // Vidas en corazones
         const corazones = '❤️'.repeat(Math.max(0, this.vidas));
         this.textoVidas.setText(`LIVES: ${this.vidas} ${corazones}`);
-        const cFT = Math.min(Math.floor(this.longitudCableFT), this.maxLongitudCableFT);
-        this.textoCable.setText(`CABLE: ${cFT.toString().padStart(3, '0')} FT`);
-        const mins = Math.floor(this.tiempoRestante / 60);
-        const segs = this.tiempoRestante % 60;
-        this.textoTiempo.setText(`⏱ ${mins.toString().padStart(2, '0')}:${segs.toString().padStart(2, '0')}`);
 
-        // Barra de progreso
-        const pct = Math.min(this.distanciaPorcentaje, 100);
+        // Cable en pies
+        this.textoCable.setText(`CABLE: ${Math.round(this.longitudCableFT).toString().padStart(3, '0')} FT`);
+
+        // Tiempo en formato MM:SS
+        const minutos = Math.floor(this.tiempoRestante / 60);
+        const segundos = this.tiempoRestante % 60;
+        this.textoTiempo.setText(`⏱ ${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`);
+
+        // Barra de progreso y porcentaje de distancia hacia la turbina eólica
+        const progreso = Phaser.Math.Clamp(this.distanciaPorcentaje, 0, 1);
+        this.textoDistancia.setText(`DISTANCE: ${Math.round(progreso * 100)}%`);
+
         this.graficoBarraProgreso.clear();
         this.graficoBarraProgreso.fillStyle(0x00f2fe, 1);
-        this.graficoBarraProgreso.fillRoundedRect(4, 4, Math.max(0, (pct / 100) * 187), 16, 4);
-        const corredorX = 5 + (pct / 100) * 170;
-        this.iconoCorredor.x = corredorX;
-        this.textoDistancia.setText(`DISTANCE: ${Math.floor(pct)}%`);
+        const anchoLleno = (195 - 6) * progreso;
+        if (anchoLleno > 4) {
+            this.graficoBarraProgreso.fillRoundedRect(3, 3, anchoLleno, 18, 4);
+        }
+
+        // Posicionar el mini corredor en la punta de la barra
+        this.iconoCorredor.x = Phaser.Math.Clamp(anchoLleno - 12, 3, 175);
     }
 
     /* =========================================================================
@@ -853,57 +864,88 @@ class EscenaSustentable2 extends Phaser.Scene {
             this.jugador.play(`avatar-${this.avatarKey}-salto`, true);
         }
 
-        // Caída al vacío
-        if (this.jugador.y > this.altoMundo + 60) {
+        // Si el jugador cae al abismo del cañón (fondo de la pantalla)
+        if (this.jugador.y > 760) {
             this.recibirDanoPorCaida();
         }
 
-        // Distancia de cable
-        const dxCable = this.jugador.x - this.posicionSalidaCable.x;
-        const dyCable = this.jugador.y - this.posicionSalidaCable.y;
-        this.longitudCableFT = Math.sqrt(dxCable * dxCable + dyCable * dyCable) * 0.3;
-
-        // Progreso hacia la turbina
-        const metaX = this.posicionEnchufeMeta.x;
-        const origenX = this.posicionSalidaCable.x;
-        this.distanciaPorcentaje = Math.max(0, Math.min(100,
-            ((this.jugador.x - origenX) / (metaX - origenX)) * 100
-        ));
+        // Calcular porcentaje de distancia hacia la turbina eólica
+        const progreso = (this.jugador.x - 100) / (this.posicionEnchufeMeta.x - 100);
+        this.distanciaPorcentaje = Phaser.Math.Clamp(progreso, 0, 1);
     }
 
     /* =========================================================================
-     * CABLE DINÁMICO (CATENARIA)
+     * FÍSICAS Y DIBUJADO DINÁMICO DEL CABLE ELÉCTRICO (CATENARIA CON CURVAS DE BEZIER)
      * ========================================================================= */
     actualizarCableDinamico() {
         this.graficosCable.clear();
-        if (this.juegoTerminado || this.nivelCompletado) return;
 
-        const sx = this.posicionSalidaCable.x;
-        const sy = this.posicionSalidaCable.y;
-        const ex = this.jugador.x;
-        const ey = this.jugador.y + 20;
+        // Origen del cable en la boquilla del generador izquierdo
+        const origX = this.posicionSalidaCable.x;
+        const origY = this.posicionSalidaCable.y;
 
-        const segmentos = 18;
-        const colgamiento = 0.35;
-
-        this.graficosCable.lineStyle(3, 0xf1c40f, 0.9);
-        this.graficosCable.beginPath();
-        this.graficosCable.moveTo(sx, sy);
-        for (let i = 1; i <= segmentos; i++) {
-            const t = i / segmentos;
-            const cx = sx + (ex - sx) * t;
-            const cy = sy + (ey - sy) * t + Math.sin(t * Math.PI) * (ey - sy + 60) * colgamiento;
-            this.graficosCable.lineTo(cx, cy);
+        // Destino del cable en la mochila/espalda del jugador (o terminal si ya se conectó)
+        let destX, destY;
+        if (this.cableConectado) {
+            destX = this.posicionEnchufeMeta.x;
+            destY = this.posicionEnchufeMeta.y;
+        } else {
+            destX = this.jugador.x + (this.mirandoDerecha ? -14 : 14);
+            destY = this.jugador.y - 4;
         }
-        this.graficosCable.strokePath();
 
-        // Mochila visual del jugador
-        this.mochilaCable.clear();
-        this.mochilaCable.fillStyle(0x2d3436, 1);
-        const mx = this.jugador.x + (this.mirandoDerecha ? -14 : 14);
-        this.mochilaCable.fillRoundedRect(mx - 7, this.jugador.y - 10, 14, 20, 3);
-        this.mochilaCable.lineStyle(2, 0xf1c40f, 1);
-        this.mochilaCable.strokeRoundedRect(mx - 7, this.jugador.y - 10, 14, 20, 3);
+        // Calcular distancia y catenaria (caída natural del cable por gravedad)
+        const dx = destX - origX;
+        const dy = destY - origY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        // Convertir la distancia en píxeles a unidades FT para el HUD retro
+        this.longitudCableFT = (dist / 1280) * 115;
+
+        // Curvatura del cable: cuelga más cuando está cerca, se tensa cuando el jugador salta o se aleja
+        const mitadX = (origX + destX) / 2;
+        const caidaGravedad = Phaser.Math.Clamp(dist * 0.12, 10, 45);
+        const mitadY = (origY + destY) / 2 + caidaGravedad;
+
+        // 1. Línea exterior oscura de contorno (estilo arcade pixel art)
+        this.graficosCable.lineStyle(6, 0x1e272e, 1);
+        this.dibujarCurvaCable(origX, origY, mitadX, mitadY, destX, destY);
+
+        // 2. Línea principal amarilla de cable de alta tensión
+        this.graficosCable.lineStyle(3.5, 0xf1c40f, 1);
+        this.dibujarCurvaCable(origX, origY, mitadX, mitadY, destX, destY);
+
+        // 3. Brillo neón interno
+        this.graficosCable.lineStyle(1.5, 0xffffff, 0.9);
+        this.dibujarCurvaCable(origX, origY, mitadX, mitadY - 1, destX, destY);
+
+        // Dibujar mochila / arnés porta-cable sobre la espalda del jugador
+        if (!this.cableConectado && this.jugador.active) {
+            this.mochilaCable.clear();
+            const mochX = this.jugador.x + (this.mirandoDerecha ? -16 : 6);
+            const mochY = this.jugador.y - 12;
+
+            // Mochila verde de explorador con refuerzos
+            this.mochilaCable.fillStyle(0x27ae60, 1);
+            this.mochilaCable.fillRoundedRect(mochX, mochY, 12, 20, 3);
+            this.mochilaCable.lineStyle(1.5, 0x1e272e, 1);
+            this.mochilaCable.strokeRoundedRect(mochX, mochY, 12, 20, 3);
+
+            // Batería / conector amarillo en la mochila
+            this.mochilaCable.fillStyle(0xf1c40f, 1);
+            this.mochilaCable.fillRect(mochX + 2, mochY + 4, 8, 5);
+        } else {
+            this.mochilaCable.clear();
+        }
+    }
+
+    dibujarCurvaCable(x0, y0, cx, cy, x1, y1) {
+        const curva = new Phaser.Curves.QuadraticBezier(
+            new Phaser.Math.Vector2(x0, y0),
+            new Phaser.Math.Vector2(cx, cy),
+            new Phaser.Math.Vector2(x1, y1)
+        );
+        curva.draw(this.graficosCable);
     }
 
     /* =========================================================================
