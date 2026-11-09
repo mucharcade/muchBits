@@ -16,7 +16,7 @@ class EscenaEnergia extends Phaser.Scene {
     }
 
     init(data) {
-        this.avatarKey = data && data.avatarKey ? data.avatarKey : (localStorage.getItem('muchbits-avatar') || 'user_default');
+        this.avatarKey = data && data.avatarKey ? data.avatarKey : (localStorage.getItem('muchbits-avatar') || 'user_male');
         this.origen = data && data.origen ? data.origen : 'EscenaJuego';
     }
 
@@ -27,27 +27,27 @@ class EscenaEnergia extends Phaser.Scene {
         // Cargar spritesheets animados de basura proporcionados en sala_energia/basura
         this.load.spritesheet('basura_barril', 'pictures/sala_energia/basura/Barril_ SpriteSheet.png', {
             frameWidth: 256,
-            frameHeight: 256
+            frameHeight: 139
         });
 
         this.load.spritesheet('basura_bolsa_anim', 'pictures/sala_energia/basura/Bolsa_basura_ SpriteSheet.png', {
             frameWidth: 256,
-            frameHeight: 256
+            frameHeight: 160
         });
 
         this.load.spritesheet('basura_botella_anim', 'pictures/sala_energia/basura/Botella_SpriteSheet.png', {
             frameWidth: 256,
-            frameHeight: 256
+            frameHeight: 110
         });
 
         this.load.spritesheet('basura_lata_anim', 'pictures/sala_energia/basura/Lata_ SpriteSheet.png', {
             frameWidth: 256,
-            frameHeight: 256
+            frameHeight: 150
         });
 
         this.load.spritesheet('basura_llanta', 'pictures/sala_energia/basura/Llanta_ SpriteSheet.png', {
             frameWidth: 256,
-            frameHeight: 256
+            frameHeight: 140
         });
 
         this.load.spritesheet('basura_tronco', 'pictures/sala_energia/basura/Tronco_SpriteSheet.png', {
@@ -1046,56 +1046,57 @@ class EscenaEnergia extends Phaser.Scene {
         // Catálogo de basura disponible (Prioriza las imágenes/spritesheets y usa los respaldos solo si no existen)
         const tiposBasura = [];
 
-        // 1. Barril (SpriteSheet oficial)
-        if (this.textures.exists('basura_barril')) {
-            tiposBasura.push({ clave: 'basura_barril', esSpriteSheet: true, anim: 'anim_barril_flotando', escala: 0.28, valorEnergia: 7, puntos: 250, nombre: 'Barril' });
-        }
-
-        // 2. Bolsa: Si existe la textura/imagen de basura_bolsa_anim usa esa; en otro caso usa la textura de respaldo
+        // Cambiamos de tamaño con escala 
+        // 1. Bolsa: Si existe la textura/imagen de basura_bolsa_anim usa esa; en otro caso usa la textura de respaldo
         if (this.textures.exists('basura_bolsa_anim')) {
-            tiposBasura.push({ clave: 'basura_bolsa_anim', esSpriteSheet: true, anim: 'anim_bolsa_flotando', escala: 0.26, valorEnergia: 5, puntos: 150, nombre: 'Bolsa' });
+            tiposBasura.push({ clave: 'basura_bolsa_anim', esSpriteSheet: true, anim: 'anim_bolsa_flotando', escala: 0.4, valorEnergia: 5, puntos: 150, nombre: 'Bolsa' });
         } else if (this.textures.exists('basura_bolsa')) {
-            tiposBasura.push({ clave: 'basura_bolsa', esSpriteSheet: false, escala: 1.4, valorEnergia: 5, puntos: 150, nombre: 'Bolsa' });
+            tiposBasura.push({ clave: 'basura_bolsa', esSpriteSheet: false, escala: 1.9, valorEnergia: 5, puntos: 150, nombre: 'Bolsa' });
         }
 
-        // 3. Botella: Si existe la imagen de basura_botella_anim usa esa; en otro caso usa los respaldos
+        // 2. Botella: Si existe la imagen de basura_botella_anim usa esa; en otro caso usa los respaldos
         if (this.textures.exists('basura_botella_anim')) {
-            tiposBasura.push({ clave: 'basura_botella_anim', esSpriteSheet: true, anim: 'anim_botella_flotando', escala: 0.28, valorEnergia: 5, puntos: 130, nombre: 'Botella' });
+            tiposBasura.push({ clave: 'basura_botella_anim', esSpriteSheet: true, anim: 'anim_botella_flotando', escala: 0.42, valorEnergia: 5, puntos: 130, nombre: 'Botella' });
         } else {
             if (this.textures.exists('basura_botella_azul')) {
-                tiposBasura.push({ clave: 'basura_botella_azul', esSpriteSheet: false, escala: 1.3, valorEnergia: 5, puntos: 120, nombre: 'Botella' });
+                tiposBasura.push({ clave: 'basura_botella_azul', esSpriteSheet: false, escala: 2.8, valorEnergia: 5, puntos: 120, nombre: 'Botella' });
             }
             if (this.textures.exists('basura_botella_roja')) {
-                tiposBasura.push({ clave: 'basura_botella_roja', esSpriteSheet: false, escala: 1.3, valorEnergia: 5, puntos: 120, nombre: 'Botella' });
+                tiposBasura.push({ clave: 'basura_botella_roja', esSpriteSheet: false, escala: 2.8, valorEnergia: 5, puntos: 120, nombre: 'Botella' });
             }
         }
 
-        // 4. Lata: Si existe la imagen de basura_lata_anim usa esa; en otro caso usa los respaldos
+        // 3. Lata: Si existe la imagen de basura_lata_anim usa esa; en otro caso usa los respaldos
         if (this.textures.exists('basura_lata_anim')) {
-            tiposBasura.push({ clave: 'basura_lata_anim', esSpriteSheet: true, anim: 'anim_lata_flotando', escala: 0.26, valorEnergia: 4, puntos: 110, nombre: 'Lata' });
+            tiposBasura.push({ clave: 'basura_lata_anim', esSpriteSheet: true, anim: 'anim_lata_flotando', escala: 0.28, valorEnergia: 4, puntos: 110, nombre: 'Lata' });
         } else {
             if (this.textures.exists('basura_lata_roja')) {
-                tiposBasura.push({ clave: 'basura_lata_roja', esSpriteSheet: false, escala: 1.3, valorEnergia: 4, puntos: 100, nombre: 'Lata' });
+                tiposBasura.push({ clave: 'basura_lata_roja', esSpriteSheet: false, escala: 1.8, valorEnergia: 4, puntos: 100, nombre: 'Lata' });
             }
             if (this.textures.exists('basura_lata_amarilla')) {
-                tiposBasura.push({ clave: 'basura_lata_amarilla', esSpriteSheet: false, escala: 1.3, valorEnergia: 4, puntos: 100, nombre: 'Lata' });
+                tiposBasura.push({ clave: 'basura_lata_amarilla', esSpriteSheet: false, escala: 1.8, valorEnergia: 4, puntos: 100, nombre: 'Lata' });
             }
         }
 
-        // 5. Neumático (SpriteSheet oficial)
+        // 4. Neumático (SpriteSheet oficial)
         if (this.textures.exists('basura_llanta')) {
-            tiposBasura.push({ clave: 'basura_llanta', esSpriteSheet: true, anim: 'anim_llanta_flotando', escala: 0.28, valorEnergia: 7, puntos: 250, nombre: 'Neumático' });
+            tiposBasura.push({ clave: 'basura_llanta', esSpriteSheet: true, anim: 'anim_llanta_flotando', escala: 0.48, valorEnergia: 7, puntos: 250, nombre: 'Neumático' });
         }
 
-        // 6. Tronco (SpriteSheet oficial)
+        // 5. Tronco (SpriteSheet oficial)
         if (this.textures.exists('basura_tronco')) {
-            tiposBasura.push({ clave: 'basura_tronco', esSpriteSheet: true, anim: 'anim_tronco_flotando', escala: 0.35, valorEnergia: 6, puntos: 200, nombre: 'Tronco' });
+            tiposBasura.push({ clave: 'basura_tronco', esSpriteSheet: true, anim: 'anim_tronco_flotando', escala: 0.46, valorEnergia: 6, puntos: 200, nombre: 'Tronco' });
         }
 
-        // 7. Vaso (objeto procedural)
-        if (this.textures.exists('basura_vaso')) {
-            tiposBasura.push({ clave: 'basura_vaso', esSpriteSheet: false, escala: 1.4, valorEnergia: 3, puntos: 80, nombre: 'Vaso' });
+        // 6. Barril (SpriteSheet oficial)
+        if (this.textures.exists('basura_barril')) {
+            tiposBasura.push({ clave: 'basura_barril', esSpriteSheet: true, anim: 'anim_barril_flotando', escala: 0.48, valorEnergia: 7, puntos: 250, nombre: 'Barril' });
         }
+
+        // // 7. Vaso (objeto procedural)
+        // if (this.textures.exists('basura_vaso')) {
+        //     tiposBasura.push({ clave: 'basura_vaso', esSpriteSheet: false, escala: 0.39, valorEnergia: 3, puntos: 80, nombre: 'Vaso' });
+        // }
 
         if (tiposBasura.length === 0) return;
 
