@@ -724,7 +724,7 @@ class EscenaSustentable extends Phaser.Scene {
     }
 
     /* =========================================================================
-     * ENEMIGOS Y PELIGROS PATRULLEROS (ESPECTROS DE TORMENTA)
+     * ENEMIGOS - NUBES PATRULLEROS (ESPECTROS DE TORMENTA)
      * ========================================================================= */
     crearEnemigos() {
         this.grupoEspectros = this.physics.add.group({
@@ -733,13 +733,16 @@ class EscenaSustentable extends Phaser.Scene {
         });
 
         // Espectro 1: Patrullando sobre el primer abismo (entre plataforma 1 y 2)
-        this.crearEspectro(350, 430, 310, 410, 45, 12);
+        // Rango ampliado: de 100 px a ~190 px
+        this.crearEspectro(350, 430, 255, 445, 45, 12);
 
         // Espectro 2: Patrullando en la zona media (entre plataforma 3 y 4)
-        this.crearEspectro(690, 370, 630, 750, 55, 16);
+        // Rango ampliado: de 120 px a ~220 px
+        this.crearEspectro(690, 370, 580, 800, 55, 16);
 
         // Espectro 3: Patrullando en la zona final (entre plataforma 5 y 6)
-        this.crearEspectro(1040, 430, 980, 1100, 50, 14);
+        // Rango ampliado: de 120 px a ~220 px
+        this.crearEspectro(1040, 430, 930, 1150, 50, 14);
 
         // Colisión / impacto con el jugador
         this.physics.add.overlap(this.jugador, this.grupoEspectros, (jugador, espectro) => {
@@ -1413,7 +1416,7 @@ class EscenaSustentable extends Phaser.Scene {
         // El container visual está en (500,400); coordenadas absolutas = 500+dx, 400+dy
         this.botonesVictoria = [
             this.crearBotonModalAbs(360, 540, 'REINTENTAR', 0xe67e22, () => this.reiniciarNivel()),
-            this.crearBotonModalAbs(640, 540, 'SALIR',       0x27ae60, () => this.volverAlOrigen())
+            this.crearBotonModalAbs(640, 540, 'SALIR', 0x27ae60, () => this.volverAlOrigen())
         ];
 
         // -------------------------------------------------------------
@@ -1456,7 +1459,7 @@ class EscenaSustentable extends Phaser.Scene {
         // Botones de game over — GameObjects independientes con setScrollFactor(0)
         this.botonesGameOver = [
             this.crearBotonModalAbs(380, 510, 'REINTENTAR', 0xe74c3c, () => this.reiniciarNivel()),
-            this.crearBotonModalAbs(620, 510, 'SALIR',       0x747d8c, () => this.volverAlOrigen())
+            this.crearBotonModalAbs(620, 510, 'SALIR', 0x747d8c, () => this.volverAlOrigen())
         ];
     }
 
@@ -1496,7 +1499,7 @@ class EscenaSustentable extends Phaser.Scene {
         zone.setInteractive({ useHandCursor: true });
 
         zone.on('pointerover', () => { dibujarBg(1.06); txt.setScale(1.06); });
-        zone.on('pointerout',  () => { dibujarBg(1);    txt.setScale(1); });
+        zone.on('pointerout', () => { dibujarBg(1); txt.setScale(1); });
         zone.on('pointerdown', accion);
 
         // Devuelve los tres objetos para poder mostrarlos/ocultarlos juntos
