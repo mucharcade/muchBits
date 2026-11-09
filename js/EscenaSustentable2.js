@@ -18,7 +18,7 @@ class EscenaSustentable2 extends Phaser.Scene {
 
     init(data) {
         this.origen    = data && data.origen    ? data.origen    : 'EscenaJuego';
-        this.avatarKey = data && data.avatarKey ? data.avatarKey : (localStorage.getItem('muchbits-avatar') || 'user_default');
+        this.avatarKey = data && data.avatarKey ? data.avatarKey : (localStorage.getItem('muchbits-avatar') || 'user_male');
         this.nivelActual = 2;
         this.maxNiveles  = 3;
     }
@@ -171,44 +171,136 @@ class EscenaSustentable2 extends Phaser.Scene {
             c.destroy();
         }
 
-        // Turbina eólica (meta del N2) — 100x140
-        if (!this.textures.exists('turbina_eolica')) {
+        // 1. Torre y Góndola de la Turbina Eólica (Estática) — 80x160
+        if (!this.textures.exists('turbina_base')) {
             const c = this.make.graphics({ x: 0, y: 0, add: false });
-            // Mástil
-            c.fillStyle(0x718093, 1);
-            c.fillRect(44, 60, 12, 80);
-            c.lineStyle(2, 0x636e72, 1);
-            c.strokeRect(44, 60, 12, 80);
-            // Góndola
+
+            // Base de anclaje en el suelo
+            c.fillStyle(0x2f3640, 1);
+            c.fillRoundedRect(20, 148, 40, 12, 3);
+            c.lineStyle(2, 0x1e272e, 1);
+            c.strokeRoundedRect(20, 148, 40, 12, 3);
+
+            // Mástil / Torre troncocónica
             c.fillStyle(0xdfe6e9, 1);
-            c.fillRoundedRect(32, 50, 36, 18, 5);
-            c.lineStyle(2, 0xb2bec3, 1);
-            c.strokeRoundedRect(32, 50, 36, 18, 5);
-            // Aspas (3 palas)
-            c.fillStyle(0xecf0f1, 1);
-            c.lineStyle(2, 0xbdc3c7, 1);
-            // Pala superior
-            c.fillRoundedRect(45, 4, 10, 48, 4);
-            c.strokeRoundedRect(45, 4, 10, 48, 4);
-            // Pala inferior-izquierda
-            const ang1 = Math.PI * 2 / 3;
-            c.fillStyle(0xecf0f1, 1);
-            c.fillRoundedRect(10, 46, 36, 10, 4);
-            c.strokeRoundedRect(10, 46, 36, 10, 4);
-            // Pala inferior-derecha
-            c.fillRoundedRect(54, 46, 36, 10, 4);
-            c.strokeRoundedRect(54, 46, 36, 10, 4);
-            // Buje central
+            c.fillPoints([
+                { x: 34, y: 34 },
+                { x: 46, y: 34 },
+                { x: 49, y: 148 },
+                { x: 31, y: 148 }
+            ], true);
+            c.lineStyle(2, 0x718093, 1);
+            c.strokePoints([
+                { x: 34, y: 34 },
+                { x: 46, y: 34 },
+                { x: 49, y: 148 },
+                { x: 31, y: 148 }
+            ], true);
+
+            // Líneas de ensamblaje de la torre
+            c.lineStyle(1, 0xb2bec3, 0.8);
+            c.strokeLineShape(new Phaser.Geom.Line(33, 72, 47, 72));
+            c.strokeLineShape(new Phaser.Geom.Line(32, 110, 48, 110));
+
+            // Terminal de conexión eléctrica en la base (lado izquierdo)
             c.fillStyle(0x2d3436, 1);
-            c.fillCircle(50, 58, 7);
-            c.fillStyle(0xf1c40f, 1);
-            c.fillCircle(50, 58, 4);
-            // Enchufe de conexión
-            c.fillStyle(0x718093, 1);
-            c.fillRoundedRect(36, 108, 10, 14, 3);
+            c.fillRoundedRect(8, 106, 26, 38, 4);
+            c.lineStyle(2, 0x00f2fe, 1);
+            c.strokeRoundedRect(8, 106, 26, 38, 4);
+
+            // Puerto / Enchufe de cable con conector cyan neón
             c.fillStyle(0x00f2fe, 1);
-            c.fillCircle(41, 115, 3);
-            c.generateTexture('turbina_eolica', 100, 140);
+            c.fillCircle(12, 125, 4);
+            c.fillStyle(0xffffff, 0.9);
+            c.fillCircle(11, 124, 1.5);
+
+            // Icono de rayo en la terminal
+            c.fillStyle(0xf1c40f, 1);
+            c.fillPoints([
+                { x: 22, y: 115 },
+                { x: 17, y: 124 },
+                { x: 22, y: 124 },
+                { x: 19, y: 132 },
+                { x: 26, y: 121 },
+                { x: 22, y: 121 }
+            ], true);
+
+            // Góndola superior (alojamiento del generador)
+            c.fillStyle(0xf5f6fa, 1);
+            c.fillRoundedRect(22, 18, 42, 24, 6);
+            c.lineStyle(2, 0x718093, 1);
+            c.strokeRoundedRect(22, 18, 42, 24, 6);
+
+            // Detalle de rejilla de ventilación en la parte posterior
+            c.fillStyle(0x718093, 1);
+            c.fillRect(52, 24, 8, 3);
+            c.fillRect(52, 30, 8, 3);
+            c.fillRect(52, 36, 8, 3);
+
+            // Soporte del eje del rotor (en X=40, Y=30)
+            c.fillStyle(0x2f3640, 1);
+            c.fillCircle(40, 30, 6);
+
+            c.generateTexture('turbina_base', 80, 160);
+            c.destroy();
+        }
+
+        // 2. Rotor con 3 aspas aerodinámicas simétricas a 120° (Rotatorio) — 160x160
+        if (!this.textures.exists('turbina_aspas')) {
+            const c = this.make.graphics({ x: 0, y: 0, add: false });
+            const cx = 80;
+            const cy = 80;
+
+            // 3 ángulos exactamente a 120 grados de separación simétrica (-90°, 30°, 150°)
+            const angulos = [
+                -Math.PI / 2,
+                -Math.PI / 2 + (2 * Math.PI / 3),
+                -Math.PI / 2 + (4 * Math.PI / 3)
+            ];
+
+            angulos.forEach((ang) => {
+                const ux = Math.cos(ang);
+                const uy = Math.sin(ang);
+                const vx = -Math.sin(ang);
+                const vy = Math.cos(ang);
+
+                // Perfil estilizado de pala eólica (más ancha en el medio, estilizada en la punta)
+                const puntos = [
+                    { x: cx + ux * 8 - vx * 3.5,  y: cy + uy * 8 - vy * 3.5 },
+                    { x: cx + ux * 28 - vx * 7,    y: cy + uy * 28 - vy * 7 },
+                    { x: cx + ux * 65 - vx * 2.5,  y: cy + uy * 65 - vy * 2.5 },
+                    { x: cx + ux * 70,             y: cy + uy * 70 },
+                    { x: cx + ux * 65 + vx * 2.5,  y: cy + uy * 65 + vy * 2.5 },
+                    { x: cx + ux * 28 + vx * 7,    y: cy + uy * 28 + vy * 7 },
+                    { x: cx + ux * 8 + vx * 3.5,   y: cy + uy * 8 + vy * 3.5 }
+                ];
+
+                c.fillStyle(0xf5f6fa, 1);
+                c.fillPoints(puntos, true);
+
+                c.lineStyle(2, 0x718093, 1);
+                c.strokePoints(puntos, true);
+
+                // Nervadura central aerodinámica
+                c.lineStyle(1, 0xdcdde1, 0.9);
+                c.strokeLineShape(new Phaser.Geom.Line(cx + ux * 10, cy + uy * 10, cx + ux * 65, cy + uy * 65));
+            });
+
+            // Buje central (Hub)
+            c.fillStyle(0x2f3640, 1);
+            c.fillCircle(cx, cy, 11);
+            c.lineStyle(2, 0x718093, 1);
+            c.strokeCircle(cx, cy, 11);
+
+            // Tapa central dorada
+            c.fillStyle(0xf1c40f, 1);
+            c.fillCircle(cx, cy, 6);
+
+            // Reflejo
+            c.fillStyle(0xffffff, 0.9);
+            c.fillCircle(cx - 2, cy - 2, 2);
+
+            c.generateTexture('turbina_aspas', 160, 160);
             c.destroy();
         }
 
@@ -242,17 +334,19 @@ class EscenaSustentable2 extends Phaser.Scene {
      * ========================================================================= */
     crearAnimaciones() {
         const key = `avatar-${this.avatarKey}`;
+        const frameDerecha = this.avatarKey === 'user_male' ? 8 : 12;
+        const frameIzquierda = this.avatarKey === 'user_male' ? 12 : 8;
         if (!this.anims.exists(`${key}-correr-der`)) {
-            this.anims.create({ key: `${key}-correr-der`, frames: this.anims.generateFrameNumbers(key, { start: 12, end: 15 }), frameRate: 10, repeat: -1 });
+            this.anims.create({ key: `${key}-correr-der`, frames: this.anims.generateFrameNumbers(key, { start: frameDerecha, end: frameDerecha + 3 }), frameRate: 10, repeat: -1 });
         }
         if (!this.anims.exists(`${key}-correr-izq`)) {
-            this.anims.create({ key: `${key}-correr-izq`, frames: this.anims.generateFrameNumbers(key, { start: 8,  end: 11 }), frameRate: 10, repeat: -1 });
+            this.anims.create({ key: `${key}-correr-izq`, frames: this.anims.generateFrameNumbers(key, { start: frameIzquierda, end: frameIzquierda + 3 }), frameRate: 10, repeat: -1 });
         }
         if (!this.anims.exists(`${key}-quieto`)) {
             this.anims.create({ key: `${key}-quieto`, frames: [{ key, frame: 0 }], frameRate: 1 });
         }
         if (!this.anims.exists(`${key}-salto`)) {
-            this.anims.create({ key: `${key}-salto`, frames: [{ key, frame: 13 }], frameRate: 1 });
+            this.anims.create({ key: `${key}-salto`, frames: [{ key, frame: frameDerecha + 1 }], frameRate: 1 });
         }
     }
 
@@ -342,26 +436,34 @@ class EscenaSustentable2 extends Phaser.Scene {
         this.physics.add.existing(colDer, true);
         this.plataformasEstaticas.add(colDer);
 
-        // Turbina eólica (meta del nivel)
-        this.turbina = this.add.image(1415, 478, 'turbina_eolica')
-            .setDisplaySize(100, 140).setDepth(5);
+        // 1. Torre y Góndola de la turbina eólica (ESTÁTICA, fija en el suelo del acantilado)
+        this.turbinaBase = this.add.image(1420, 542, 'turbina_base')
+            .setOrigin(0.5, 1)
+            .setDisplaySize(80, 160)
+            .setDepth(5);
 
-        // Animación de aspas girando
+        // 2. Rotor con 3 aspas simétricas a 120° (ROTATORIO, montado en el buje de la góndola)
+        this.turbinaAspas = this.add.image(1420, 412, 'turbina_aspas')
+            .setOrigin(0.5, 0.5)
+            .setDisplaySize(140, 140)
+            .setDepth(6);
+
+        // SOLO rotan las aspas (la torre, la góndola y el enchufe se mantienen firmes)
         this.tweens.add({
-            targets: this.turbina,
+            targets: this.turbinaAspas,
             angle: 360,
-            duration: 4000,
+            duration: 3500,
             repeat: -1,
             ease: 'Linear'
         });
 
-        // Punto exacto de enchufe
-        this.posicionEnchufeMeta = { x: 1375, y: 515 };
-        this.zonaConexionTerminal = this.add.zone(1368, 512, 48, 72);
+        // Punto exacto de enchufe (en el conector de la terminal estática izquierda)
+        this.posicionEnchufeMeta = { x: 1392, y: 507 };
+        this.zonaConexionTerminal = this.add.zone(1390, 507, 48, 72);
         this.physics.add.existing(this.zonaConexionTerminal, true);
 
         // Marcador de meta
-        this.marcadorMeta = this.add.text(1385, 428, '⚡ CONECTA AQUÍ', {
+        this.marcadorMeta = this.add.text(1392, 440, '⚡ CONECTA AQUÍ', {
             fontSize: '11px',
             fontFamily: '"Press Start 2P", monospace',
             fill: '#00f2fe',
@@ -371,44 +473,36 @@ class EscenaSustentable2 extends Phaser.Scene {
 
         this.tweens.add({
             targets: this.marcadorMeta,
-            y: 420,
+            y: 432,
             duration: 700,
             yoyo: true,
             repeat: -1,
             ease: 'Sine.easeInOut'
         });
 
-        // ── 3. Plataformas Intermedias ─────────────────────────────────────────
-        //
-        // Distribución en 1500 px (inicio ~150, fin ~1340):
-        //   Zona A (150–450):  estática + frágil
-        //   Zona B (450–750):  móvil H + elevadiza V
-        //   Zona C (750–1050): frágil + estática
-        //   Zona D (1050–1340): móvil H + frágil + estática
-        //
-        // Plataforma 1 — ESTÁTICA: primer escalón desde el acantilado
-        this.crearPlataformaEstatica(260, 585);
+        // ── 3. Plataformas Intermedias con mayor separación ────────────────────
+        this.listaPlataformasMoviles = [];
 
-        // Plataforma 2 — FRÁGIL: obliga al jugador a ser rápido
-        this.crearPlataformaFragil(400, 520);
+        // Plataforma 1 — ESTÁTICA: primer escalón seguro desde el acantilado
+        this.crearPlataformaEstatica(285, 585);
 
-        // Plataforma 3 — MÓVIL HORIZONTAL: patrulla zona A→B
-        this.crearPlataformaMovilHorizontal(550, 475, 480, 620, 70);
+        // Plataforma 3 — MÓVIL HORIZONTAL: patrulla en zona media-izquierda
+        this.crearPlataformaMovilHorizontal(685, 470, 620, 750, 75);
 
-        // Plataforma 4 — ELEVADIZA VERTICAL: sube y baja en zona B
-        this.crearPlataformaElevadizaVertical(700, 440, 355, 530, 60);
+        // Plataforma 4 — ELEVADIZA VERTICAL: sube y baja entre ruinas
+        this.crearPlataformaElevadizaVertical(855, 445, 360, 530, 65);
 
-        // Plataforma 5 — FRÁGIL: zona media peligrosa
-        this.crearPlataformaFragil(850, 410);
+        // Plataforma 6 — MÓVIL HORIZONTAL: puente dinámico hacia la meta
+        this.crearPlataformaMovilHorizontal(1190, 480, 1140, 1240, 75);
 
-        // Plataforma 6 — ESTÁTICA elevada: punto de descanso en zona C
-        this.crearPlataformaEstatica(990, 395);
+        // Definición de las plataformas frágiles para crearlas y poder restaurarlas al revivir
+        this.datosPlataformasFragiles = [
+            { x: 475, y: 525 },  // Plataforma 2 (FRÁGIL): enlace entre estática 1 y móvil 3
+            { x: 1020, y: 425 }, // Plataforma 5 (FRÁGIL): enlace entre elevadiza 4 y móvil 6
+            { x: 1270, y: 510 }  // Plataforma 7 (FRÁGIL): escalón de llegada al acantilado
+        ];
 
-        // Plataforma 7 — FRÁGIL: combinada con móvil siguiente (secuencia de riesgo)
-        this.crearPlataformaFragil(1115, 450);
-
-        // Plataforma 8 — MÓVIL HORIZONTAL: puente final hacia el acantilado
-        this.crearPlataformaMovilHorizontal(1240, 490, 1175, 1310, 72);
+        this.restaurarPlataformasFragiles();
     }
 
     /* ── Creadores de plataformas ────────────────────────────────────────────── */
@@ -481,6 +575,33 @@ class EscenaSustentable2 extends Phaser.Scene {
     }
 
     /**
+     * Restaura todas las plataformas frágiles al revivir el jugador.
+     * Cancela temblores/caídas activas y regenera las plataformas sólidas e intactas.
+     */
+    restaurarPlataformasFragiles() {
+        if (this.listaFragiles) {
+            this.listaFragiles.forEach((plat) => {
+                if (plat) {
+                    this.tweens.killTweensOf(plat);
+                    if (plat.timerCaida) {
+                        plat.timerCaida.remove(false);
+                    }
+                    if (plat.active) {
+                        this.plataformasEstaticas.remove(plat, true, true);
+                    }
+                }
+            });
+        }
+        this.listaFragiles = [];
+
+        if (this.datosPlataformasFragiles) {
+            this.datosPlataformasFragiles.forEach((dato) => {
+                this.crearPlataformaFragil(dato.x, dato.y);
+            });
+        }
+    }
+
+    /**
      * Crea una plataforma frágil que cae al vacío 2 segundos después
      * de que el jugador la pise por primera vez.
      */
@@ -489,7 +610,7 @@ class EscenaSustentable2 extends Phaser.Scene {
                   : this.textures.exists('plat_fragil')      ? 'plat_fragil'
                   : 'plataforma_flotante_med';
 
-        // Las frágiles son inicialmente ESTÁTICAS; al pisarse pasan a DINÁMICAS
+        // Las frágiles son inicialmente ESTÁTICAS sólidas
         const plat = this.plataformasEstaticas.create(x, y, key);
         plat.setDisplaySize(135, 52).setDepth(4).refreshBody();
         plat.body.setSize(124, 20);
@@ -499,13 +620,15 @@ class EscenaSustentable2 extends Phaser.Scene {
         plat.body.checkCollision.right = false;
         plat.body.checkCollision.up    = true;
 
-        // Marcador de tipo y estado
+        // Estado inicial intacto
         plat.esFragil   = true;
-        plat.disparada  = false;   // aún no ha sido pisada
-        plat.cayendo    = false;   // aún no está en caída libre
+        plat.disparada  = false;
+        plat.cayendo    = false;
+        plat.setAlpha(1);
+        plat.clearTint();
 
-        // Efecto visual: leve vibración pulsante para indicar fragilidad
-        this.tweens.add({
+        // Efecto visual: leve pulsación para señalar fragilidad
+        plat.tweenPulso = this.tweens.add({
             targets: plat,
             alpha: { from: 1, to: 0.75 },
             duration: 600,
@@ -530,7 +653,7 @@ class EscenaSustentable2 extends Phaser.Scene {
         plat.setTint(0xff7675); // Tinte rojizo de fractura
 
         // Vibración rápida de advertencia durante exactamente 2 segundos (20 ciclos * 100ms = 2000ms)
-        this.tweens.add({
+        plat.tweenTemblor = this.tweens.add({
             targets: plat,
             x: { from: plat.x - 3, to: plat.x + 3 },
             duration: 50,
@@ -540,7 +663,7 @@ class EscenaSustentable2 extends Phaser.Scene {
         });
 
         // A los 2 segundos exactos se desprende y cae al abismo
-        this.time.delayedCall(2000, () => {
+        plat.timerCaida = this.time.delayedCall(2000, () => {
             if (plat && plat.active) {
                 this.iniciarCaidaLibre(plat);
             }
@@ -571,16 +694,16 @@ class EscenaSustentable2 extends Phaser.Scene {
         }
 
         // Caída acelerada hacia el fondo del abismo
-        this.tweens.add({
+        plat.tweenCaida = this.tweens.add({
             targets: plat,
             y: this.altoMundo + 150,
             angle: Phaser.Math.Between(-12, 12),
             duration: 900,
             ease: 'Quad.easeIn',
             onComplete: () => {
-                if (plat && plat.active) plat.destroy();
-                const idx = this.listaFragiles.indexOf(plat);
-                if (idx !== -1) this.listaFragiles.splice(idx, 1);
+                if (plat && plat.active) {
+                    plat.destroy();
+                }
             }
         });
     }
@@ -635,14 +758,14 @@ class EscenaSustentable2 extends Phaser.Scene {
     crearEnemigos() {
         this.grupoEspectros = this.physics.add.group({ allowGravity: false, immovable: true });
 
-        // Espectro 1: zona inicio — rango amplio sobre el primer abismo
-        this.crearEspectro(360, 425, 250, 480, 48, 13);
+        // Espectro 1: zona inicio — patrulla el espacio entre plataforma estática 1 y frágil 2
+        this.crearEspectro(380, 430, 260, 490, 48, 13);
 
-        // Espectro 2: zona media — largo recorrido sobre ruinas
-        this.crearEspectro(720, 365, 580, 860, 58, 17);
+        // Espectro 2: zona media — patrulla entre móvil 3 y elevadiza 4
+        this.crearEspectro(770, 365, 640, 890, 55, 16);
 
-        // Espectro 3: zona final — patrulla amplia antes del acantilado derecho
-        this.crearEspectro(1070, 420, 960, 1200, 52, 15);
+        // Espectro 3: zona final — patrulla el abismo entre plataforma frágil 5 y móvil 6
+        this.crearEspectro(1110, 415, 990, 1220, 50, 14);
 
         // Contacto con el jugador → daño
         this.physics.add.overlap(this.jugador, this.grupoEspectros, (jugador, espectro) => {
@@ -680,14 +803,14 @@ class EscenaSustentable2 extends Phaser.Scene {
      * ========================================================================= */
     crearColeccionables() {
         this.grupoOrbes = this.physics.add.group({ allowGravity: false, immovable: true });
-
+        // CAMBIAMOS AQUI LAS POSICIONES DE LOS ORBES PARA EL NIVEL 2
         const posicionesOrbes = [
-            { x: 350, y: 548 },
-            { x: 520, y: 442 },
-            { x: 700, y: 408 },
-            { x: 900, y: 378 },
-            { x: 1050, y: 362 },
-            { x: 1180, y: 418 }
+            { x: 360, y: 545 },
+            { x: 600, y: 385 },
+            { x: 770, y: 430 },
+            { x: 940, y: 395 },
+            { x: 1105, y: 435 },
+            { x: 1200, y: 480 }
         ];
 
         posicionesOrbes.forEach((pos) => {
@@ -838,7 +961,7 @@ class EscenaSustentable2 extends Phaser.Scene {
         if (moverIzq) {
             this.jugador.setVelocityX(-velocidadX);
             this.mirandoDerecha = false;
-            this.jugador.setFlipX(true);
+            this.jugador.setFlipX(!enSuelo);
             if (enSuelo) this.jugador.play(`avatar-${this.avatarKey}-correr-izq`, true);
         } else if (moverDer) {
             this.jugador.setVelocityX(velocidadX);
@@ -851,16 +974,21 @@ class EscenaSustentable2 extends Phaser.Scene {
             } else {
                 this.jugador.setVelocityX(0);
             }
-            if (enSuelo) this.jugador.play(`avatar-${this.avatarKey}-quieto`, true);
+            if (enSuelo) {
+                this.jugador.setFlipX(false);
+                this.jugador.play(`avatar-${this.avatarKey}-quieto`, true);
+            }
         }
 
         if (intentarSalto && enSuelo) {
             this.jugador.setVelocityY(fuerzaSalto);
+            this.jugador.setFlipX(!this.mirandoDerecha);
             this.jugador.play(`avatar-${this.avatarKey}-salto`, true);
             this.reproducirSonido('salto');
         }
 
         if (!enSuelo && this.jugador.body.velocity.y > 0) {
+            this.jugador.setFlipX(!this.mirandoDerecha);
             this.jugador.play(`avatar-${this.avatarKey}-salto`, true);
         }
 
@@ -1017,11 +1145,31 @@ class EscenaSustentable2 extends Phaser.Scene {
         this.reproducirSonido('dano');
         this.jugador.setPosition(this.puntoSpawn.x, this.puntoSpawn.y);
         this.jugador.setVelocity(0, 0);
+        this.jugadorEnPlataforma = null;
         this.actualizarHUD();
         this.mostrarTextoFlotante(this.jugador.x, this.jugador.y - 30, '¡CAÍDA! -1 VIDA', '#ff4757');
+
+        // Al revivir tras caer, restablecer todas las plataformas frágiles para el nuevo intento
+        this.restaurarPlataformasFragiles();
+
         if (this.vidas <= 0) {
             this.declararGameOver('¡Caíste al vacío sin suministro!');
+            return;
         }
+
+        // Breve parpadeo de invulnerabilidad al reaparecer en el spawn
+        this.invulnerable = true;
+        this.tweens.add({
+            targets: this.jugador,
+            alpha: { from: 0.3, to: 1 },
+            duration: 120,
+            yoyo: true,
+            repeat: 5,
+            onComplete: () => {
+                this.invulnerable = false;
+                this.jugador.setAlpha(1);
+            }
+        });
     }
 
     /* =========================================================================
@@ -1309,4 +1457,3 @@ class EscenaSustentable2 extends Phaser.Scene {
         }
     }
 }
-

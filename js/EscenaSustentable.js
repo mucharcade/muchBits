@@ -17,7 +17,7 @@ class EscenaSustentable extends Phaser.Scene {
 
     init(data) {
         this.origen = data && data.origen ? data.origen : 'EscenaJuego';
-        this.avatarKey = data && data.avatarKey ? data.avatarKey : (localStorage.getItem('muchbits-avatar') || 'user_default');
+        this.avatarKey = data && data.avatarKey ? data.avatarKey : (localStorage.getItem('muchbits-avatar') || 'user_male');
         this.nivelActual = 1;
         this.maxNiveles = 3;
     }
@@ -386,12 +386,14 @@ class EscenaSustentable extends Phaser.Scene {
      * ========================================================================= */
     crearAnimaciones() {
         const key = `avatar-${this.avatarKey}`;
+        const frameDerecha = this.avatarKey === 'user_male' ? 8 : 12;
+        const frameIzquierda = this.avatarKey === 'user_male' ? 12 : 8;
 
         // Caminata hacia la derecha
         if (!this.anims.exists(`${key}-correr-der`)) {
             this.anims.create({
                 key: `${key}-correr-der`,
-                frames: this.anims.generateFrameNumbers(key, { start: 12, end: 15 }),
+                frames: this.anims.generateFrameNumbers(key, { start: frameDerecha, end: frameDerecha + 3 }),
                 frameRate: 10,
                 repeat: -1
             });
@@ -401,7 +403,7 @@ class EscenaSustentable extends Phaser.Scene {
         if (!this.anims.exists(`${key}-correr-izq`)) {
             this.anims.create({
                 key: `${key}-correr-izq`,
-                frames: this.anims.generateFrameNumbers(key, { start: 8, end: 11 }),
+                frames: this.anims.generateFrameNumbers(key, { start: frameIzquierda, end: frameIzquierda + 3 }),
                 frameRate: 10,
                 repeat: -1
             });
@@ -420,7 +422,7 @@ class EscenaSustentable extends Phaser.Scene {
         if (!this.anims.exists(`${key}-salto`)) {
             this.anims.create({
                 key: `${key}-salto`,
-                frames: [{ key: key, frame: 13 }],
+                frames: [{ key: key, frame: frameDerecha + 1 }],
                 frameRate: 1
             });
         }
@@ -1058,6 +1060,13 @@ class EscenaSustentable extends Phaser.Scene {
         this.teclaENTER = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
 
         this.teclaESC.on('down', () => this.volverAlOrigen());
+        this.teclaENTER.on('down', () => {
+            if (this.nivelCompletado && this.modalVictoria && this.modalVictoria.visible) {
+                this.irANivel2();
+            } else if (this.juegoTerminado && this.modalGameOver && this.modalGameOver.visible) {
+                this.reiniciarNivel();
+            }
+        });
     }
 
     actualizarJugador() {
@@ -1083,7 +1092,7 @@ class EscenaSustentable extends Phaser.Scene {
         if (moverIzq) {
             this.jugador.setVelocityX(-velocidadX);
             this.mirandoDerecha = false;
-            this.jugador.setFlipX(true);
+            this.jugador.setFlipX(!enSuelo);
             if (enSuelo) {
                 this.jugador.play(`avatar-${this.avatarKey}-correr-izq`, true);
             }
@@ -1103,6 +1112,7 @@ class EscenaSustentable extends Phaser.Scene {
             }
 
             if (enSuelo) {
+                this.jugador.setFlipX(false);
                 this.jugador.play(`avatar-${this.avatarKey}-quieto`, true);
             }
         }
@@ -1110,6 +1120,7 @@ class EscenaSustentable extends Phaser.Scene {
         // Salto
         if (intentarSalto && enSuelo) {
             this.jugador.setVelocityY(fuerzaSalto);
+            this.jugador.setFlipX(!this.mirandoDerecha);
             this.jugador.play(`avatar-${this.avatarKey}-salto`, true);
             this.reproducirSonido('salto');
             this.crearPolvoSalto(this.jugador.x, this.jugador.y + 24);
@@ -1117,6 +1128,7 @@ class EscenaSustentable extends Phaser.Scene {
 
         // Animar caída en el aire
         if (!enSuelo && this.jugador.body.velocity.y > 0) {
+            this.jugador.setFlipX(!this.mirandoDerecha);
             this.jugador.play(`avatar-${this.avatarKey}-salto`, true);
         }
 
@@ -1416,8 +1428,8 @@ class EscenaSustentable extends Phaser.Scene {
         // El container visual está en (500,400); coordenadas absolutas = 500+dx, 400+dy
         this.botonesVictoria = [
             this.crearBotonModalAbs(290, 540, 'REINTENTAR', 0xe67e22, () => this.reiniciarNivel(), 165),
-            this.crearBotonModalAbs(500, 540, 'NIVEL 2 ➔',  0x0984e3, () => this.irANivel2(),       170),
-            this.crearBotonModalAbs(710, 540, 'SALIR',       0x27ae60, () => this.volverAlOrigen(),  165)
+            this.crearBotonModalAbs(500, 540, 'NIVEL 2 ➔', 0x0984e3, () => this.irANivel2(), 170),
+            this.crearBotonModalAbs(710, 540, 'SALIR', 0x27ae60, () => this.volverAlOrigen(), 165)
         ];
 
         // -------------------------------------------------------------
@@ -1497,11 +1509,27 @@ class EscenaSustentable extends Phaser.Scene {
         // Zona de interacción invisible encima
         const zone = this.add.zone(absX, absY, W, H)
             .setScrollFactor(0).setDepth(33);
-        zone.setInteractive({ useHandCursor: true });
+        zone.setInteractive(new Phaser.Geom.Rectangle(0, 0, W, H), Phaser.Geom.Rectangle.Contains);
+        if (zone.input) {
+            zone.input.cursor = 'pointer';
+        }
+
+        let procesando = false;
+        const ejecutarAccion = () => {
+            if (procesando) return;
+            procesando = true;
+            accion();
+        };
 
         zone.on('pointerover', () => { dibujarBg(1.06); txt.setScale(1.06); });
         zone.on('pointerout', () => { dibujarBg(1); txt.setScale(1); });
-        zone.on('pointerdown', accion);
+        zone.on('pointerdown', ejecutarAccion);
+        zone.on('pointerup', ejecutarAccion);
+
+        // Hacer también el texto interactivo para garantizar respuesta táctil
+        txt.setInteractive({ useHandCursor: true });
+        txt.on('pointerdown', ejecutarAccion);
+        txt.on('pointerup', ejecutarAccion);
 
         // Devuelve los tres objetos para poder mostrarlos/ocultarlos juntos
         return { bg, txt, zone };
@@ -1512,11 +1540,11 @@ class EscenaSustentable extends Phaser.Scene {
         for (const b of botones) {
             b.bg.setAlpha(alpha);
             b.txt.setAlpha(alpha);
-            // zone no tiene alpha, pero necesitamos activar/desactivar su input
-            if (visible) {
-                b.zone.setInteractive({ useHandCursor: true });
-            } else {
-                b.zone.disableInteractive();
+            if (b.zone && b.zone.input) {
+                b.zone.input.enabled = visible;
+            }
+            if (b.txt && b.txt.input) {
+                b.txt.input.enabled = visible;
             }
         }
     }
@@ -1536,7 +1564,17 @@ class EscenaSustentable extends Phaser.Scene {
             alpha: 1,
             duration: 300,
             ease: 'Quad.easeOut',
-            onComplete: () => this._setBotonesVisible(this.botonesVictoria, true, 1)
+            onComplete: () => {
+                this._setBotonesVisible(this.botonesVictoria, true, 1);
+            }
+        });
+
+        // Transición automática al Nivel 2 tras 5 segundos si el jugador no presiona antes
+        if (this.temporizadorAutoNivel2) this.temporizadorAutoNivel2.remove();
+        this.temporizadorAutoNivel2 = this.time.delayedCall(5000, () => {
+            if (this.nivelCompletado && !this.cambiandoNivel) {
+                this.irANivel2();
+            }
         });
     }
 
@@ -1560,17 +1598,24 @@ class EscenaSustentable extends Phaser.Scene {
     }
 
     reiniciarNivel() {
+        if (this.temporizadorAutoNivel2) this.temporizadorAutoNivel2.remove();
         this.scene.restart();
     }
 
     irANivel2() {
+        if (this.cambiandoNivel) return;
+        this.cambiandoNivel = true;
+        if (this.temporizadorAutoNivel2) this.temporizadorAutoNivel2.remove();
+        const avatar = this.avatarKey || localStorage.getItem('muchbits-avatar') || 'user_male';
+        this.scene.stop('EscenaSustentable');
         this.scene.start('EscenaSustentable2', {
-            origen: this.origen,
-            avatarKey: this.avatarKey
+            origen: this.origen || 'EscenaMenu',
+            avatarKey: avatar
         });
     }
 
     volverAlOrigen() {
+        if (this.temporizadorAutoNivel2) this.temporizadorAutoNivel2.remove();
         if (this.origen === 'EscenaMenu') {
             this.scene.start('EscenaMenu');
         } else {
@@ -1615,6 +1660,23 @@ class EscenaSustentable extends Phaser.Scene {
 
         // 4. Actualización del HUD
         this.actualizarHUD();
+
+        // 5. Interacción móvil para modales (Enter / Escape)
+        if (window.mobileControls) {
+            if (this.nivelCompletado && this.modalVictoria && this.modalVictoria.visible) {
+                if (window.mobileControls.consume('enter')) {
+                    this.irANivel2();
+                } else if (window.mobileControls.consume('escape')) {
+                    this.volverAlOrigen();
+                }
+            } else if (this.juegoTerminado && this.modalGameOver && this.modalGameOver.visible) {
+                if (window.mobileControls.consume('enter')) {
+                    this.reiniciarNivel();
+                } else if (window.mobileControls.consume('escape')) {
+                    this.volverAlOrigen();
+                }
+            }
+        }
     }
 
     /* =========================================================================
