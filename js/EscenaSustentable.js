@@ -1415,8 +1415,9 @@ class EscenaSustentable extends Phaser.Scene {
         // para que el input del puntero funcione aunque la cámara haya hecho scroll.
         // El container visual está en (500,400); coordenadas absolutas = 500+dx, 400+dy
         this.botonesVictoria = [
-            this.crearBotonModalAbs(360, 540, 'REINTENTAR', 0xe67e22, () => this.reiniciarNivel()),
-            this.crearBotonModalAbs(640, 540, 'SALIR', 0x27ae60, () => this.volverAlOrigen())
+            this.crearBotonModalAbs(290, 540, 'REINTENTAR', 0xe67e22, () => this.reiniciarNivel(), 165),
+            this.crearBotonModalAbs(500, 540, 'NIVEL 2 ➔',  0x0984e3, () => this.irANivel2(),       170),
+            this.crearBotonModalAbs(710, 540, 'SALIR',       0x27ae60, () => this.volverAlOrigen(),  165)
         ];
 
         // -------------------------------------------------------------
@@ -1470,8 +1471,8 @@ class EscenaSustentable extends Phaser.Scene {
      * @param {number} absX  Coordenada X absoluta en pantalla (viewport)
      * @param {number} absY  Coordenada Y absoluta en pantalla (viewport)
      */
-    crearBotonModalAbs(absX, absY, texto, colorHex, accion) {
-        const W = 200, H = 40;
+    crearBotonModalAbs(absX, absY, texto, colorHex, accion, anchoCustom) {
+        const W = anchoCustom || 200, H = 40;
 
         // Fondo del botón
         const bg = this.add.graphics()
@@ -1560,6 +1561,13 @@ class EscenaSustentable extends Phaser.Scene {
 
     reiniciarNivel() {
         this.scene.restart();
+    }
+
+    irANivel2() {
+        this.scene.start('EscenaSustentable2', {
+            origen: this.origen,
+            avatarKey: this.avatarKey
+        });
     }
 
     volverAlOrigen() {

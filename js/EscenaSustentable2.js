@@ -520,24 +520,29 @@ class EscenaSustentable2 extends Phaser.Scene {
 
     /**
      * Se llama cuando el jugador toca una plataforma frágil por primera vez.
-     * Espera 2 s y luego la hace caer con física real.
+     * Espera exactamente 2 segundos temblando en advertencia y luego cae al vacío.
      */
     activarCaidaFragil(plat) {
         if (plat.disparada) return;
         plat.disparada = true;
 
-        // Vibración rápida de advertencia durante ~1.4 s
+        this.reproducirSonido('crujido');
+        plat.setTint(0xff7675); // Tinte rojizo de fractura
+
+        // Vibración rápida de advertencia durante exactamente 2 segundos (20 ciclos * 100ms = 2000ms)
         this.tweens.add({
             targets: plat,
             x: { from: plat.x - 3, to: plat.x + 3 },
-            duration: 60,
+            duration: 50,
             yoyo: true,
-            repeat: 11,       // ~1.4 s
-            ease: 'Linear',
-            onComplete: () => {
-                if (plat.active) {
-                    this.iniciarCaidaLibre(plat);
-                }
+            repeat: 19,
+            ease: 'Linear'
+        });
+
+        // A los 2 segundos exactos se desprende y cae al abismo
+        this.time.delayedCall(2000, () => {
+            if (plat && plat.active) {
+                this.iniciarCaidaLibre(plat);
             }
         });
     }
@@ -546,17 +551,33 @@ class EscenaSustentable2 extends Phaser.Scene {
         if (!plat.active || plat.cayendo) return;
         plat.cayendo = true;
 
-        // Sacar del grupo estático y convertir en cuerpo dinámico con gravedad
-        this.plataformasEstaticas.remove(plat, false, false);
-        this.physics.world.enable(plat);
-        plat.body.allowGravity = true;
-        plat.body.setGravityY(900);
-        plat.body.checkCollision.up = false; // ya no es piso sólido
+        // Desactivar colisión inmediatamente: si el jugador sigue arriba, caerá al vacío
+        plat.body.enable = false;
+        this.reproducirSonido('crujido');
 
-        // Destruir cuando salga de la pantalla
-        this.time.addEvent({
-            delay: 3000,
-            callback: () => {
+        // Partículas de desprendimiento rocoso
+        for (let i = 0; i < 8; i++) {
+            const p = this.add.image(plat.x + Phaser.Math.Between(-50, 50), plat.y + 10, 'chispa_cable')
+                .setDisplaySize(6, 6).setDepth(6);
+            this.tweens.add({
+                targets: p,
+                x: p.x + Phaser.Math.Between(-30, 30),
+                y: p.y + Phaser.Math.Between(20, 70),
+                alpha: 0,
+                scale: 0.2,
+                duration: 450,
+                onComplete: () => p.destroy()
+            });
+        }
+
+        // Caída acelerada hacia el fondo del abismo
+        this.tweens.add({
+            targets: plat,
+            y: this.altoMundo + 150,
+            angle: Phaser.Math.Between(-12, 12),
+            duration: 900,
+            ease: 'Quad.easeIn',
+            onComplete: () => {
                 if (plat && plat.active) plat.destroy();
                 const idx = this.listaFragiles.indexOf(plat);
                 if (idx !== -1) this.listaFragiles.splice(idx, 1);
@@ -1187,6 +1208,16 @@ class EscenaSustentable2 extends Phaser.Scene {
             gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
             osc.connect(gain); gain.connect(ctx.destination);
             osc.start(now); osc.stop(now + 0.15);
+        } else if (tipo === 'crujido') {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(140, now);
+            osc.frequency.exponentialRampToValueAtTime(35, now + 0.35);
+            gain.gain.setValueAtTime(0.18, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.start(now); osc.stop(now + 0.35);
         } else if (tipo === 'orbe') {
             [523.25, 783.99].forEach((freq, idx) => {
                 const osc = ctx.createOscillator();
@@ -1236,3 +1267,4 @@ class EscenaSustentable2 extends Phaser.Scene {
         }
     }
 }
+
