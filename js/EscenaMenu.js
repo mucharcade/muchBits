@@ -688,6 +688,7 @@ class EscenaMenu extends Phaser.Scene {
         // Dinosaurio corriendo en la parte inferior
         this.dinoMenu = this.add.sprite(-80, 700, 'dinobit-menu')
             .setDisplaySize(150, 123)
+            .setFlipX(false)
             .setDepth(3);
 
         this.dinoVaHaciaLaDerecha = true;
