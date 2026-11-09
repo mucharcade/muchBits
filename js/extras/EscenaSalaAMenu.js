@@ -259,7 +259,7 @@ class EscenaSalaAMenu extends Phaser.Scene {
                 this.cameras.main.fadeOut(300, 0, 0, 0);
                 this.cameras.main.once('camerafadeoutcomplete', () => {
                     this.scene.start(opcion.escena, {
-                        avatarKey: localStorage.getItem('muchbits-avatar') || 'user_default'
+                        avatarKey: localStorage.getItem('muchbits-avatar') || 'user_male'
                     });
                 });
             }
@@ -306,7 +306,7 @@ class EscenaSalaAMenu extends Phaser.Scene {
         this.cameras.main.fadeOut(300, 0, 0, 0);
         this.cameras.main.once('camerafadeoutcomplete', () => {
             this.scene.start('EscenaJuego', {
-                avatarKey: localStorage.getItem('muchbits-avatar') || 'user_default',
+                avatarKey: localStorage.getItem('muchbits-avatar') || 'user_male',
                 posInicial: { x: 1400, y: 900 },
                 ignoreEscape: true
             });

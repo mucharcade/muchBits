@@ -6,7 +6,7 @@ class EscenaJuego extends Phaser.Scene {
     init(data) {
         this.ignoreEscape = Boolean(data && data.ignoreEscape);
         this.posInicial = (data && data.posInicial) ? data.posInicial : null;
-        this.avatarKey = (data && data.avatarKey) ? data.avatarKey : (localStorage.getItem('muchbits-avatar') || 'user_default');
+        this.avatarKey = (data && data.avatarKey) ? data.avatarKey : (localStorage.getItem('muchbits-avatar') || 'user_male');
     }
 
     preload() {
@@ -91,6 +91,8 @@ class EscenaJuego extends Phaser.Scene {
         }
 
         const avatarTexKey = `avatar-${this.avatarKey}`;
+        const frameDerecha = this.avatarKey === 'user_male' ? 8 : 12;
+        const frameIzquierda = this.avatarKey === 'user_male' ? 12 : 8;
         if (this.anims.exists('avatar-abajo')) this.anims.remove('avatar-abajo');
         if (this.anims.exists('avatar-arriba')) this.anims.remove('avatar-arriba');
         if (this.anims.exists('avatar-izquierda')) this.anims.remove('avatar-izquierda');
@@ -98,8 +100,8 @@ class EscenaJuego extends Phaser.Scene {
 
         this.anims.create({ key: 'avatar-abajo', frames: this.anims.generateFrameNumbers(avatarTexKey, { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
         this.anims.create({ key: 'avatar-arriba', frames: this.anims.generateFrameNumbers(avatarTexKey, { start: 4, end: 7 }), frameRate: 8, repeat: -1 });
-        this.anims.create({ key: 'avatar-izquierda', frames: this.anims.generateFrameNumbers(avatarTexKey, { start: 8, end: 11 }), frameRate: 8, repeat: -1 });
-        this.anims.create({ key: 'avatar-derecha', frames: this.anims.generateFrameNumbers(avatarTexKey, { start: 12, end: 15 }), frameRate: 8, repeat: -1 });
+        this.anims.create({ key: 'avatar-izquierda', frames: this.anims.generateFrameNumbers(avatarTexKey, { start: frameIzquierda, end: frameIzquierda + 3 }), frameRate: 8, repeat: -1 });
+        this.anims.create({ key: 'avatar-derecha', frames: this.anims.generateFrameNumbers(avatarTexKey, { start: frameDerecha, end: frameDerecha + 3 }), frameRate: 8, repeat: -1 });
 
         let graficosBorde = this.add.graphics();
         let graficosCamino = this.add.graphics();

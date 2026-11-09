@@ -6,18 +6,18 @@ class EscenaMenu extends Phaser.Scene {
     preload() {
         this.load.image('arbusto', 'pictures/arbusto.png');
         this.load.image('letrero_much', 'pictures/Letrero_MUCH.png');
-        this.load.spritesheet('dinobit-menu', 'pictures/dinosaur-run.png', {
+        this.load.spritesheet('dinobit-menu', 'pictures/sala_sbeel_dinosaurios/dinosaur-run.png', {
             frameWidth: 396,
-            frameHeight: 396
+            frameHeight: 326
         });
 
         // Terodáctilo para animar el cielo del menú
-        this.load.spritesheet('terodactilo-menu', 'pictures/terodactile.png', {
-            frameWidth: 543,
-            frameHeight: 724
+        this.load.spritesheet('terodactilo-menu', 'pictures/sala_sbeel_dinosaurios/terodactile.png', {
+            frameWidth: 524,
+            frameHeight: 412
         });
 
-        this.avatarOpciones = ['user_default', 'user_male', 'user_female'];
+        this.avatarOpciones = ['user_male', 'user_female'];
         this.avatarOpciones.forEach((avatarKey) => {
             this.load.spritesheet(`avatar-${avatarKey}`, `pictures/${avatarKey}.png`, {
                 frameWidth: 64,
@@ -27,7 +27,9 @@ class EscenaMenu extends Phaser.Scene {
     }
 
     create() {
-        this.avatarSeleccionado = localStorage.getItem('muchbits-avatar') || 'user_default';
+        const avatarGuardado = localStorage.getItem('muchbits-avatar');
+        this.avatarSeleccionado = this.avatarOpciones.includes(avatarGuardado) ? avatarGuardado : 'user_male';
+        localStorage.setItem('muchbits-avatar', this.avatarSeleccionado);
         this.creditosAbiertos = false;
 
         // 1. Fondo atmosférico Arcade con estrellas y partículas flotantes
@@ -147,7 +149,7 @@ class EscenaMenu extends Phaser.Scene {
         if (!this.anims.exists('dino-menu-corriendo')) {
             this.anims.create({
                 key: 'dino-menu-corriendo',
-                frames: this.anims.generateFrameNumbers('dinobit-menu', { start: 0, end: 12 }),
+                frames: this.anims.generateFrameNumbers('dinobit-menu', { start: 0, end: 11 }).reverse(),
                 frameRate: 14,
                 repeat: -1
             });
@@ -182,7 +184,7 @@ class EscenaMenu extends Phaser.Scene {
     // ==========================================
     iniciarTerodactiloVolador() {
         this.terodactilo = this.add.sprite(1100, 75, 'terodactilo-menu', 0)
-            .setDisplaySize(90, 60)
+            .setDisplaySize(90, 71)
             .setDepth(2)
             .setAlpha(0.85);
 
@@ -319,22 +321,21 @@ class EscenaMenu extends Phaser.Scene {
         const tarima = this.add.graphics().setDepth(3);
         // Sombra de la tarima
         tarima.fillStyle(0x05070e, 0.6);
-        tarima.fillRoundedRect(220, 395, 560, 22, 11);
+        tarima.fillRoundedRect(260, 395, 480, 22, 11);
         // Base de tarima tecnológica
         tarima.fillStyle(0x192a56, 0.9);
-        tarima.fillRoundedRect(225, 386, 550, 16, 8);
+        tarima.fillRoundedRect(265, 386, 470, 16, 8);
         tarima.lineStyle(2, 0x00d2d3, 0.7);
-        tarima.strokeRoundedRect(225, 386, 550, 16, 8);
+        tarima.strokeRoundedRect(265, 386, 470, 16, 8);
 
         this.avatarItems = [];
         const nombresAvatares = {
-            'user_default': 'CLÁSICO',
-            'user_male': 'CHICO',
-            'user_female': 'CHICA'
+            'user_male': 'HOMBRE',
+            'user_female': 'MUJER'
         };
 
         const avatarY = 328;
-        const coordsX = [355, 500, 645];
+        const coordsX = [390, 610];
 
         this.avatarOpciones.forEach((avatarKey, index) => {
             const avatarX = coordsX[index];
@@ -372,9 +373,9 @@ class EscenaMenu extends Phaser.Scene {
             const badgeFondo = this.add.graphics();
             const esActivo = avatarKey === this.avatarSeleccionado;
             badgeFondo.fillStyle(esActivo ? 0xf1c40f : 0x222f3e, 0.95);
-            badgeFondo.fillRoundedRect(-42, -11, 84, 22, 6);
+            badgeFondo.fillRoundedRect(-54, -11, 108, 22, 6);
             badgeFondo.lineStyle(2, esActivo ? 0xffffff : 0x576574, 1);
-            badgeFondo.strokeRoundedRect(-42, -11, 84, 22, 6);
+            badgeFondo.strokeRoundedRect(-54, -11, 108, 22, 6);
 
             const badgeTexto = this.add.text(0, 0, nombresAvatares[avatarKey] || avatarKey.toUpperCase(), {
                 fontSize: '11px',
@@ -453,9 +454,8 @@ class EscenaMenu extends Phaser.Scene {
         localStorage.setItem('muchbits-avatar', avatarKey);
 
         const nombresAvatares = {
-            'user_default': 'CLÁSICO',
-            'user_male': 'CHICO',
-            'user_female': 'CHICA'
+            'user_male': 'HOMBRE',
+            'user_female': 'MUJER'
         };
 
         this.avatarItems.forEach((item) => {
@@ -486,9 +486,9 @@ class EscenaMenu extends Phaser.Scene {
             // Actualizar badge
             item.badgeFondo.clear();
             item.badgeFondo.fillStyle(esActivo ? 0xf1c40f : 0x222f3e, 0.95);
-            item.badgeFondo.fillRoundedRect(-42, -11, 84, 22, 6);
+            item.badgeFondo.fillRoundedRect(-54, -11, 108, 22, 6);
             item.badgeFondo.lineStyle(2, esActivo ? 0xffffff : 0x576574, 1);
-            item.badgeFondo.strokeRoundedRect(-42, -11, 84, 22, 6);
+            item.badgeFondo.strokeRoundedRect(-54, -11, 108, 22, 6);
 
             item.badgeTexto.setStyle({
                 fill: esActivo ? '#1e272e' : '#c8d6e5'
@@ -635,7 +635,7 @@ class EscenaMenu extends Phaser.Scene {
 
         btnSustentable.on('pointerdown', () => {
             localStorage.setItem('muchbits-avatar', this.avatarSeleccionado);
-            this.scene.start('EscenaSustentable', { avatarKey: this.avatarSeleccionado, origen: 'EscenaMenu' });
+            this.scene.start('EscenaSustentable2', { avatarKey: this.avatarSeleccionado, origen: 'EscenaMenu' });
         });
 
         // --- BOTÓN 4: VER CRÉDITOS ---
@@ -685,30 +685,9 @@ class EscenaMenu extends Phaser.Scene {
         suelo.fillStyle(0x00d2d3, 0.9);
         suelo.fillRect(0, 753, 1000, 3);
 
-        // Arbustos decorativos con leve bamboleo de viento
-        this.arbustos = [];
-        for (let x = 40; x <= 960; x += 90) {
-            const arbusto = this.add.image(x, 758, 'arbusto')
-                .setDisplaySize(62, 62)
-                .setAlpha(0.85)
-                .setDepth(2);
-
-            this.arbustos.push(arbusto);
-
-            // Balanceo sutil de viento
-            this.tweens.add({
-                targets: arbusto,
-                angle: { from: -1.8, to: 1.8 },
-                duration: Phaser.Math.Between(2200, 3200),
-                yoyo: true,
-                repeat: -1,
-                ease: 'Sine.easeInOut'
-            });
-        }
-
         // Dinosaurio corriendo en la parte inferior
-        this.dinoMenu = this.add.sprite(-80, 712, 'dinobit-menu')
-            .setDisplaySize(130, 130)
+        this.dinoMenu = this.add.sprite(-80, 700, 'dinobit-menu')
+            .setDisplaySize(150, 123)
             .setDepth(3);
 
         this.dinoVaHaciaLaDerecha = true;
@@ -724,7 +703,7 @@ class EscenaMenu extends Phaser.Scene {
         this.tweens.add({
             targets: this.dinoMenu,
             x: vaHaciaLaDerecha ? 1060 : -60,
-            y: vaHaciaLaDerecha ? 712 : 710,
+            y: vaHaciaLaDerecha ? 700 : 698,
             duration: 6800,
             ease: 'Linear',
             onComplete: () => {
