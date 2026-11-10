@@ -1494,7 +1494,13 @@ class EscenaEnergia extends Phaser.Scene {
      * UPDATE LOOP
      * ========================================================================= */
     update(time, delta) {
-        if (this.juegoTerminado || this.juegoPausado) return;
+        if (this.juegoPausado) {
+            if (window.mobileControls && window.mobileControls.consume('enter')) {
+                if (this.cerrarBannerBienvenida) this.cerrarBannerBienvenida();
+            }
+            return;
+        }
+        if (this.juegoTerminado) return;
 
         const dtSegundos = delta / 1000;
 
@@ -1636,50 +1642,80 @@ class EscenaEnergia extends Phaser.Scene {
     }
 
     mostrarBannerBienvenida() {
-        const banner = this.add.container(500, 260).setDepth(150);
+        const banner = this.add.container(500, 290).setDepth(150);
 
         const fondo = this.add.graphics();
-        fondo.fillStyle(0x060f1c, 0.94);
-        fondo.fillRoundedRect(-260, -80, 520, 160, 12);
-        fondo.lineStyle(2, 0x00f2fe, 1);
-        fondo.strokeRoundedRect(-260, -80, 520, 160, 12);
+        // Sombra de fondo
+        fondo.fillStyle(0x020611, 0.7);
+        fondo.fillRoundedRect(-365, -115, 730, 230, 20);
+        // Cuerpo principal de la tarjeta
+        fondo.fillStyle(0x060f1c, 0.96);
+        fondo.fillRoundedRect(-360, -115, 720, 230, 18);
+        fondo.lineStyle(3, 0x00f2fe, 1);
+        fondo.strokeRoundedRect(-360, -115, 720, 230, 18);
+        // Borde interior sutil
+        fondo.lineStyle(1, 0x00f2fe, 0.35);
+        fondo.strokeRoundedRect(-354, -109, 708, 218, 14);
 
-        const t1 = this.add.text(0, -50, '⚡ SALA ENERGÍA: PRESA HIDROELÉCTRICA ⚡', {
+        const t1 = this.add.text(0, -72, '⚡ SALA ENERGÍA: PRESA HIDROELÉCTRICA ⚡', {
             fontFamily: '"Press Start 2P", monospace',
-            fontSize: '10px',
+            fontSize: '14px',
             color: '#00f2fe'
         }).setOrigin(0.5);
 
-        const t2 = this.add.text(0, -5,
+        const t2 = this.add.text(0, -2,
             'Haz click en la basura que arrastra la corriente para limpiarla.\n' +
             'No dejes que llegue a la presa o se atascarán las turbinas.\n' +
             'Tu barra de energía empieza al 50%. ¡Mantenla arriba!', {
             fontFamily: 'Outfit, sans-serif',
-            fontSize: '14px',
+            fontSize: '19px',
             color: '#f8fafc',
             align: 'center',
-            lineSpacing: 4
+            lineSpacing: 8
         }).setOrigin(0.5);
 
-        const t3 = this.add.text(0, 48, '[ HAZ CLICK EN CUALQUIER LADO PARA COMENZAR ]', {
+        const t3 = this.add.text(0, 74, '[ HAZ CLICK EN CUALQUIER LADO PARA COMENZAR ]', {
             fontFamily: '"Press Start 2P", monospace',
-            fontSize: '8px',
+            fontSize: '11px',
             color: '#7ed957'
         }).setOrigin(0.5);
+
+        // Animación de pulso sutil para el texto de inicio
+        this.tweens.add({
+            targets: t3,
+            alpha: 0.45,
+            duration: 650,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
 
         banner.add([fondo, t1, t2, t3]);
 
         // INICIAR EL JUEGO
-        // Cerrar banner y comenzar el juego al hacer click
-        this.input.once('pointerdown', () => {
+        // Cerrar banner y comenzar el juego al hacer click o presionar Enter
+        let cerrado = false;
+        const cerrarBanner = () => {
+            if (cerrado) return;
+            cerrado = true;
             this.juegoPausado = false;
+            this.cerrarBannerBienvenida = null;
             this.tweens.add({
                 targets: banner,
                 alpha: 0,
                 duration: 250,
                 onComplete: () => banner.destroy()
             });
-        });
+        };
+
+        this.cerrarBannerBienvenida = cerrarBanner;
+        this.input.once('pointerdown', cerrarBanner);
+        if (this.teclaENTER) {
+            this.teclaENTER.once('down', cerrarBanner);
+        }
+        if (this.teclaESPACIO) {
+            this.teclaESPACIO.once('down', cerrarBanner);
+        }
     }
 
     /* =========================================================================

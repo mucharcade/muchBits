@@ -17,10 +17,10 @@ class EscenaSustentable2 extends Phaser.Scene {
     }
 
     init(data) {
-        this.origen    = data && data.origen    ? data.origen    : 'EscenaJuego';
+        this.origen = data && data.origen ? data.origen : 'EscenaJuego';
         this.avatarKey = data && data.avatarKey ? data.avatarKey : (localStorage.getItem('muchbits-avatar') || 'user_male');
         this.nivelActual = 2;
-        this.maxNiveles  = 3;
+        this.maxNiveles = 3;
     }
 
     preload() {
@@ -28,9 +28,9 @@ class EscenaSustentable2 extends Phaser.Scene {
         this.load.image('fondo_sustentable_n2', 'pictures/sala_desarrollo_sustentable/Paisaje_Eolico_Ruinas_Maya.png');
 
         // Texturas de plataformas (mismo conjunto que N1)
-        this.load.image('plat_estable',    'pictures/sala_desarrollo_sustentable/plataforma_estable.png');
+        this.load.image('plat_estable', 'pictures/sala_desarrollo_sustentable/plataforma_estable.png');
         this.load.image('plat_movimiento', 'pictures/sala_desarrollo_sustentable/plataforma_movimiento.png');
-        this.load.image('plat_fragil',     'pictures/sala_desarrollo_sustentable/plataforma_fragil.png');
+        this.load.image('plat_fragil', 'pictures/sala_desarrollo_sustentable/plataforma_fragil.png');
 
         // Spritesheet del avatar seleccionado (4x4 frames de 64x64)
         this.load.spritesheet(`avatar-${this.avatarKey}`, `pictures/${this.avatarKey}.png`, {
@@ -43,23 +43,23 @@ class EscenaSustentable2 extends Phaser.Scene {
         this.initAudioSynthesizer();
 
         // ── Estado del juego ────────────────────────────────────────────────────
-        this.vidas             = 3;
-        this.maxVidas          = 3;
-        this.puntuacion        = 0;
-        this.tiempoRestante    = 65;        // un poco más de tiempo — nivel más largo
-        this.juegoTerminado    = false;
-        this.juegoPausado      = false;
-        this.nivelCompletado   = false;
-        this.invulnerable      = false;
-        this.cableConectado    = false;
+        this.vidas = 3;
+        this.maxVidas = 3;
+        this.puntuacion = 0;
+        this.tiempoRestante = 65;        // un poco más de tiempo — nivel más largo
+        this.juegoTerminado = false;
+        this.juegoPausado = false;
+        this.nivelCompletado = false;
+        this.invulnerable = false;
+        this.cableConectado = false;
         this.distanciaPorcentaje = 0;
 
-        this.longitudCableFT    = 0;
+        this.longitudCableFT = 0;
         this.maxLongitudCableFT = 160;      // Cable un poco más largo para N2
 
         // ── Dimensiones del mundo (mismo aspect ratio que N1: ~1.83) ───────────
         this.anchoMundo = 1500;
-        this.altoMundo  = 800;
+        this.altoMundo = 800;
         this.physics.world.setBounds(0, 0, this.anchoMundo, this.altoMundo);
 
         // ── Texturas procedurales ───────────────────────────────────────────────
@@ -266,13 +266,13 @@ class EscenaSustentable2 extends Phaser.Scene {
 
                 // Perfil estilizado de pala eólica (más ancha en el medio, estilizada en la punta)
                 const puntos = [
-                    { x: cx + ux * 8 - vx * 3.5,  y: cy + uy * 8 - vy * 3.5 },
-                    { x: cx + ux * 28 - vx * 7,    y: cy + uy * 28 - vy * 7 },
-                    { x: cx + ux * 65 - vx * 2.5,  y: cy + uy * 65 - vy * 2.5 },
-                    { x: cx + ux * 70,             y: cy + uy * 70 },
-                    { x: cx + ux * 65 + vx * 2.5,  y: cy + uy * 65 + vy * 2.5 },
-                    { x: cx + ux * 28 + vx * 7,    y: cy + uy * 28 + vy * 7 },
-                    { x: cx + ux * 8 + vx * 3.5,   y: cy + uy * 8 + vy * 3.5 }
+                    { x: cx + ux * 8 - vx * 3.5, y: cy + uy * 8 - vy * 3.5 },
+                    { x: cx + ux * 28 - vx * 7, y: cy + uy * 28 - vy * 7 },
+                    { x: cx + ux * 65 - vx * 2.5, y: cy + uy * 65 - vy * 2.5 },
+                    { x: cx + ux * 70, y: cy + uy * 70 },
+                    { x: cx + ux * 65 + vx * 2.5, y: cy + uy * 65 + vy * 2.5 },
+                    { x: cx + ux * 28 + vx * 7, y: cy + uy * 28 + vy * 7 },
+                    { x: cx + ux * 8 + vx * 3.5, y: cy + uy * 8 + vy * 3.5 }
                 ];
 
                 c.fillStyle(0xf5f6fa, 1);
@@ -388,10 +388,10 @@ class EscenaSustentable2 extends Phaser.Scene {
     crearNivel2() {
         // Grupos de físicas
         this.plataformasEstaticas = this.physics.add.staticGroup();
-        this.plataformasMoviles   = this.physics.add.group({ allowGravity: false, immovable: true });
+        this.plataformasMoviles = this.physics.add.group({ allowGravity: false, immovable: true });
 
         // Lista de plataformas frágiles (para lógica especial de caída)
-        this.listaFragiles        = [];
+        this.listaFragiles = [];
         this.listaPlataformasMoviles = [];
 
         // ── 1. Acantilado Izquierdo (inicio, generador) ────────────────────────
@@ -486,20 +486,20 @@ class EscenaSustentable2 extends Phaser.Scene {
         // Plataforma 1 — ESTÁTICA: primer escalón seguro desde el acantilado
         this.crearPlataformaEstatica(285, 585);
 
-        // Plataforma 3 — MÓVIL HORIZONTAL: patrulla en zona media-izquierda
+        // Plataforma 3 — MÓVIL HORIZONTAL: patrulla en zona media-izquierda 
         this.crearPlataformaMovilHorizontal(685, 470, 620, 750, 75);
 
-        // Plataforma 4 — ELEVADIZA VERTICAL: sube y baja entre ruinas
-        this.crearPlataformaElevadizaVertical(855, 445, 360, 530, 65);
+        // Plataforma 4 — ELEVADIZA VERTICAL: sube y baja entre ruinas (x, y, minY, maxY, velocidad)
+        this.crearPlataformaElevadizaVertical(955, 445, 360, 530, 65);
 
         // Plataforma 6 — MÓVIL HORIZONTAL: puente dinámico hacia la meta
-        this.crearPlataformaMovilHorizontal(1190, 480, 1140, 1240, 75);
+        //this.crearPlataformaMovilHorizontal(1190, 480, 1140, 1240, 75);
 
-        // Definición de las plataformas frágiles para crearlas y poder restaurarlas al revivir
+        // Plataforma 2, 5 y  - Definición de las plataformas frágiles para crearlas y poder restaurarlas al revivir
         this.datosPlataformasFragiles = [
             { x: 475, y: 525 },  // Plataforma 2 (FRÁGIL): enlace entre estática 1 y móvil 3
-            { x: 1020, y: 425 }, // Plataforma 5 (FRÁGIL): enlace entre elevadiza 4 y móvil 6
-            { x: 1270, y: 510 }  // Plataforma 7 (FRÁGIL): escalón de llegada al acantilado
+            //{ x: 1020, y: 425 }, // Plataforma 5 (FRÁGIL): enlace entre elevadiza 4 y móvil 6
+            { x: 1170, y: 510 }  // Plataforma 7 (FRÁGIL): escalón de llegada al acantilado
         ];
 
         this.restaurarPlataformasFragiles();
@@ -509,23 +509,23 @@ class EscenaSustentable2 extends Phaser.Scene {
 
     crearPlataformaEstatica(x, y) {
         const key = this.textures.exists('plat_estable_game') ? 'plat_estable_game'
-                  : this.textures.exists('plat_estable')      ? 'plat_estable'
-                  : 'plataforma_flotante_med';
+            : this.textures.exists('plat_estable') ? 'plat_estable'
+                : 'plataforma_flotante_med';
         const plat = this.plataformasEstaticas.create(x, y, key);
         plat.setDisplaySize(135, 52).setDepth(4).refreshBody();
         plat.body.setSize(124, 20);
         plat.body.setOffset(5, 4);
-        plat.body.checkCollision.down  = false;
-        plat.body.checkCollision.left  = false;
+        plat.body.checkCollision.down = false;
+        plat.body.checkCollision.left = false;
         plat.body.checkCollision.right = false;
-        plat.body.checkCollision.up    = true;
+        plat.body.checkCollision.up = true;
         return plat;
     }
 
     crearPlataformaMovilHorizontal(x, y, minX, maxX, velocidad) {
         const key = this.textures.exists('plat_movimiento_game') ? 'plat_movimiento_game'
-                  : this.textures.exists('plat_movimiento')      ? 'plat_movimiento'
-                  : 'plataforma_flotante_med';
+            : this.textures.exists('plat_movimiento') ? 'plat_movimiento'
+                : 'plataforma_flotante_med';
         const plat = this.plataformasMoviles.create(x, y, key);
         plat.setDisplaySize(135, 52).setDepth(4).setImmovable(true);
         plat.body.allowGravity = false;
@@ -536,10 +536,10 @@ class EscenaSustentable2 extends Phaser.Scene {
             plat.body.setSize(124 / plat.scaleX, 20 / plat.scaleY);
             plat.body.setOffset(5 / plat.scaleX, 4 / plat.scaleY);
         }
-        plat.body.checkCollision.down  = false;
-        plat.body.checkCollision.left  = false;
+        plat.body.checkCollision.down = false;
+        plat.body.checkCollision.left = false;
         plat.body.checkCollision.right = false;
-        plat.body.checkCollision.up    = true;
+        plat.body.checkCollision.up = true;
         plat.minX = minX; plat.maxX = maxX;
         plat.velocidadBase = velocidad;
         plat.body.setVelocityX(velocidad);
@@ -550,8 +550,8 @@ class EscenaSustentable2 extends Phaser.Scene {
 
     crearPlataformaElevadizaVertical(x, y, minY, maxY, velocidad) {
         const key = this.textures.exists('plat_movimiento_sm_game') ? 'plat_movimiento_sm_game'
-                  : this.textures.exists('plat_movimiento')         ? 'plat_movimiento'
-                  : 'plataforma_flotante_sm';
+            : this.textures.exists('plat_movimiento') ? 'plat_movimiento'
+                : 'plataforma_flotante_sm';
         const plat = this.plataformasMoviles.create(x, y, key);
         plat.setDisplaySize(100, 44).setDepth(4).setImmovable(true);
         plat.body.allowGravity = false;
@@ -562,10 +562,10 @@ class EscenaSustentable2 extends Phaser.Scene {
             plat.body.setSize(92 / plat.scaleX, 18 / plat.scaleY);
             plat.body.setOffset(4 / plat.scaleX, 3 / plat.scaleY);
         }
-        plat.body.checkCollision.down  = false;
-        plat.body.checkCollision.left  = false;
+        plat.body.checkCollision.down = false;
+        plat.body.checkCollision.left = false;
         plat.body.checkCollision.right = false;
-        plat.body.checkCollision.up    = true;
+        plat.body.checkCollision.up = true;
         plat.minY = minY; plat.maxY = maxY;
         plat.velocidadBase = velocidad;
         plat.body.setVelocityY(velocidad);
@@ -607,23 +607,23 @@ class EscenaSustentable2 extends Phaser.Scene {
      */
     crearPlataformaFragil(x, y) {
         const key = this.textures.exists('plat_fragil_game') ? 'plat_fragil_game'
-                  : this.textures.exists('plat_fragil')      ? 'plat_fragil'
-                  : 'plataforma_flotante_med';
+            : this.textures.exists('plat_fragil') ? 'plat_fragil'
+                : 'plataforma_flotante_med';
 
         // Las frágiles son inicialmente ESTÁTICAS sólidas
         const plat = this.plataformasEstaticas.create(x, y, key);
         plat.setDisplaySize(135, 52).setDepth(4).refreshBody();
         plat.body.setSize(124, 20);
         plat.body.setOffset(5, 4);
-        plat.body.checkCollision.down  = false;
-        plat.body.checkCollision.left  = false;
+        plat.body.checkCollision.down = false;
+        plat.body.checkCollision.left = false;
         plat.body.checkCollision.right = false;
-        plat.body.checkCollision.up    = true;
+        plat.body.checkCollision.up = true;
 
         // Estado inicial intacto
-        plat.esFragil   = true;
-        plat.disparada  = false;
-        plat.cayendo    = false;
+        plat.esFragil = true;
+        plat.disparada = false;
+        plat.cayendo = false;
         plat.setAlpha(1);
         plat.clearTint();
 
@@ -780,12 +780,12 @@ class EscenaSustentable2 extends Phaser.Scene {
         espectro.setDisplaySize(48, 44).setDepth(6);
         espectro.body.setSize(34, 30);
         espectro.body.setOffset(7, 7);
-        espectro.baseY   = y;
-        espectro.minX    = minX;
-        espectro.maxX    = maxX;
+        espectro.baseY = y;
+        espectro.minX = minX;
+        espectro.maxX = maxX;
         espectro.velocidadX = velocidad;
-        espectro.amplitud   = amplitudBobbing;
-        espectro.fase    = Phaser.Math.FloatBetween(0, Math.PI * 2);
+        espectro.amplitud = amplitudBobbing;
+        espectro.fase = Phaser.Math.FloatBetween(0, Math.PI * 2);
         this.tweens.add({
             targets: espectro,
             scaleX: { from: 1, to: 1.08 },
@@ -928,14 +928,14 @@ class EscenaSustentable2 extends Phaser.Scene {
      * CONTROLES (Teclado + Touch D-Pad)
      * ========================================================================= */
     configurarControles() {
-        this.cursores       = this.input.keyboard.createCursorKeys();
-        this.teclaW         = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
-        this.teclaA         = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
-        this.teclaS         = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
-        this.teclaD         = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
-        this.teclaESPACIO   = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-        this.teclaESC       = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
-        this.teclaENTER     = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
+        this.cursores = this.input.keyboard.createCursorKeys();
+        this.teclaW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+        this.teclaA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+        this.teclaS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+        this.teclaD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+        this.teclaESPACIO = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        this.teclaESC = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+        this.teclaENTER = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
         this.teclaESC.on('down', () => this.volverAlOrigen());
     }
 
@@ -948,8 +948,8 @@ class EscenaSustentable2 extends Phaser.Scene {
         const velocidadX = 220;
         const fuerzaSalto = -560;
 
-        const moverIzq    = this.cursores.left.isDown  || this.teclaA.isDown || window.mobileControls?.isDown('left');
-        const moverDer    = this.cursores.right.isDown || this.teclaD.isDown || window.mobileControls?.isDown('right');
+        const moverIzq = this.cursores.left.isDown || this.teclaA.isDown || window.mobileControls?.isDown('left');
+        const moverDer = this.cursores.right.isDown || this.teclaD.isDown || window.mobileControls?.isDown('right');
         const intentarSalto = Phaser.Input.Keyboard.JustDown(this.cursores.up) ||
             Phaser.Input.Keyboard.JustDown(this.teclaW) ||
             Phaser.Input.Keyboard.JustDown(this.teclaESPACIO) ||
@@ -1080,7 +1080,7 @@ class EscenaSustentable2 extends Phaser.Scene {
      * CONEXIÓN EXITOSA (VICTORIA)
      * ========================================================================= */
     conectarCableExitoso() {
-        this.cableConectado  = true;
+        this.cableConectado = true;
         this.nivelCompletado = true;
         this.reproducirSonido('conexion_exitosa');
 
@@ -1109,10 +1109,10 @@ class EscenaSustentable2 extends Phaser.Scene {
         }
 
         // Calcular bonificaciones
-        const bonusNivel  = 2000;
+        const bonusNivel = 2000;
         const bonusTiempo = this.tiempoRestante * 30;
-        const bonusCable  = Math.max(0, Math.floor((this.maxLongitudCableFT - this.longitudCableFT) * 5));
-        this.puntuacion  += bonusNivel + bonusTiempo + bonusCable;
+        const bonusCable = Math.max(0, Math.floor((this.maxLongitudCableFT - this.longitudCableFT) * 5));
+        this.puntuacion += bonusNivel + bonusTiempo + bonusCable;
 
         this.time.delayedCall(900, () => {
             this.mostrarModalVictoria(bonusNivel, bonusTiempo, bonusCable);
@@ -1257,14 +1257,14 @@ class EscenaSustentable2 extends Phaser.Scene {
         cardV.strokeRoundedRect(-300, -210, 600, 420, 18);
 
         const tituloV = this.add.text(0, -165, '★ ¡TURBINA CONECTADA! ★', { fontSize: '18px', fontFamily: '"Press Start 2P", monospace', fill: '#f1c40f' }).setOrigin(0.5);
-        const subV    = this.add.text(0, -130, 'Nivel 2: Ruinas Mayas con Parque Eólico', { fontSize: '12px', fontFamily: 'Arial', fontStyle: 'bold', fill: '#7ed6df' }).setOrigin(0.5);
+        const subV = this.add.text(0, -130, 'Nivel 2: Ruinas Mayas con Parque Eólico', { fontSize: '12px', fontFamily: 'Arial', fontStyle: 'bold', fill: '#7ed6df' }).setOrigin(0.5);
 
         this.textoDetalleVictoria = this.add.text(0, -20, '', { fontSize: '14px', fontFamily: '"Press Start 2P", monospace', fill: '#ffffff', align: 'center', lineSpacing: 14 }).setOrigin(0.5);
         this.modalVictoria.add([telonV, cardV, tituloV, subV, this.textoDetalleVictoria]);
 
         this.botonesVictoria = [
             this.crearBotonModalAbs(360, 540, 'REINTENTAR', 0xe67e22, () => this.reiniciarNivel()),
-            this.crearBotonModalAbs(640, 540, 'SALIR',       0x27ae60, () => this.volverAlOrigen())
+            this.crearBotonModalAbs(640, 540, 'SALIR', 0x27ae60, () => this.volverAlOrigen())
         ];
 
         // ── Modal de Game Over ───────────────────────────────────────────────
@@ -1281,13 +1281,13 @@ class EscenaSustentable2 extends Phaser.Scene {
         cardGO.strokeRoundedRect(-280, -180, 560, 360, 18);
 
         const tituloGO = this.add.text(0, -130, '💀 TURBINA SIN ENERGÍA 💀', { fontSize: '18px', fontFamily: '"Press Start 2P", monospace', fill: '#ff4757' }).setOrigin(0.5);
-        this.textoCausaGameOver  = this.add.text(0, -70, '', { fontSize: '13px', fontFamily: 'Arial', fontStyle: 'bold', fill: '#ff6b81', align: 'center' }).setOrigin(0.5);
-        this.textoScoreGameOver  = this.add.text(0, -10, '', { fontSize: '14px', fontFamily: '"Press Start 2P", monospace', fill: '#f1c40f' }).setOrigin(0.5);
+        this.textoCausaGameOver = this.add.text(0, -70, '', { fontSize: '13px', fontFamily: 'Arial', fontStyle: 'bold', fill: '#ff6b81', align: 'center' }).setOrigin(0.5);
+        this.textoScoreGameOver = this.add.text(0, -10, '', { fontSize: '14px', fontFamily: '"Press Start 2P", monospace', fill: '#f1c40f' }).setOrigin(0.5);
         this.modalGameOver.add([telonGO, cardGO, tituloGO, this.textoCausaGameOver, this.textoScoreGameOver]);
 
         this.botonesGameOver = [
             this.crearBotonModalAbs(380, 510, 'REINTENTAR', 0xe74c3c, () => this.reiniciarNivel()),
-            this.crearBotonModalAbs(620, 510, 'SALIR',       0x747d8c, () => this.volverAlOrigen())
+            this.crearBotonModalAbs(620, 510, 'SALIR', 0x747d8c, () => this.volverAlOrigen())
         ];
     }
 
@@ -1307,7 +1307,7 @@ class EscenaSustentable2 extends Phaser.Scene {
         const zone = this.add.zone(absX, absY, W, H).setScrollFactor(0).setDepth(33);
         zone.setInteractive({ useHandCursor: true });
         zone.on('pointerover', () => { dibujarBg(1.06); txt.setScale(1.06); });
-        zone.on('pointerout',  () => { dibujarBg(1);    txt.setScale(1); });
+        zone.on('pointerout', () => { dibujarBg(1); txt.setScale(1); });
         zone.on('pointerdown', accion);
         return { bg, txt, zone };
     }
@@ -1330,8 +1330,10 @@ class EscenaSustentable2 extends Phaser.Scene {
         );
         this._setBotonesVisible(this.botonesVictoria, false, 0);
         this.modalVictoria.setVisible(true);
-        this.tweens.add({ targets: this.modalVictoria, alpha: 1, duration: 300, ease: 'Quad.easeOut',
-            onComplete: () => this._setBotonesVisible(this.botonesVictoria, true, 1) });
+        this.tweens.add({
+            targets: this.modalVictoria, alpha: 1, duration: 300, ease: 'Quad.easeOut',
+            onComplete: () => this._setBotonesVisible(this.botonesVictoria, true, 1)
+        });
     }
 
     declararGameOver(causa) {
@@ -1342,8 +1344,10 @@ class EscenaSustentable2 extends Phaser.Scene {
         this.textoScoreGameOver.setText(`SCORE FINAL: ${this.puntuacion}`);
         this._setBotonesVisible(this.botonesGameOver, false, 0);
         this.modalGameOver.setVisible(true);
-        this.tweens.add({ targets: this.modalGameOver, alpha: 1, duration: 300, ease: 'Quad.easeOut',
-            onComplete: () => this._setBotonesVisible(this.botonesGameOver, true, 1) });
+        this.tweens.add({
+            targets: this.modalGameOver, alpha: 1, duration: 300, ease: 'Quad.easeOut',
+            onComplete: () => this._setBotonesVisible(this.botonesGameOver, true, 1)
+        });
     }
 
     reiniciarNivel() { this.scene.restart(); }

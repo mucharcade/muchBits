@@ -155,7 +155,7 @@ class EscenaDinoRun extends Phaser.Scene {
         if (!this.anims.exists('dinosaurio-corriendo')) {
             this.anims.create({
                 key: 'dinosaurio-corriendo',
-                frames: this.anims.generateFrameNumbers('dinosaurio-perseguidor', { start: 0, end: 11 }).reverse(),
+                frames: this.anims.generateFrameNumbers('dinosaurio-perseguidor', { start: 0, end: 11 }),
                 frameRate: 12,
                 repeat: -1
             });

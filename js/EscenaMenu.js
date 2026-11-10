@@ -635,7 +635,7 @@ class EscenaMenu extends Phaser.Scene {
 
         btnSustentable.on('pointerdown', () => {
             localStorage.setItem('muchbits-avatar', this.avatarSeleccionado);
-            this.scene.start('EscenaSustentable2', { avatarKey: this.avatarSeleccionado, origen: 'EscenaMenu' });
+            this.scene.start('EscenaSustentable', { avatarKey: this.avatarSeleccionado, origen: 'EscenaMenu' });
         });
 
         // --- BOTÓN 4: VER CRÉDITOS ---
@@ -678,7 +678,7 @@ class EscenaMenu extends Phaser.Scene {
     // 7. SUELO, ARBUSTOS Y DINOSAURIO CORREDOR
     // ==========================================
     crearSueloYDinoCorredor() {
-        // Franja de tierra y pasto inferior
+        // Franja de tierra
         const suelo = this.add.graphics().setDepth(2);
         suelo.fillStyle(0x192a56, 1);
         suelo.fillRect(0, 755, 1000, 45);
@@ -687,8 +687,7 @@ class EscenaMenu extends Phaser.Scene {
 
         // Dinosaurio corriendo en la parte inferior
         this.dinoMenu = this.add.sprite(-80, 700, 'dinobit-menu')
-            .setDisplaySize(150, 123)
-            .setFlipX(false)
+            .setDisplaySize(170, 128)
             .setDepth(3);
 
         this.dinoVaHaciaLaDerecha = true;
@@ -698,7 +697,7 @@ class EscenaMenu extends Phaser.Scene {
     moverDinoMenu() {
         const vaHaciaLaDerecha = this.dinoVaHaciaLaDerecha;
         this.dinoMenu
-            .setFlipX(vaHaciaLaDerecha)
+            .setFlipX(!vaHaciaLaDerecha)
             .play('dino-menu-corriendo', true);
 
         this.tweens.add({
