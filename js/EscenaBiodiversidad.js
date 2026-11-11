@@ -175,6 +175,8 @@ class EscenaBiodiversidad extends Phaser.Scene {
             frameWidth: 384,
             frameHeight: 445
         });
+
+        this.load.audio('biodiversidad-ambiente', 'music/sountrack_biodiversidad.mp3');
     }
 
     create() {
@@ -184,6 +186,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
         this.physics.world.setBounds(0, 0, this.mundoAncho, this.mundoAlto);
 
         this._inicializarAudio();
+        this._inicializarMusicaAmbiente();
         this._mapearFramesYAnimaciones();
         this._crearFondoParalaje();
         this._crearPlataformasYSuelo();
@@ -333,6 +336,53 @@ class EscenaBiodiversidad extends Phaser.Scene {
                 repeat: -1
             });
         }
+    }
+
+    _inicializarMusicaAmbiente() {
+        if (!this.sound || !this.sound.add) return;
+
+        if (this.musicaAmbiente) {
+            this.musicaAmbiente.stop();
+        }
+
+        this.musicaAmbiente = this.sound.add('biodiversidad-ambiente', {
+            loop: true,
+            volume: 0
+        });
+
+        if (this.musicaAmbiente) {
+            this.musicaAmbiente.play();
+            this.musicaAmbienteVolumen = { valor: 0 };
+            this.tweens.add({
+                targets: this.musicaAmbienteVolumen,
+                valor: 0.22,
+                duration: 2400,
+                ease: 'Sine.easeInOut',
+                onUpdate: () => {
+                    this.musicaAmbiente.setVolume(this.musicaAmbienteVolumen.valor);
+                }
+            });
+        }
+
+        this.events.once('shutdown', () => this._detenerMusicaAmbiente());
+        this.events.once('destroy', () => this._detenerMusicaAmbiente());
+    }
+
+    _detenerMusicaAmbiente() {
+        if (!this.musicaAmbiente) return;
+        this.tweens.add({
+            targets: { valor: this.musicaAmbiente.volume || 0.22 },
+            valor: 0,
+            duration: 500,
+            ease: 'Sine.easeInOut',
+            onUpdate: (tween, target) => {
+                this.musicaAmbiente.setVolume(target.valor);
+            },
+            onComplete: () => {
+                this.musicaAmbiente.stop();
+                this.musicaAmbiente = null;
+            }
+        });
     }
 
     /* -------------------------------------------------------------

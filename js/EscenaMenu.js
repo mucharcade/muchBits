@@ -6,6 +6,7 @@ class EscenaMenu extends Phaser.Scene {
     preload() {
         this.load.image('arbusto', 'pictures/arbusto.png');
         this.load.image('letrero_much', 'pictures/Letrero_MUCH.png');
+        this.load.audio('menu-intro', 'music/intro.mp3');
         this.load.spritesheet('dinobit-menu', 'pictures/sala_sbeel_dinosaurios/dinosaur-run.png', {
             frameWidth: 396,
             frameHeight: 326
@@ -27,6 +28,26 @@ class EscenaMenu extends Phaser.Scene {
     }
 
     create() {
+        this.sound.stopByKey('menu-intro');
+        this.musicaMenu = this.sound.add('menu-intro', { loop: true, volume: 0 });
+        this.musicaMenu.play();
+
+        this.musicaMenuVolumen = { valor: 0 };
+        this.tweens.add({
+            targets: this.musicaMenuVolumen,
+            valor: 0.5,
+            duration: 2600,
+            ease: 'Sine.easeInOut',
+            onUpdate: () => {
+                if (this.musicaMenu) {
+                    this.musicaMenu.setVolume(this.musicaMenuVolumen.valor);
+                }
+            }
+        });
+
+        this.events.on('shutdown', () => this.detenerMusicaMenu());
+        this.events.on('destroy', () => this.detenerMusicaMenu());
+
         const avatarGuardado = localStorage.getItem('muchbits-avatar');
         this.avatarSeleccionado = this.avatarOpciones.includes(avatarGuardado) ? avatarGuardado : 'user_male';
         localStorage.setItem('muchbits-avatar', this.avatarSeleccionado);
@@ -602,6 +623,7 @@ class EscenaMenu extends Phaser.Scene {
         });
 
         btnEnergia.on('pointerdown', () => {
+            this.detenerMusicaMenu();
             localStorage.setItem('muchbits-avatar', this.avatarSeleccionado);
             this.scene.start('EscenaEnergia', { avatarKey: this.avatarSeleccionado, origen: 'EscenaMenu' });
         });
@@ -634,6 +656,7 @@ class EscenaMenu extends Phaser.Scene {
         });
 
         btnSustentable.on('pointerdown', () => {
+            this.detenerMusicaMenu();
             localStorage.setItem('muchbits-avatar', this.avatarSeleccionado);
             this.scene.start('EscenaSustentable', { avatarKey: this.avatarSeleccionado, origen: 'EscenaMenu' });
         });
@@ -825,7 +848,16 @@ class EscenaMenu extends Phaser.Scene {
         this.input.keyboard.on('keydown-ESC', () => this.alternarCreditos());
     }
 
+    detenerMusicaMenu() {
+        if (this.musicaMenu) {
+            this.sound.stopByKey('menu-intro');
+            this.musicaMenu.stop();
+            this.musicaMenu = null;
+        }
+    }
+
     iniciarJuego() {
+        this.detenerMusicaMenu();
         localStorage.setItem('muchbits-avatar', this.avatarSeleccionado);
         this.scene.start('EscenaJuego', { avatarKey: this.avatarSeleccionado });
     }
