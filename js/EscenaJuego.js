@@ -10,7 +10,7 @@ class EscenaJuego extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('arbusto', 'pictures/arbusto.png');
+        this.load.image('arbusto', 'pictures/salabiodiversidad/arbusto.png');
         if (!this.textures.exists(`avatar-${this.avatarKey}`)) {
             this.load.spritesheet(`avatar-${this.avatarKey}`, `pictures/${this.avatarKey}.png`, {
                 frameWidth: 64,

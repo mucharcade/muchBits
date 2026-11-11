@@ -4,7 +4,6 @@ class EscenaMenu extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('arbusto', 'pictures/arbusto.png');
         this.load.image('letrero_much', 'pictures/Letrero_MUCH.png');
         this.load.audio('menu-intro', 'music/intro.mp3');
         this.load.spritesheet('dinobit-menu', 'pictures/sala_sbeel_dinosaurios/dinosaur-run.png', {

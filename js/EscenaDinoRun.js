@@ -12,9 +12,8 @@ class EscenaDinoRun extends Phaser.Scene {
                 frameHeight: 64
             });
         }
-        this.load.image('arbusto', 'pictures/arbusto.png');
-        this.load.image('arbol', 'pictures/arbol.png');
-        this.load.image('arbol_grande', 'pictures/arbol_grande.png');
+        this.load.image('arbol', 'pictures/salabiodiversidad/arbol.png');
+        this.load.image('arbol_grande', 'pictures/salabiodiversidad/arbol_grande.png');
         this.load.image('roca', 'pictures/sala_sbeel_dinosaurios/roca.png');
         this.load.spritesheet('terodactilo', 'pictures/sala_sbeel_dinosaurios/terodactile.png', {
             frameWidth: 524,

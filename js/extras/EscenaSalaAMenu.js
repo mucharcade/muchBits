@@ -5,7 +5,7 @@ class EscenaSalaAMenu extends Phaser.Scene {
 
     preload() {
         this.load.image('wood-sign', 'pictures/wood.png');
-        this.load.image('arbusto', 'pictures/arbusto.png');
+        this.load.image('arbusto', 'pictures/salabiodiversidad/arbusto.png');
     }
 
     create() {
