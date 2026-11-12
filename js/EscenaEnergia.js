@@ -23,6 +23,7 @@ class EscenaEnergia extends Phaser.Scene {
     preload() {
         // Cargar imagen de fondo base limpia (segunda imagen de referencia)
         this.load.image('fondo_presa', 'pictures/sala_energia/fondo_presa.png');
+        this.load.audio('energia-presa-fondo', 'music/intro_presa_energia_loop.mp3');
 
         // Cargar spritesheets animados de basura proporcionados en sala_energia/basura
         this.load.spritesheet('basura_barril', 'pictures/sala_energia/basura/Barril_ SpriteSheet.png', {
@@ -68,6 +69,8 @@ class EscenaEnergia extends Phaser.Scene {
     }
 
     create() {
+        this.iniciarMusicaFondo();
+
         // Inicializar estado del juego
         this.energia = 50; // La barra empieza exactamente a la mitad (50%)
         this.energiaObjetivo = 50;
@@ -1639,6 +1642,26 @@ class EscenaEnergia extends Phaser.Scene {
             posInicial: { x: 1750, y: 450 },
             ignoreEscape: true
         });
+    }
+
+    iniciarMusicaFondo() {
+        this.sound.stopByKey('energia-presa-fondo');
+        this.musicaFondo = this.sound.add('energia-presa-fondo', {
+            loop: true,
+            volume: 0.2
+        });
+        this.musicaFondo.play();
+
+        this.events.once('shutdown', () => this.detenerMusicaFondo());
+        this.events.once('destroy', () => this.detenerMusicaFondo());
+    }
+
+    detenerMusicaFondo() {
+        if (this.musicaFondo) {
+            this.sound.stopByKey('energia-presa-fondo');
+            this.musicaFondo.stop();
+            this.musicaFondo = null;
+        }
     }
 
     mostrarBannerBienvenida() {
