@@ -27,6 +27,7 @@ class EscenaMenu extends Phaser.Scene {
     }
 
     create() {
+        this.mantenerMusicaMenu = false;
         this.sound.stopByKey('menu-intro');
         this.musicaMenu = this.sound.add('menu-intro', { loop: true, volume: 0 });
         this.musicaMenu.play();
@@ -34,7 +35,7 @@ class EscenaMenu extends Phaser.Scene {
         this.musicaMenuVolumen = { valor: 0 };
         this.tweens.add({
             targets: this.musicaMenuVolumen,
-            valor: 0.5,
+            valor: 0.7,
             duration: 2600,
             ease: 'Sine.easeInOut',
             onUpdate: () => {
@@ -44,8 +45,11 @@ class EscenaMenu extends Phaser.Scene {
             }
         });
 
-        this.events.on('shutdown', () => this.detenerMusicaMenu());
-        this.events.on('destroy', () => this.detenerMusicaMenu());
+        this.events.once('shutdown', () => {
+            if (!this.mantenerMusicaMenu) this.detenerMusicaMenu();
+            this.mantenerMusicaMenu = false;
+        });
+        this.events.once('destroy', () => this.detenerMusicaMenu());
 
         const avatarGuardado = localStorage.getItem('muchbits-avatar');
         this.avatarSeleccionado = this.avatarOpciones.includes(avatarGuardado) ? avatarGuardado : 'user_male';
@@ -856,7 +860,7 @@ class EscenaMenu extends Phaser.Scene {
     }
 
     iniciarJuego() {
-        this.detenerMusicaMenu();
+        this.mantenerMusicaMenu = true;
         localStorage.setItem('muchbits-avatar', this.avatarSeleccionado);
         this.scene.start('EscenaJuego', { avatarKey: this.avatarSeleccionado });
     }

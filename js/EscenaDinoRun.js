@@ -371,6 +371,7 @@ class EscenaDinoRun extends Phaser.Scene {
         mapa.ignoreEscape = true;
         this.scene.stop('EscenaDinoRun');
         this.scene.wake('EscenaJuego');
+        mapa.iniciarMusicaMapa();
     }
 
     crearArbolPaisaje(x) {

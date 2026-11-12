@@ -20,6 +20,10 @@ class EscenaJuego extends Phaser.Scene {
     }
 
     create() {
+        this.iniciarMusicaMapa();
+        this.events.once('shutdown', () => this.detenerMusicaMapa());
+        this.events.once('destroy', () => this.detenerMusicaMapa());
+
         const anchoMundo = 2000;
         const altoMundo = 1200;
 
@@ -265,6 +269,7 @@ class EscenaJuego extends Phaser.Scene {
                 if (Phaser.Input.Keyboard.JustDown(this.teclaENTER) || enterTactil || Phaser.Input.Keyboard.JustDown(this.teclaS)) {
                     this.textoPortal.setVisible(false);
                     this.enPortal = false;
+                    this.detenerMusicaMapa();
                     this.scene.sleep('EscenaJuego');
                     this.scene.launch('EscenaDinoRun');
                 } else if (Phaser.Input.Keyboard.JustDown(this.teclaESC) || escapeTactil || Phaser.Input.Keyboard.JustDown(this.teclaN)) {
@@ -407,5 +412,38 @@ class EscenaJuego extends Phaser.Scene {
         this.jugador.y = salida.y;
         this.ultimaPosSegura = { x: salida.x, y: salida.y };
         this.salaActual = null;
+    }
+
+    iniciarMusicaMapa() {
+        const musicaExistente = this.sound.get('menu-intro');
+        if (musicaExistente && musicaExistente.isPlaying) {
+            this.musicaMapa = musicaExistente;
+            return;
+        }
+
+        this.sound.stopByKey('menu-intro');
+        this.musicaMapa = this.sound.add('menu-intro', { loop: true, volume: 0 });
+        this.musicaMapa.play();
+
+        this.musicaMapaVolumen = { valor: 0 };
+        this.tweens.add({
+            targets: this.musicaMapaVolumen,
+            valor: 0.7,
+            duration: 2600,
+            ease: 'Sine.easeInOut',
+            onUpdate: () => {
+                if (this.musicaMapa) {
+                    this.musicaMapa.setVolume(this.musicaMapaVolumen.valor);
+                }
+            }
+        });
+    }
+
+    detenerMusicaMapa() {
+        if (this.musicaMapa) {
+            this.sound.stopByKey('menu-intro');
+            this.musicaMapa.stop();
+            this.musicaMapa = null;
+        }
     }
 }
