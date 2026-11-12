@@ -24,7 +24,7 @@ class EscenaSustentable extends Phaser.Scene {
 
     preload() {
         // Fondo oficial del Nivel 1 (Cañón del Sumidero / Paneles Solares)
-        this.load.image('fondo_sustentable_n1', 'pictures/sala_desarrollo_sustentable/Paisaje_Panel_Canon.png');
+        this.load.image('fondo_sustentable_n1', 'pictures/sala_desarrollo_sustentable/Paisaje_Panel_Canon_Sumidero.png');
 
         // Texturas oficiales de plataformas flotantes (diseñadas por los artistas)
         this.load.image('plat_estable', 'pictures/sala_desarrollo_sustentable/plataforma_estable.png');
