@@ -4,20 +4,20 @@ class EscenaMenu extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('arbusto', 'pictures/arbusto.png');
         this.load.image('letrero_much', 'pictures/Letrero_MUCH.png');
-        this.load.spritesheet('dinobit-menu', 'pictures/dinosaur-run.png', {
+        this.load.audio('menu-intro', 'music/intro_menu_loop_extended.mp3');
+        this.load.spritesheet('dinobit-menu', 'pictures/sala_sbeel_dinosaurios/dinosaur-run.png', {
             frameWidth: 396,
-            frameHeight: 396
+            frameHeight: 326
         });
 
         // Terodáctilo para animar el cielo del menú
-        this.load.spritesheet('terodactilo-menu', 'pictures/terodactile.png', {
-            frameWidth: 543,
-            frameHeight: 724
+        this.load.spritesheet('terodactilo-menu', 'pictures/sala_sbeel_dinosaurios/terodactile.png', {
+            frameWidth: 524,
+            frameHeight: 412
         });
 
-        this.avatarOpciones = ['user_default', 'user_male', 'user_female'];
+        this.avatarOpciones = ['user_male', 'user_female'];
         this.avatarOpciones.forEach((avatarKey) => {
             this.load.spritesheet(`avatar-${avatarKey}`, `pictures/${avatarKey}.png`, {
                 frameWidth: 64,
@@ -27,7 +27,33 @@ class EscenaMenu extends Phaser.Scene {
     }
 
     create() {
-        this.avatarSeleccionado = localStorage.getItem('muchbits-avatar') || 'user_default';
+        this.mantenerMusicaMenu = false;
+        this.sound.stopByKey('menu-intro');
+        this.musicaMenu = this.sound.add('menu-intro', { loop: true, volume: 0 });
+        this.musicaMenu.play();
+
+        this.musicaMenuVolumen = { valor: 0 };
+        this.tweens.add({
+            targets: this.musicaMenuVolumen,
+            valor: 0.7,
+            duration: 2600,
+            ease: 'Sine.easeInOut',
+            onUpdate: () => {
+                if (this.musicaMenu) {
+                    this.musicaMenu.setVolume(this.musicaMenuVolumen.valor);
+                }
+            }
+        });
+
+        this.events.once('shutdown', () => {
+            if (!this.mantenerMusicaMenu) this.detenerMusicaMenu();
+            this.mantenerMusicaMenu = false;
+        });
+        this.events.once('destroy', () => this.detenerMusicaMenu());
+
+        const avatarGuardado = localStorage.getItem('muchbits-avatar');
+        this.avatarSeleccionado = this.avatarOpciones.includes(avatarGuardado) ? avatarGuardado : 'user_male';
+        localStorage.setItem('muchbits-avatar', this.avatarSeleccionado);
         this.creditosAbiertos = false;
 
         // 1. Fondo atmosférico Arcade con estrellas y partículas flotantes
@@ -147,7 +173,7 @@ class EscenaMenu extends Phaser.Scene {
         if (!this.anims.exists('dino-menu-corriendo')) {
             this.anims.create({
                 key: 'dino-menu-corriendo',
-                frames: this.anims.generateFrameNumbers('dinobit-menu', { start: 0, end: 12 }),
+                frames: this.anims.generateFrameNumbers('dinobit-menu', { start: 0, end: 11 }).reverse(),
                 frameRate: 14,
                 repeat: -1
             });
@@ -182,7 +208,7 @@ class EscenaMenu extends Phaser.Scene {
     // ==========================================
     iniciarTerodactiloVolador() {
         this.terodactilo = this.add.sprite(1100, 75, 'terodactilo-menu', 0)
-            .setDisplaySize(90, 60)
+            .setDisplaySize(90, 71)
             .setDepth(2)
             .setAlpha(0.85);
 
@@ -319,22 +345,21 @@ class EscenaMenu extends Phaser.Scene {
         const tarima = this.add.graphics().setDepth(3);
         // Sombra de la tarima
         tarima.fillStyle(0x05070e, 0.6);
-        tarima.fillRoundedRect(220, 395, 560, 22, 11);
+        tarima.fillRoundedRect(260, 395, 480, 22, 11);
         // Base de tarima tecnológica
         tarima.fillStyle(0x192a56, 0.9);
-        tarima.fillRoundedRect(225, 386, 550, 16, 8);
+        tarima.fillRoundedRect(265, 386, 470, 16, 8);
         tarima.lineStyle(2, 0x00d2d3, 0.7);
-        tarima.strokeRoundedRect(225, 386, 550, 16, 8);
+        tarima.strokeRoundedRect(265, 386, 470, 16, 8);
 
         this.avatarItems = [];
         const nombresAvatares = {
-            'user_default': 'CLÁSICO',
-            'user_male': 'CHICO',
-            'user_female': 'CHICA'
+            'user_male': 'HOMBRE',
+            'user_female': 'MUJER'
         };
 
         const avatarY = 328;
-        const coordsX = [355, 500, 645];
+        const coordsX = [390, 610];
 
         this.avatarOpciones.forEach((avatarKey, index) => {
             const avatarX = coordsX[index];
@@ -372,9 +397,9 @@ class EscenaMenu extends Phaser.Scene {
             const badgeFondo = this.add.graphics();
             const esActivo = avatarKey === this.avatarSeleccionado;
             badgeFondo.fillStyle(esActivo ? 0xf1c40f : 0x222f3e, 0.95);
-            badgeFondo.fillRoundedRect(-42, -11, 84, 22, 6);
+            badgeFondo.fillRoundedRect(-54, -11, 108, 22, 6);
             badgeFondo.lineStyle(2, esActivo ? 0xffffff : 0x576574, 1);
-            badgeFondo.strokeRoundedRect(-42, -11, 84, 22, 6);
+            badgeFondo.strokeRoundedRect(-54, -11, 108, 22, 6);
 
             const badgeTexto = this.add.text(0, 0, nombresAvatares[avatarKey] || avatarKey.toUpperCase(), {
                 fontSize: '11px',
@@ -453,9 +478,8 @@ class EscenaMenu extends Phaser.Scene {
         localStorage.setItem('muchbits-avatar', avatarKey);
 
         const nombresAvatares = {
-            'user_default': 'CLÁSICO',
-            'user_male': 'CHICO',
-            'user_female': 'CHICA'
+            'user_male': 'HOMBRE',
+            'user_female': 'MUJER'
         };
 
         this.avatarItems.forEach((item) => {
@@ -486,9 +510,9 @@ class EscenaMenu extends Phaser.Scene {
             // Actualizar badge
             item.badgeFondo.clear();
             item.badgeFondo.fillStyle(esActivo ? 0xf1c40f : 0x222f3e, 0.95);
-            item.badgeFondo.fillRoundedRect(-42, -11, 84, 22, 6);
+            item.badgeFondo.fillRoundedRect(-54, -11, 108, 22, 6);
             item.badgeFondo.lineStyle(2, esActivo ? 0xffffff : 0x576574, 1);
-            item.badgeFondo.strokeRoundedRect(-42, -11, 84, 22, 6);
+            item.badgeFondo.strokeRoundedRect(-54, -11, 108, 22, 6);
 
             item.badgeTexto.setStyle({
                 fill: esActivo ? '#1e272e' : '#c8d6e5'
@@ -530,26 +554,26 @@ class EscenaMenu extends Phaser.Scene {
     // ==========================================
     crearBotonesMenu() {
         // --- BOTÓN 1: INICIAR JUEGO (Arcade Principal) ---
-        const btnIniciar = this.add.container(500, 475).setDepth(7);
+        const btnIniciar = this.add.container(500, 464).setDepth(7);
         const bgIniciar = this.add.graphics();
-        this.dibujarBotonArcade(bgIniciar, 300, 52, 0x27ae60, 0x2ecc71, 0x1abc9c);
+        this.dibujarBotonArcade(bgIniciar, 300, 48, 0x27ae60, 0x2ecc71, 0x1abc9c);
 
         const txtIniciar = this.add.text(0, -5, '▶ INICIAR JUEGO', {
-            fontSize: '18px',
+            fontSize: '17px',
             fontFamily: '"Press Start 2P", monospace',
             fill: '#ffffff',
             stroke: '#1b4d3e',
             strokeThickness: 3
         }).setOrigin(0.5);
 
-        const subTxtIniciar = this.add.text(0, 14, '[ENTER / ESPACIO]', {
-            fontSize: '10px',
+        const subTxtIniciar = this.add.text(0, 13, '[ENTER / ESPACIO]', {
+            fontSize: '9px',
             fontFamily: '"Press Start 2P", monospace',
             fill: '#a3e4d7'
         }).setOrigin(0.5);
 
         btnIniciar.add([bgIniciar, txtIniciar, subTxtIniciar]);
-        btnIniciar.setSize(300, 52);
+        btnIniciar.setSize(300, 48);
         btnIniciar.setInteractive({ useHandCursor: true });
 
         // Pulso de respiración para llamar a la acción
@@ -575,12 +599,12 @@ class EscenaMenu extends Phaser.Scene {
         btnIniciar.on('pointerdown', () => this.iniciarJuego());
 
         // --- BOTÓN 2: SALA ENERGÍA (PRESA) ---
-        const btnEnergia = this.add.container(500, 542).setDepth(7);
+        const btnEnergia = this.add.container(500, 516).setDepth(7);
         const bgEnergia = this.add.graphics();
-        this.dibujarBotonArcade(bgEnergia, 360, 42, 0x0c2461, 0x1e3799, 0x00f2fe);
+        this.dibujarBotonArcade(bgEnergia, 360, 36, 0x0c2461, 0x1e3799, 0x00f2fe);
 
-        const txtEnergia = this.add.text(0, 0, '⚡ JUGAR SALA ENERGÍA', {
-            fontSize: '13px',
+        const txtEnergia = this.add.text(0, 0, '⚡ JUGAR SALA B: ENERGÍA', {
+            fontSize: '11px',
             fontFamily: '"Press Start 2P", monospace',
             fill: '#00f2fe',
             stroke: '#081c3c',
@@ -588,7 +612,7 @@ class EscenaMenu extends Phaser.Scene {
         }).setOrigin(0.5);
 
         btnEnergia.add([bgEnergia, txtEnergia]);
-        btnEnergia.setSize(360, 42);
+        btnEnergia.setSize(360, 36);
         btnEnergia.setInteractive({ useHandCursor: true });
 
         btnEnergia.on('pointerover', () => {
@@ -602,13 +626,47 @@ class EscenaMenu extends Phaser.Scene {
         });
 
         btnEnergia.on('pointerdown', () => {
+            this.detenerMusicaMenu();
             localStorage.setItem('muchbits-avatar', this.avatarSeleccionado);
-            this.scene.start('EscenaEnergia', { avatarKey: this.avatarSeleccionado });
+            this.scene.start('EscenaEnergia', { avatarKey: this.avatarSeleccionado, origen: 'EscenaMenu' });
         });
 
-        // --- BOTÓN 3: VER CRÉDITOS ---
-        const btnCreditos = this.add.text(500, 604, '★ VER CRÉDITOS [ESC] ★', {
-            fontSize: '12px',
+        // --- BOTÓN 3: SALA C: DESARROLLO SUSTENTABLE ---
+        const btnSustentable = this.add.container(500, 564).setDepth(7);
+        const bgSustentable = this.add.graphics();
+        this.dibujarBotonArcade(bgSustentable, 360, 36, 0xd35400, 0xe67e22, 0xf1c40f);
+
+        const txtSustentable = this.add.text(0, 0, '☀️ JUGAR SALA C: SUSTENTABLE', {
+            fontSize: '11px',
+            fontFamily: '"Press Start 2P", monospace',
+            fill: '#ffffff',
+            stroke: '#6e2c00',
+            strokeThickness: 3
+        }).setOrigin(0.5);
+
+        btnSustentable.add([bgSustentable, txtSustentable]);
+        btnSustentable.setSize(360, 36);
+        btnSustentable.setInteractive({ useHandCursor: true });
+
+        btnSustentable.on('pointerover', () => {
+            btnSustentable.setScale(1.05);
+            txtSustentable.setStyle({ fill: '#f1c40f' });
+        });
+
+        btnSustentable.on('pointerout', () => {
+            btnSustentable.setScale(1);
+            txtSustentable.setStyle({ fill: '#ffffff' });
+        });
+
+        btnSustentable.on('pointerdown', () => {
+            this.detenerMusicaMenu();
+            localStorage.setItem('muchbits-avatar', this.avatarSeleccionado);
+            this.scene.start('EscenaSustentable', { avatarKey: this.avatarSeleccionado, origen: 'EscenaMenu' });
+        });
+
+        // --- BOTÓN 4: VER CRÉDITOS ---
+        const btnCreditos = this.add.text(500, 612, '★ VER CRÉDITOS [ESC] ★', {
+            fontSize: '11px',
             fontFamily: '"Press Start 2P", monospace',
             fill: '#74b9ff',
             stroke: '#0984e3',
@@ -646,37 +704,16 @@ class EscenaMenu extends Phaser.Scene {
     // 7. SUELO, ARBUSTOS Y DINOSAURIO CORREDOR
     // ==========================================
     crearSueloYDinoCorredor() {
-        // Franja de tierra y pasto inferior
+        // Franja de tierra
         const suelo = this.add.graphics().setDepth(2);
         suelo.fillStyle(0x192a56, 1);
         suelo.fillRect(0, 755, 1000, 45);
         suelo.fillStyle(0x00d2d3, 0.9);
         suelo.fillRect(0, 753, 1000, 3);
 
-        // Arbustos decorativos con leve bamboleo de viento
-        this.arbustos = [];
-        for (let x = 40; x <= 960; x += 90) {
-            const arbusto = this.add.image(x, 758, 'arbusto')
-                .setDisplaySize(62, 62)
-                .setAlpha(0.85)
-                .setDepth(2);
-
-            this.arbustos.push(arbusto);
-
-            // Balanceo sutil de viento
-            this.tweens.add({
-                targets: arbusto,
-                angle: { from: -1.8, to: 1.8 },
-                duration: Phaser.Math.Between(2200, 3200),
-                yoyo: true,
-                repeat: -1,
-                ease: 'Sine.easeInOut'
-            });
-        }
-
         // Dinosaurio corriendo en la parte inferior
-        this.dinoMenu = this.add.sprite(-80, 712, 'dinobit-menu')
-            .setDisplaySize(130, 130)
+        this.dinoMenu = this.add.sprite(-80, 700, 'dinobit-menu')
+            .setDisplaySize(170, 128)
             .setDepth(3);
 
         this.dinoVaHaciaLaDerecha = true;
@@ -686,13 +723,13 @@ class EscenaMenu extends Phaser.Scene {
     moverDinoMenu() {
         const vaHaciaLaDerecha = this.dinoVaHaciaLaDerecha;
         this.dinoMenu
-            .setFlipX(vaHaciaLaDerecha)
+            .setFlipX(!vaHaciaLaDerecha)
             .play('dino-menu-corriendo', true);
 
         this.tweens.add({
             targets: this.dinoMenu,
             x: vaHaciaLaDerecha ? 1060 : -60,
-            y: vaHaciaLaDerecha ? 712 : 710,
+            y: vaHaciaLaDerecha ? 700 : 698,
             duration: 6800,
             ease: 'Linear',
             onComplete: () => {
@@ -814,7 +851,16 @@ class EscenaMenu extends Phaser.Scene {
         this.input.keyboard.on('keydown-ESC', () => this.alternarCreditos());
     }
 
+    detenerMusicaMenu() {
+        if (this.musicaMenu) {
+            this.sound.stopByKey('menu-intro');
+            this.musicaMenu.stop();
+            this.musicaMenu = null;
+        }
+    }
+
     iniciarJuego() {
+        this.mantenerMusicaMenu = true;
         localStorage.setItem('muchbits-avatar', this.avatarSeleccionado);
         this.scene.start('EscenaJuego', { avatarKey: this.avatarSeleccionado });
     }

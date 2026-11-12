@@ -16,38 +16,39 @@ class EscenaEnergia extends Phaser.Scene {
     }
 
     init(data) {
-        this.avatarKey = data && data.avatarKey ? data.avatarKey : (localStorage.getItem('muchbits-avatar') || 'user_default');
+        this.avatarKey = data && data.avatarKey ? data.avatarKey : (localStorage.getItem('muchbits-avatar') || 'user_male');
         this.origen = data && data.origen ? data.origen : 'EscenaJuego';
     }
 
     preload() {
         // Cargar imagen de fondo base limpia (segunda imagen de referencia)
         this.load.image('fondo_presa', 'pictures/sala_energia/fondo_presa.png');
+        this.load.audio('energia-presa-fondo', 'music/intro_presa_energia_loop.mp3');
 
         // Cargar spritesheets animados de basura proporcionados en sala_energia/basura
         this.load.spritesheet('basura_barril', 'pictures/sala_energia/basura/Barril_ SpriteSheet.png', {
             frameWidth: 256,
-            frameHeight: 256
+            frameHeight: 139
         });
 
         this.load.spritesheet('basura_bolsa_anim', 'pictures/sala_energia/basura/Bolsa_basura_ SpriteSheet.png', {
             frameWidth: 256,
-            frameHeight: 256
+            frameHeight: 160
         });
 
         this.load.spritesheet('basura_botella_anim', 'pictures/sala_energia/basura/Botella_SpriteSheet.png', {
             frameWidth: 256,
-            frameHeight: 256
+            frameHeight: 110
         });
 
         this.load.spritesheet('basura_lata_anim', 'pictures/sala_energia/basura/Lata_ SpriteSheet.png', {
             frameWidth: 256,
-            frameHeight: 256
+            frameHeight: 150
         });
 
         this.load.spritesheet('basura_llanta', 'pictures/sala_energia/basura/Llanta_ SpriteSheet.png', {
             frameWidth: 256,
-            frameHeight: 256
+            frameHeight: 140
         });
 
         this.load.spritesheet('basura_tronco', 'pictures/sala_energia/basura/Tronco_SpriteSheet.png', {
@@ -68,6 +69,8 @@ class EscenaEnergia extends Phaser.Scene {
     }
 
     create() {
+        this.iniciarMusicaFondo();
+
         // Inicializar estado del juego
         this.energia = 50; // La barra empieza exactamente a la mitad (50%)
         this.energiaObjetivo = 50;
@@ -156,82 +159,84 @@ class EscenaEnergia extends Phaser.Scene {
      * GENERACIÓN DE TEXTURAS DE BASURA PIXEL-ART
      * ========================================================================= */
     generarTexturasBasura() {
-        // 1. Lata Roja de Refresco (32x22)
-        if (!this.textures.exists('basura_lata_roja')) {
-            const c = this.make.graphics({ x: 0, y: 0, add: false });
-            // Sombra bajo el agua
-            c.fillStyle(0x0a4066, 0.4);
-            c.fillEllipse(16, 20, 24, 6);
-            // Cuerpo de la lata
-            c.fillStyle(0xd63031, 1);
-            c.fillRoundedRect(4, 4, 24, 14, 3);
-            // Tapa metálica plateada
-            c.fillStyle(0xdfe6e9, 1);
-            c.fillRoundedRect(4, 4, 5, 14, 2);
-            // Franja blanca clásica
-            c.fillStyle(0xffffff, 0.9);
-            c.fillRect(14, 4, 4, 14);
-            // Brillo superior
-            c.fillStyle(0xffffff, 0.5);
-            c.fillRect(7, 5, 18, 2);
-            c.generateTexture('basura_lata_roja', 32, 24);
-            c.destroy();
+        // 1 y 2. Latas de Refresco (Solo se generan como respaldo si no existe la textura/spritesheet basura_lata_anim)
+        if (!this.textures.exists('basura_lata_anim')) {
+            if (!this.textures.exists('basura_lata_roja')) {
+                const c = this.make.graphics({ x: 0, y: 0, add: false });
+                // Sombra bajo el agua
+                c.fillStyle(0x0a4066, 0.4);
+                c.fillEllipse(16, 20, 24, 6);
+                // Cuerpo de la lata
+                c.fillStyle(0xd63031, 1);
+                c.fillRoundedRect(4, 4, 24, 14, 3);
+                // Tapa metálica plateada
+                c.fillStyle(0xdfe6e9, 1);
+                c.fillRoundedRect(4, 4, 5, 14, 2);
+                // Franja blanca clásica
+                c.fillStyle(0xffffff, 0.9);
+                c.fillRect(14, 4, 4, 14);
+                // Brillo superior
+                c.fillStyle(0xffffff, 0.5);
+                c.fillRect(7, 5, 18, 2);
+                c.generateTexture('basura_lata_roja', 32, 24);
+                c.destroy();
+            }
+
+            if (!this.textures.exists('basura_lata_amarilla')) {
+                const c = this.make.graphics({ x: 0, y: 0, add: false });
+                c.fillStyle(0x0a4066, 0.4);
+                c.fillEllipse(16, 20, 24, 6);
+                c.fillStyle(0xe67e22, 1);
+                c.fillRoundedRect(4, 4, 24, 14, 3);
+                c.fillStyle(0xdfe6e9, 1);
+                c.fillRoundedRect(4, 4, 5, 14, 2);
+                c.fillStyle(0xf1c40f, 1);
+                c.fillRect(13, 4, 6, 14);
+                c.fillStyle(0xffffff, 0.5);
+                c.fillRect(7, 5, 18, 2);
+                c.generateTexture('basura_lata_amarilla', 32, 24);
+                c.destroy();
+            }
         }
 
-        // 2. Lata Amarilla / Naranja (32x22)
-        if (!this.textures.exists('basura_lata_amarilla')) {
-            const c = this.make.graphics({ x: 0, y: 0, add: false });
-            c.fillStyle(0x0a4066, 0.4);
-            c.fillEllipse(16, 20, 24, 6);
-            c.fillStyle(0xe67e22, 1);
-            c.fillRoundedRect(4, 4, 24, 14, 3);
-            c.fillStyle(0xdfe6e9, 1);
-            c.fillRoundedRect(4, 4, 5, 14, 2);
-            c.fillStyle(0xf1c40f, 1);
-            c.fillRect(13, 4, 6, 14);
-            c.fillStyle(0xffffff, 0.5);
-            c.fillRect(7, 5, 18, 2);
-            c.generateTexture('basura_lata_amarilla', 32, 24);
-            c.destroy();
-        }
+        // 3 y 4. Botellas de Plástico (Solo se generan como respaldo si no existe la textura/spritesheet basura_botella_anim)
+        if (!this.textures.exists('basura_botella_anim')) {
+            if (!this.textures.exists('basura_botella_azul')) {
+                const c = this.make.graphics({ x: 0, y: 0, add: false });
+                c.fillStyle(0x0a4066, 0.4);
+                c.fillEllipse(22, 17, 34, 6);
+                // Cuerpo transparente celeste
+                c.fillStyle(0xa0e6ff, 0.75);
+                c.fillRoundedRect(10, 4, 30, 12, 4);
+                // Cuello de botella
+                c.fillStyle(0x7ed6fa, 0.85);
+                c.fillRect(6, 7, 5, 6);
+                // Tapa azul
+                c.fillStyle(0x0984e3, 1);
+                c.fillRect(3, 6, 4, 8);
+                // Brillos de plástico
+                c.fillStyle(0xffffff, 0.8);
+                c.fillRect(12, 5, 24, 2);
+                c.fillRect(16, 12, 18, 1);
+                c.generateTexture('basura_botella_azul', 44, 22);
+                c.destroy();
+            }
 
-        // 3. Botella de Plástico con Tapa Azul (44x20)
-        if (!this.textures.exists('basura_botella_azul')) {
-            const c = this.make.graphics({ x: 0, y: 0, add: false });
-            c.fillStyle(0x0a4066, 0.4);
-            c.fillEllipse(22, 17, 34, 6);
-            // Cuerpo transparente celeste
-            c.fillStyle(0xa0e6ff, 0.75);
-            c.fillRoundedRect(10, 4, 30, 12, 4);
-            // Cuello de botella
-            c.fillStyle(0x7ed6fa, 0.85);
-            c.fillRect(6, 7, 5, 6);
-            // Tapa azul
-            c.fillStyle(0x0984e3, 1);
-            c.fillRect(3, 6, 4, 8);
-            // Brillos de plástico
-            c.fillStyle(0xffffff, 0.8);
-            c.fillRect(12, 5, 24, 2);
-            c.fillRect(16, 12, 18, 1);
-            c.generateTexture('basura_botella_azul', 44, 22);
-            c.destroy();
-        }
-
-        // 4. Botella con Tapa Roja (44x20)
-        if (!this.textures.exists('basura_botella_roja')) {
-            const c = this.make.graphics({ x: 0, y: 0, add: false });
-            c.fillStyle(0x0a4066, 0.4);
-            c.fillEllipse(22, 17, 34, 6);
-            c.fillStyle(0x81ecec, 0.75);
-            c.fillRoundedRect(10, 4, 30, 12, 4);
-            c.fillStyle(0x55efc4, 0.85);
-            c.fillRect(6, 7, 5, 6);
-            c.fillStyle(0xd63031, 1);
-            c.fillRect(3, 6, 4, 8);
-            c.fillStyle(0xffffff, 0.8);
-            c.fillRect(12, 5, 24, 2);
-            c.generateTexture('basura_botella_roja', 44, 22);
-            c.destroy();
+            if (!this.textures.exists('basura_botella_roja')) {
+                const c = this.make.graphics({ x: 0, y: 0, add: false });
+                c.fillStyle(0x0a4066, 0.4);
+                c.fillEllipse(22, 17, 34, 6);
+                c.fillStyle(0x81ecec, 0.75);
+                c.fillRoundedRect(10, 4, 30, 12, 4);
+                c.fillStyle(0x55efc4, 0.85);
+                c.fillRect(6, 7, 5, 6);
+                c.fillStyle(0xd63031, 1);
+                c.fillRect(3, 6, 4, 8);
+                c.fillStyle(0xffffff, 0.8);
+                c.fillRect(12, 5, 24, 2);
+                c.generateTexture('basura_botella_roja', 44, 22);
+                c.destroy();
+            }
         }
 
         // 5. Vaso de Unicel / Desechable (28x28)
@@ -255,21 +260,23 @@ class EscenaEnergia extends Phaser.Scene {
             c.destroy();
         }
 
-        // 6. Bolsa de Plástico Blanca Arrugada (38x30)
-        if (!this.textures.exists('basura_bolsa')) {
-            const c = this.make.graphics({ x: 0, y: 0, add: false });
-            c.fillStyle(0x0a4066, 0.4);
-            c.fillEllipse(19, 25, 28, 6);
-            c.fillStyle(0xecf0f1, 0.85);
-            c.fillCircle(14, 14, 10);
-            c.fillCircle(24, 15, 11);
-            c.fillCircle(20, 12, 9);
-            // Asas de la bolsa
-            c.lineStyle(3, 0xbdc3c7, 0.9);
-            c.strokeCircle(10, 8, 4);
-            c.strokeCircle(28, 8, 4);
-            c.generateTexture('basura_bolsa', 38, 30);
-            c.destroy();
+        // 6. Bolsa de Plástico Blanca Arrugada (38x30) (Solo se genera como respaldo si no existe basura_bolsa_anim)
+        if (!this.textures.exists('basura_bolsa_anim')) {
+            if (!this.textures.exists('basura_bolsa')) {
+                const c = this.make.graphics({ x: 0, y: 0, add: false });
+                c.fillStyle(0x0a4066, 0.4);
+                c.fillEllipse(19, 25, 28, 6);
+                c.fillStyle(0xecf0f1, 0.85);
+                c.fillCircle(14, 14, 10);
+                c.fillCircle(24, 15, 11);
+                c.fillCircle(20, 12, 9);
+                // Asas de la bolsa
+                c.lineStyle(3, 0xbdc3c7, 0.9);
+                c.strokeCircle(10, 8, 4);
+                c.strokeCircle(28, 8, 4);
+                c.generateTexture('basura_bolsa', 38, 30);
+                c.destroy();
+            }
         }
 
         // 7. Partícula de Gota de Agua (16x16)
@@ -1039,24 +1046,62 @@ class EscenaEnergia extends Phaser.Scene {
         // LIMITE DE LA CANTIDAD DE BASURA EN PANTALLA.
         if (basurasActivas >= 6) return;
 
-        // Catálogo de basura disponible (SpriteSheets animados de sala_energia/basura + Objetos de respaldo)
-        const tiposBasura = [
-            // 1. Nuevos SpriteSheets animados de basura oficial
-            { clave: 'basura_barril', esSpriteSheet: true, anim: 'anim_barril_flotando', escala: 0.28, valorEnergia: 7, puntos: 250, nombre: 'Barril' },
-            { clave: 'basura_bolsa_anim', esSpriteSheet: true, anim: 'anim_bolsa_flotando', escala: 0.26, valorEnergia: 5, puntos: 150, nombre: 'Bolsa' },
-            { clave: 'basura_botella_anim', esSpriteSheet: true, anim: 'anim_botella_flotando', escala: 0.28, valorEnergia: 5, puntos: 130, nombre: 'Botella' },
-            { clave: 'basura_lata_anim', esSpriteSheet: true, anim: 'anim_lata_flotando', escala: 0.26, valorEnergia: 4, puntos: 110, nombre: 'Lata' },
-            { clave: 'basura_llanta', esSpriteSheet: true, anim: 'anim_llanta_flotando', escala: 0.28, valorEnergia: 7, puntos: 250, nombre: 'Neumático' },
-            { clave: 'basura_tronco', esSpriteSheet: true, anim: 'anim_tronco_flotando', escala: 0.35, valorEnergia: 6, puntos: 200, nombre: 'Tronco' },
+        // Catálogo de basura disponible (Prioriza las imágenes/spritesheets y usa los respaldos solo si no existen)
+        const tiposBasura = [];
 
-            // 2. Objetos de respaldo / procedurales preservados
-            { clave: 'basura_lata_roja', esSpriteSheet: false, escala: 1.3, valorEnergia: 4, puntos: 100, nombre: 'Lata' },
-            { clave: 'basura_lata_amarilla', esSpriteSheet: false, escala: 1.3, valorEnergia: 4, puntos: 100, nombre: 'Lata' },
-            { clave: 'basura_botella_azul', esSpriteSheet: false, escala: 1.3, valorEnergia: 5, puntos: 120, nombre: 'Botella' },
-            { clave: 'basura_botella_roja', esSpriteSheet: false, escala: 1.3, valorEnergia: 5, puntos: 120, nombre: 'Botella' },
-            { clave: 'basura_vaso', esSpriteSheet: false, escala: 1.4, valorEnergia: 3, puntos: 80, nombre: 'Vaso' },
-            { clave: 'basura_bolsa', esSpriteSheet: false, escala: 1.4, valorEnergia: 5, puntos: 150, nombre: 'Bolsa' }
-        ];
+        // Cambiamos de tamaño con escala 
+        // 1. Bolsa: Si existe la textura/imagen de basura_bolsa_anim usa esa; en otro caso usa la textura de respaldo
+        if (this.textures.exists('basura_bolsa_anim')) {
+            tiposBasura.push({ clave: 'basura_bolsa_anim', esSpriteSheet: true, anim: 'anim_bolsa_flotando', escala: 0.4, valorEnergia: 5, puntos: 150, nombre: 'Bolsa' });
+        } else if (this.textures.exists('basura_bolsa')) {
+            tiposBasura.push({ clave: 'basura_bolsa', esSpriteSheet: false, escala: 1.9, valorEnergia: 5, puntos: 150, nombre: 'Bolsa' });
+        }
+
+        // 2. Botella: Si existe la imagen de basura_botella_anim usa esa; en otro caso usa los respaldos
+        if (this.textures.exists('basura_botella_anim')) {
+            tiposBasura.push({ clave: 'basura_botella_anim', esSpriteSheet: true, anim: 'anim_botella_flotando', escala: 0.42, valorEnergia: 5, puntos: 130, nombre: 'Botella' });
+        } else {
+            if (this.textures.exists('basura_botella_azul')) {
+                tiposBasura.push({ clave: 'basura_botella_azul', esSpriteSheet: false, escala: 2.8, valorEnergia: 5, puntos: 120, nombre: 'Botella' });
+            }
+            if (this.textures.exists('basura_botella_roja')) {
+                tiposBasura.push({ clave: 'basura_botella_roja', esSpriteSheet: false, escala: 2.8, valorEnergia: 5, puntos: 120, nombre: 'Botella' });
+            }
+        }
+
+        // 3. Lata: Si existe la imagen de basura_lata_anim usa esa; en otro caso usa los respaldos
+        if (this.textures.exists('basura_lata_anim')) {
+            tiposBasura.push({ clave: 'basura_lata_anim', esSpriteSheet: true, anim: 'anim_lata_flotando', escala: 0.28, valorEnergia: 4, puntos: 110, nombre: 'Lata' });
+        } else {
+            if (this.textures.exists('basura_lata_roja')) {
+                tiposBasura.push({ clave: 'basura_lata_roja', esSpriteSheet: false, escala: 1.8, valorEnergia: 4, puntos: 100, nombre: 'Lata' });
+            }
+            if (this.textures.exists('basura_lata_amarilla')) {
+                tiposBasura.push({ clave: 'basura_lata_amarilla', esSpriteSheet: false, escala: 1.8, valorEnergia: 4, puntos: 100, nombre: 'Lata' });
+            }
+        }
+
+        // 4. Neumático (SpriteSheet oficial)
+        if (this.textures.exists('basura_llanta')) {
+            tiposBasura.push({ clave: 'basura_llanta', esSpriteSheet: true, anim: 'anim_llanta_flotando', escala: 0.48, valorEnergia: 7, puntos: 250, nombre: 'Neumático' });
+        }
+
+        // 5. Tronco (SpriteSheet oficial)
+        if (this.textures.exists('basura_tronco')) {
+            tiposBasura.push({ clave: 'basura_tronco', esSpriteSheet: true, anim: 'anim_tronco_flotando', escala: 0.46, valorEnergia: 6, puntos: 200, nombre: 'Tronco' });
+        }
+
+        // 6. Barril (SpriteSheet oficial)
+        if (this.textures.exists('basura_barril')) {
+            tiposBasura.push({ clave: 'basura_barril', esSpriteSheet: true, anim: 'anim_barril_flotando', escala: 0.48, valorEnergia: 7, puntos: 250, nombre: 'Barril' });
+        }
+
+        // // 7. Vaso (objeto procedural)
+        // if (this.textures.exists('basura_vaso')) {
+        //     tiposBasura.push({ clave: 'basura_vaso', esSpriteSheet: false, escala: 0.39, valorEnergia: 3, puntos: 80, nombre: 'Vaso' });
+        // }
+
+        if (tiposBasura.length === 0) return;
 
         const item = Phaser.Utils.Array.GetRandom(tiposBasura);
 
@@ -1452,7 +1497,13 @@ class EscenaEnergia extends Phaser.Scene {
      * UPDATE LOOP
      * ========================================================================= */
     update(time, delta) {
-        if (this.juegoTerminado || this.juegoPausado) return;
+        if (this.juegoPausado) {
+            if (window.mobileControls && window.mobileControls.consume('enter')) {
+                if (this.cerrarBannerBienvenida) this.cerrarBannerBienvenida();
+            }
+            return;
+        }
+        if (this.juegoTerminado) return;
 
         const dtSegundos = delta / 1000;
 
@@ -1593,51 +1644,101 @@ class EscenaEnergia extends Phaser.Scene {
         });
     }
 
+    iniciarMusicaFondo() {
+        this.sound.stopByKey('energia-presa-fondo');
+        this.musicaFondo = this.sound.add('energia-presa-fondo', {
+            loop: true,
+            volume: 0.2
+        });
+        this.musicaFondo.play();
+
+        this.events.once('shutdown', () => this.detenerMusicaFondo());
+        this.events.once('destroy', () => this.detenerMusicaFondo());
+    }
+
+    detenerMusicaFondo() {
+        if (this.musicaFondo) {
+            this.sound.stopByKey('energia-presa-fondo');
+            this.musicaFondo.stop();
+            this.musicaFondo = null;
+        }
+    }
+
     mostrarBannerBienvenida() {
-        const banner = this.add.container(500, 260).setDepth(150);
+        const banner = this.add.container(500, 290).setDepth(150);
 
         const fondo = this.add.graphics();
-        fondo.fillStyle(0x060f1c, 0.94);
-        fondo.fillRoundedRect(-260, -80, 520, 160, 12);
-        fondo.lineStyle(2, 0x00f2fe, 1);
-        fondo.strokeRoundedRect(-260, -80, 520, 160, 12);
+        // Sombra de fondo
+        fondo.fillStyle(0x020611, 0.7);
+        fondo.fillRoundedRect(-365, -115, 730, 230, 20);
+        // Cuerpo principal de la tarjeta
+        fondo.fillStyle(0x060f1c, 0.96);
+        fondo.fillRoundedRect(-360, -115, 720, 230, 18);
+        fondo.lineStyle(3, 0x00f2fe, 1);
+        fondo.strokeRoundedRect(-360, -115, 720, 230, 18);
+        // Borde interior sutil
+        fondo.lineStyle(1, 0x00f2fe, 0.35);
+        fondo.strokeRoundedRect(-354, -109, 708, 218, 14);
 
-        const t1 = this.add.text(0, -50, '⚡ SALA ENERGÍA: PRESA HIDROELÉCTRICA ⚡', {
+        const t1 = this.add.text(0, -72, '⚡ SALA ENERGÍA: PRESA HIDROELÉCTRICA ⚡', {
             fontFamily: '"Press Start 2P", monospace',
-            fontSize: '10px',
+            fontSize: '14px',
             color: '#00f2fe'
         }).setOrigin(0.5);
 
-        const t2 = this.add.text(0, -5,
+        const t2 = this.add.text(0, -2,
             'Haz click en la basura que arrastra la corriente para limpiarla.\n' +
             'No dejes que llegue a la presa o se atascarán las turbinas.\n' +
             'Tu barra de energía empieza al 50%. ¡Mantenla arriba!', {
             fontFamily: 'Outfit, sans-serif',
-            fontSize: '14px',
+            fontSize: '19px',
             color: '#f8fafc',
             align: 'center',
-            lineSpacing: 4
+            lineSpacing: 8
         }).setOrigin(0.5);
 
-        const t3 = this.add.text(0, 48, '[ HAZ CLICK EN CUALQUIER LADO PARA COMENZAR ]', {
+        const t3 = this.add.text(0, 74, '[ HAZ CLICK EN CUALQUIER LADO PARA COMENZAR ]', {
             fontFamily: '"Press Start 2P", monospace',
-            fontSize: '8px',
+            fontSize: '11px',
             color: '#7ed957'
         }).setOrigin(0.5);
+
+        // Animación de pulso sutil para el texto de inicio
+        this.tweens.add({
+            targets: t3,
+            alpha: 0.45,
+            duration: 650,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.easeInOut'
+        });
 
         banner.add([fondo, t1, t2, t3]);
 
         // INICIAR EL JUEGO
-        // Cerrar banner y comenzar el juego al hacer click
-        this.input.once('pointerdown', () => {
+        // Cerrar banner y comenzar el juego al hacer click o presionar Enter
+        let cerrado = false;
+        const cerrarBanner = () => {
+            if (cerrado) return;
+            cerrado = true;
             this.juegoPausado = false;
+            this.cerrarBannerBienvenida = null;
             this.tweens.add({
                 targets: banner,
                 alpha: 0,
                 duration: 250,
                 onComplete: () => banner.destroy()
             });
-        });
+        };
+
+        this.cerrarBannerBienvenida = cerrarBanner;
+        this.input.once('pointerdown', cerrarBanner);
+        if (this.teclaENTER) {
+            this.teclaENTER.once('down', cerrarBanner);
+        }
+        if (this.teclaESPACIO) {
+            this.teclaESPACIO.once('down', cerrarBanner);
+        }
     }
 
     /* =========================================================================

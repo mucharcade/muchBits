@@ -1,3 +1,15 @@
+function intentarBloqueoHorizontal() {
+    try {
+        if (screen.orientation && typeof screen.orientation.lock === 'function') {
+            screen.orientation.lock('landscape').catch(() => {});
+        }
+    } catch (e) {}
+}
+
+window.addEventListener('pointerdown', () => {
+    intentarBloqueoHorizontal();
+}, { once: true, passive: true });
+
 const touchControlState = {
     up: false,
     down: false,
@@ -171,6 +183,7 @@ if (btnFullscreen) {
             } else if (docEl.msRequestFullscreen) {
                 docEl.msRequestFullscreen();
             }
+            intentarBloqueoHorizontal();
         } else {
             if (document.exitFullscreen) {
                 document.exitFullscreen().catch(() => { });
@@ -192,3 +205,18 @@ if (btnFullscreen) {
     document.addEventListener('mozfullscreenchange', updateFullscreenBtn);
     document.addEventListener('MSFullscreenChange', updateFullscreenBtn);
 }
+
+// Actualizar la escala y centrado de Phaser al rotar o redimensionar
+const refrescarEscalaJuego = () => {
+    if (window.game && window.game.scale) {
+        window.game.scale.refresh();
+    }
+};
+
+window.addEventListener('resize', refrescarEscalaJuego);
+window.addEventListener('orientationchange', () => {
+    setTimeout(refrescarEscalaJuego, 250);
+});
+document.addEventListener('fullscreenchange', () => {
+    setTimeout(refrescarEscalaJuego, 250);
+});

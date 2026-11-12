@@ -4,7 +4,7 @@ class EscenaDinoRun extends Phaser.Scene {
     }
 
     preload() {
-        const avatarKey = localStorage.getItem('muchbits-avatar') || 'user_default';
+        const avatarKey = localStorage.getItem('muchbits-avatar') || 'user_male';
         this.avatarKey = avatarKey;
         if (!this.textures.exists(`avatar-${avatarKey}`)) {
             this.load.spritesheet(`avatar-${avatarKey}`, `pictures/${avatarKey}.png`, {
@@ -12,17 +12,16 @@ class EscenaDinoRun extends Phaser.Scene {
                 frameHeight: 64
             });
         }
-        this.load.image('arbusto', 'pictures/arbusto.png');
-        this.load.image('arbol', 'pictures/arbol.png');
-        this.load.image('arbol_grande', 'pictures/arbol_grande.png');
-        this.load.image('roca', 'pictures/roca.png');
-        this.load.spritesheet('terodactilo', 'pictures/terodactile.png', {
-            frameWidth: 543,
-            frameHeight: 724
+        this.load.image('arbol', 'pictures/salabiodiversidad/arbol.png');
+        this.load.image('arbol_grande', 'pictures/salabiodiversidad/arbol_grande.png');
+        this.load.image('roca', 'pictures/sala_sbeel_dinosaurios/roca.png');
+        this.load.spritesheet('terodactilo', 'pictures/sala_sbeel_dinosaurios/terodactile.png', {
+            frameWidth: 524,
+            frameHeight: 412
         });
-        this.load.spritesheet('dinosaurio-perseguidor', 'pictures/dinosaur-run.png', {
+        this.load.spritesheet('dinosaurio-perseguidor', 'pictures/sala_sbeel_dinosaurios/dinosaur-run.png', {
             frameWidth: 396,
-            frameHeight: 396
+            frameHeight: 326
         });
     }
 
@@ -50,12 +49,13 @@ class EscenaDinoRun extends Phaser.Scene {
 
     crearTexturas() {
         const animKeyRun = `dino-jugador-corriendo-${this.avatarKey}`;
+        const frameDerecha = this.avatarKey === 'user_male' ? 8 : 12;
         if (this.anims.exists(animKeyRun)) {
             this.anims.remove(animKeyRun);
         }
         this.anims.create({
             key: animKeyRun,
-            frames: this.anims.generateFrameNumbers(`avatar-${this.avatarKey}`, { start: 12, end: 15 }),
+            frames: this.anims.generateFrameNumbers(`avatar-${this.avatarKey}`, { start: frameDerecha, end: frameDerecha + 3 }),
             frameRate: 10,
             repeat: -1
         });
@@ -139,7 +139,8 @@ class EscenaDinoRun extends Phaser.Scene {
 
     crearJugador() {
         const animKeyRun = `dino-jugador-corriendo-${this.avatarKey}`;
-        this.jugador = this.physics.add.sprite(220, 580, `avatar-${this.avatarKey}`, 12).setOrigin(0.5, 1).setDepth(3);  //Revisar como funciona sprite
+        const frameDerecha = this.avatarKey === 'user_male' ? 8 : 12;
+        this.jugador = this.physics.add.sprite(220, 580, `avatar-${this.avatarKey}`, frameDerecha).setOrigin(0.5, 1).setDepth(3);  //Revisar como funciona sprite
         this.jugador.setDisplaySize(58, 58);
         this.jugador.body.setSize(38, 52, true);
         this.jugador.body.setGravityY(1050);
@@ -153,7 +154,7 @@ class EscenaDinoRun extends Phaser.Scene {
         if (!this.anims.exists('dinosaurio-corriendo')) {
             this.anims.create({
                 key: 'dinosaurio-corriendo',
-                frames: this.anims.generateFrameNumbers('dinosaurio-perseguidor', { start: 0, end: 12 }),
+                frames: this.anims.generateFrameNumbers('dinosaurio-perseguidor', { start: 0, end: 11 }),
                 frameRate: 12,
                 repeat: -1
             });
@@ -161,13 +162,14 @@ class EscenaDinoRun extends Phaser.Scene {
 
         this.perseguidor = this.physics.add.sprite(50, 554, 'dinosaurio-perseguidor', 0) //Revisar setOrigin(0.5, 1)
             .setOrigin(0.5, 0.95) // Ajusta el origen Y (0.95 = casi el fondo) para que pise bien, dada la transparencia del sprite
-            .setDisplaySize(170, 170)
-            .setFlipX(true)
+            .setDisplaySize(170, 140)
+            .setFlipX(false)
             .setDepth(2);
 
         this.perseguidor.body.setAllowGravity(true);
         this.perseguidor.body.setGravityY(1050);
         this.perseguidor.body.setSize(102, 122, true);
+        this.perseguidor.body.setOffset(147, 188); // Ajusta el offset para que la colisión sea más precisa
         this.perseguidor.play('dinosaurio-corriendo');
         this.physics.add.collider(this.perseguidor, this.suelo);
     }
@@ -247,7 +249,7 @@ class EscenaDinoRun extends Phaser.Scene {
 
     crearObstaculo(x, tipo) {
         const isBajo = (tipo === 'bajo');
-        const yPos = isBajo ? 600 : 512;
+        const yPos = isBajo ? 600 : 450;
         const obstaculo = this.obstaculos.create(
             x,
             yPos,
@@ -256,11 +258,11 @@ class EscenaDinoRun extends Phaser.Scene {
 
         if (isBajo) {
             obstaculo.setOrigin(0.5, 1);
-            obstaculo.setDisplaySize(64, 64);
+            obstaculo.setDisplaySize(64, 56);
             obstaculo.body.setSize(obstaculo.width * 0.5, obstaculo.height * 0.5, true);
         } else {
-            obstaculo.setDisplaySize(105, 70);
-            obstaculo.body.setSize(300, 100, true);
+            obstaculo.setDisplaySize(105, 83);
+            obstaculo.body.setSize(430, 280, true);
             obstaculo.play('terodactilo-volando');
         }
 
@@ -369,6 +371,7 @@ class EscenaDinoRun extends Phaser.Scene {
         mapa.ignoreEscape = true;
         this.scene.stop('EscenaDinoRun');
         this.scene.wake('EscenaJuego');
+        mapa.iniciarMusicaMapa();
     }
 
     crearArbolPaisaje(x) {

@@ -6,11 +6,11 @@ class EscenaJuego extends Phaser.Scene {
     init(data) {
         this.ignoreEscape = Boolean(data && data.ignoreEscape);
         this.posInicial = (data && data.posInicial) ? data.posInicial : null;
-        this.avatarKey = (data && data.avatarKey) ? data.avatarKey : (localStorage.getItem('muchbits-avatar') || 'user_default');
+        this.avatarKey = (data && data.avatarKey) ? data.avatarKey : (localStorage.getItem('muchbits-avatar') || 'user_male');
     }
 
     preload() {
-        this.load.image('arbusto', 'pictures/arbusto.png');
+        this.load.image('arbusto', 'pictures/salabiodiversidad/arbusto.png');
         if (!this.textures.exists(`avatar-${this.avatarKey}`)) {
             this.load.spritesheet(`avatar-${this.avatarKey}`, `pictures/${this.avatarKey}.png`, {
                 frameWidth: 64,
@@ -20,6 +20,10 @@ class EscenaJuego extends Phaser.Scene {
     }
 
     create() {
+        this.iniciarMusicaMapa();
+        this.events.once('shutdown', () => this.detenerMusicaMapa());
+        this.events.once('destroy', () => this.detenerMusicaMapa());
+
         const anchoMundo = 2000;
         const altoMundo = 1200;
 
@@ -91,6 +95,8 @@ class EscenaJuego extends Phaser.Scene {
         }
 
         const avatarTexKey = `avatar-${this.avatarKey}`;
+        const frameDerecha = this.avatarKey === 'user_male' ? 8 : 12;
+        const frameIzquierda = this.avatarKey === 'user_male' ? 12 : 8;
         if (this.anims.exists('avatar-abajo')) this.anims.remove('avatar-abajo');
         if (this.anims.exists('avatar-arriba')) this.anims.remove('avatar-arriba');
         if (this.anims.exists('avatar-izquierda')) this.anims.remove('avatar-izquierda');
@@ -98,8 +104,8 @@ class EscenaJuego extends Phaser.Scene {
 
         this.anims.create({ key: 'avatar-abajo', frames: this.anims.generateFrameNumbers(avatarTexKey, { start: 0, end: 3 }), frameRate: 8, repeat: -1 });
         this.anims.create({ key: 'avatar-arriba', frames: this.anims.generateFrameNumbers(avatarTexKey, { start: 4, end: 7 }), frameRate: 8, repeat: -1 });
-        this.anims.create({ key: 'avatar-izquierda', frames: this.anims.generateFrameNumbers(avatarTexKey, { start: 8, end: 11 }), frameRate: 8, repeat: -1 });
-        this.anims.create({ key: 'avatar-derecha', frames: this.anims.generateFrameNumbers(avatarTexKey, { start: 12, end: 15 }), frameRate: 8, repeat: -1 });
+        this.anims.create({ key: 'avatar-izquierda', frames: this.anims.generateFrameNumbers(avatarTexKey, { start: frameIzquierda, end: frameIzquierda + 3 }), frameRate: 8, repeat: -1 });
+        this.anims.create({ key: 'avatar-derecha', frames: this.anims.generateFrameNumbers(avatarTexKey, { start: frameDerecha, end: frameDerecha + 3 }), frameRate: 8, repeat: -1 });
 
         let graficosBorde = this.add.graphics();
         let graficosCamino = this.add.graphics();
@@ -176,8 +182,14 @@ class EscenaJuego extends Phaser.Scene {
         }).setOrigin(0.5);
 
         let salaC = this.salas.create(820, 600, 'textura_sala');
-        salaC.setData({ nombre: 'C', salida: { x: 820, y: 510 } }); // SALA C, POR HACER
-        this.add.text(795, 590, 'SALA C', { fill: '#ffffff', fontStyle: 'bold', fontFamily: 'Arial' });
+        salaC.setData({ nombre: 'SUSTENTABILIDAD', salida: { x: 820, y: 510 } }); // SALA C: DESARROLLO SUSTENTABLE
+        this.add.text(820, 600, 'SALA C\nDESARROLLO\nSUSTENTABLE', {
+            fontSize: '11px',
+            fill: '#ffffff',
+            fontStyle: 'bold',
+            fontFamily: 'Arial',
+            align: 'center'
+        }).setOrigin(0.5);
 
         this.salas.children.iterate((sala) => { sala.body.setCircle(60); });
 
@@ -257,6 +269,7 @@ class EscenaJuego extends Phaser.Scene {
                 if (Phaser.Input.Keyboard.JustDown(this.teclaENTER) || enterTactil || Phaser.Input.Keyboard.JustDown(this.teclaS)) {
                     this.textoPortal.setVisible(false);
                     this.enPortal = false;
+                    this.detenerMusicaMapa();
                     this.scene.sleep('EscenaJuego');
                     this.scene.launch('EscenaDinoRun');
                 } else if (Phaser.Input.Keyboard.JustDown(this.teclaESC) || escapeTactil || Phaser.Input.Keyboard.JustDown(this.teclaN)) {
@@ -282,6 +295,19 @@ class EscenaJuego extends Phaser.Scene {
                     this.enPortal = false;
                     this.scene.start('EscenaEnergia', {
                         avatarKey: this.avatarKey
+                    });
+                } else if (Phaser.Input.Keyboard.JustDown(this.teclaESC) || escapeTactil || Phaser.Input.Keyboard.JustDown(this.teclaN)) {
+                    this.textoPortal.setVisible(false);
+                    this.enPortal = false;
+                    this.reiniciarJugador();
+                }
+            } else if (nombreSala.includes('SUSTENTAB') || nombreSala === 'C') {
+                if (Phaser.Input.Keyboard.JustDown(this.teclaENTER) || enterTactil || Phaser.Input.Keyboard.JustDown(this.teclaS)) {
+                    this.textoPortal.setVisible(false);
+                    this.enPortal = false;
+                    this.scene.start('EscenaSustentable', {
+                        avatarKey: this.avatarKey,
+                        origen: 'EscenaJuego'
                     });
                 } else if (Phaser.Input.Keyboard.JustDown(this.teclaESC) || escapeTactil || Phaser.Input.Keyboard.JustDown(this.teclaN)) {
                     this.textoPortal.setVisible(false);
@@ -386,5 +412,38 @@ class EscenaJuego extends Phaser.Scene {
         this.jugador.y = salida.y;
         this.ultimaPosSegura = { x: salida.x, y: salida.y };
         this.salaActual = null;
+    }
+
+    iniciarMusicaMapa() {
+        const musicaExistente = this.sound.get('menu-intro');
+        if (musicaExistente && musicaExistente.isPlaying) {
+            this.musicaMapa = musicaExistente;
+            return;
+        }
+
+        this.sound.stopByKey('menu-intro');
+        this.musicaMapa = this.sound.add('menu-intro', { loop: true, volume: 0 });
+        this.musicaMapa.play();
+
+        this.musicaMapaVolumen = { valor: 0 };
+        this.tweens.add({
+            targets: this.musicaMapaVolumen,
+            valor: 0.7,
+            duration: 2600,
+            ease: 'Sine.easeInOut',
+            onUpdate: () => {
+                if (this.musicaMapa) {
+                    this.musicaMapa.setVolume(this.musicaMapaVolumen.valor);
+                }
+            }
+        });
+    }
+
+    detenerMusicaMapa() {
+        if (this.musicaMapa) {
+            this.sound.stopByKey('menu-intro');
+            this.musicaMapa.stop();
+            this.musicaMapa = null;
+        }
     }
 }

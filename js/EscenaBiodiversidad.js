@@ -8,7 +8,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
     }
 
     init(data) {
-        this.avatarKey = data && data.avatarKey ? data.avatarKey : (localStorage.getItem('muchbits-avatar') || 'user_default');
+        this.avatarKey = data && data.avatarKey ? data.avatarKey : (localStorage.getItem('muchbits-avatar') || 'user_male');
         this.origen = data && data.origen ? data.origen : 'EscenaJuego';
         this.bitacora = {
             quetzal: {
@@ -132,9 +132,12 @@ class EscenaBiodiversidad extends Phaser.Scene {
         }
 
         // Elementos de entorno
-        this.load.image('arbusto', 'pictures/arbusto.png');
-        this.load.image('arbol', 'pictures/arbol.png');
-        this.load.image('arbol_grande', 'pictures/arbol_grande.png');
+        this.load.image('arbusto', 'pictures/salabiodiversidad/arbusto.png');
+        this.load.image('arbol', 'pictures/salabiodiversidad/arbol.png');
+        this.load.image('arbol_grande', 'pictures/salabiodiversidad/arbol_grande.png');
+        this.load.image('arbol-sala-b-1', 'pictures/salabiodiversidad/Arbol_1_sala_B.png');
+        this.load.image('arbol-sala-b-2', 'pictures/salabiodiversidad/Arbol_2_sala_B.png');
+        this.load.image('arbol-sala-b-3', 'pictures/salabiodiversidad/Arbol_3_sala_B.png');
         this.load.image('arbusto_escondite', 'pictures/salabiodiversidad/fauna/arbusto_escondite.png');
 
         // Spritesheets de fauna (mapeo directo)
@@ -175,6 +178,8 @@ class EscenaBiodiversidad extends Phaser.Scene {
             frameWidth: 384,
             frameHeight: 445
         });
+
+        this.load.audio('biodiversidad-ambiente', 'music/intro_biodiversidad.mp3');
     }
 
     create() {
@@ -184,6 +189,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
         this.physics.world.setBounds(0, 0, this.mundoAncho, this.mundoAlto);
 
         this._inicializarAudio();
+        this._inicializarMusicaAmbiente();
         this._mapearFramesYAnimaciones();
         this._crearFondoParalaje();
         this._crearPlataformasYSuelo();
@@ -333,6 +339,42 @@ class EscenaBiodiversidad extends Phaser.Scene {
                 repeat: -1
             });
         }
+    }
+
+    _inicializarMusicaAmbiente() {
+        if (!this.sound || !this.sound.add) return;
+
+        if (this.musicaAmbiente) {
+            this.musicaAmbiente.stop();
+        }
+
+        this.musicaAmbiente = this.sound.add('biodiversidad-ambiente', {
+            loop: true,
+            volume: 0
+        });
+
+        if (this.musicaAmbiente) {
+            this.musicaAmbiente.play();
+            this.musicaAmbienteVolumen = { valor: 0 };
+            this.tweens.add({
+                targets: this.musicaAmbienteVolumen,
+                valor: 0.42,
+                duration: 2400,
+                ease: 'Sine.easeInOut',
+                onUpdate: () => {
+                    this.musicaAmbiente.setVolume(this.musicaAmbienteVolumen.valor);
+                }
+            });
+        }
+
+        this.events.once('shutdown', () => this._detenerMusicaAmbiente());
+        this.events.once('destroy', () => this._detenerMusicaAmbiente());
+    }
+
+    _detenerMusicaAmbiente() {
+        this.sound.stopByKey('biodiversidad-ambiente');
+        if (this.musicaAmbiente) this.musicaAmbiente.stop();
+        this.musicaAmbiente = null;
     }
 
     /* -------------------------------------------------------------
@@ -557,10 +599,15 @@ class EscenaBiodiversidad extends Phaser.Scene {
 
         // Capa 3: Árboles majestuosos
         for (let x = 60; x <= this.mundoAncho; x += 400) {
-            this.add.image(x, this.sueloY + 20, 'arbol_grande')
+            const texturaArbol = Phaser.Utils.Array.GetRandom([
+                'arbol-sala-b-1',
+                'arbol-sala-b-2',
+                'arbol-sala-b-3'
+            ]);
+            this.add.image(x, this.sueloY - 40, texturaArbol) // -40 para que la base del árbol quede sobre el suelo
                 .setScrollFactor(0.6)
                 .setOrigin(0.5, 1)
-                .setDisplaySize(280, 420)
+                .setDisplaySize(280, 320)
                 .setTint(0x235338)
                 .setAlpha(0.9);
         }
@@ -754,7 +801,8 @@ class EscenaBiodiversidad extends Phaser.Scene {
             ramaG.generateTexture('textura-rama', 220, 26);
             ramaG.destroy();
         }
-        // SUELO FLOTANTE
+        // SUELO o PLATAFORMAS FLOTANTES (Ramas de Árboles, Escalones, etc.)
+        // Aquí se definen las coordenadas de cada plataforma flotante a lo largo del nivel
         const coordSueloFlotante = [
             // --- Zona inicial (Quetzal) ---
             { x: 740, y: 580, w: 160 },
@@ -773,9 +821,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
             { x: 3600, y: 575, w: 160 },
             { x: 3820, y: 490, w: 160 },
             { x: 4300, y: 570, w: 160 },
-            { x: 4550, y: 480, w: 160 },
-            { x: 4900, y: 570, w: 160 },
-            { x: 5150, y: 490, w: 160 }
+            { x: 4550, y: 480, w: 160 }
         ];
 
         coordSueloFlotante.forEach(r => {
@@ -800,9 +846,11 @@ class EscenaBiodiversidad extends Phaser.Scene {
      * CAPAS DE LA TIERRA (LITOSFERA - INFOGRAFÍA INTERACTIVA)
      * ------------------------------------------------------------- */
     _crearCapasDeLaTierra() {
-        const cx = 1450;
+        // Cartel informativo de la Litosfera (estructura de la Tierra)
+        // Posición central del cartel en el mundo, modificar cx para moverlo
+        const cx = 5100;
         const groundY = this.sueloY; // 660
-        const container = this.add.container(cx, groundY).setDepth(4);
+        const container = this.add.container(cx, groundY - 10).setDepth(4);
         container.setScale(0.60); // Cartel compacto y elegante
 
         const baseY = -30;
@@ -1214,34 +1262,35 @@ class EscenaBiodiversidad extends Phaser.Scene {
         if (this.anims.exists(`quieto-izq-${key}`)) this.anims.remove(`quieto-izq-${key}`);
         if (this.anims.exists(`quieto-${key}`)) this.anims.remove(`quieto-${key}`);
 
-        // Mapeo idéntico al spritesheet 64x64 de EscenaJuego:
+        const frameDerecha = this.avatarKey === 'user_male' ? 8 : 12;
+        const frameIzquierda = this.avatarKey === 'user_male' ? 12 : 8;
+
+        // El personaje masculino tiene las filas laterales invertidas respecto a los otros avatares.
         // Fila 0 (frames 0-3): Abajo / Frente
         // Fila 1 (frames 4-7): Arriba / Espalda
-        // Fila 2 (frames 8-11): Izquierda
-        // Fila 3 (frames 12-15): Derecha
         this.anims.create({
             key: `caminar-der-${key}`,
-            frames: this.anims.generateFrameNumbers(avatarTexKey, { start: 12, end: 15 }),
+            frames: this.anims.generateFrameNumbers(avatarTexKey, { start: frameDerecha, end: frameDerecha + 3 }),
             frameRate: 8,
             repeat: -1
         });
 
         this.anims.create({
             key: `caminar-izq-${key}`,
-            frames: this.anims.generateFrameNumbers(avatarTexKey, { start: 8, end: 11 }),
+            frames: this.anims.generateFrameNumbers(avatarTexKey, { start: frameIzquierda, end: frameIzquierda + 3 }),
             frameRate: 8,
             repeat: -1
         });
 
         this.anims.create({
             key: `quieto-der-${key}`,
-            frames: [{ key: avatarTexKey, frame: 12 }],
+            frames: [{ key: avatarTexKey, frame: frameDerecha }],
             frameRate: 1
         });
 
         this.anims.create({
             key: `quieto-izq-${key}`,
-            frames: [{ key: avatarTexKey, frame: 8 }],
+            frames: [{ key: avatarTexKey, frame: frameIzquierda }],
             frameRate: 1
         });
 
@@ -1254,7 +1303,8 @@ class EscenaBiodiversidad extends Phaser.Scene {
 
     _crearJugador() {
         const avatarTexKey = `avatar-${this.avatarKey}`;
-        this.jugador = this.physics.add.sprite(150, this.sueloY - 40, avatarTexKey, 12);
+        const frameDerecha = this.avatarKey === 'user_male' ? 8 : 12;
+        this.jugador = this.physics.add.sprite(150, this.sueloY - 40, avatarTexKey, frameDerecha);
         this.jugador.setDisplaySize(58, 58);
         this.jugador.body.setSize(38, 52, true);
         this.jugador.setCollideWorldBounds(true);
@@ -1304,8 +1354,9 @@ class EscenaBiodiversidad extends Phaser.Scene {
         this.tapir.velocidadHuida = 340;
 
         // 3. EL MONO SARAGUATO
-        this.monoArbol = this.add.image(2240, 360, 'arbol_grande')
+        this.monoArbol = this.add.image(2240, this.sueloY, 'arbol_grande') // Modificamos sueloY del arbol
             .setDisplaySize(320, 420)
+            .setOrigin(0.5, 1)
             .setDepth(4);
 
         this.mono = this.physics.add.sprite(2240, 340, 'mono_img');
@@ -1463,6 +1514,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
      * FLORA RECOLECTABLE (Muestras Mapeadas Individualmente)
      * ------------------------------------------------------------- */
     _crearFloraRecolectable() {
+        // Aquí se definen las muestras de flora que el jugador puede recolectar durante la expedición.
         // Cada muestra: texturaKey = spritesheet, animKey = animación de balanceo
         this.muestrasFlora = [
             {
@@ -1503,17 +1555,6 @@ class EscenaBiodiversidad extends Phaser.Scene {
                 nombre: 'Orquídea Selva Lacandona',
                 texturaKey: 'orquidea_sheet',
                 animKey: 'orquidea-balanceo',
-                sprite: null,
-                recolectada: false,
-                esDecoractiva: false
-            },
-            {
-                id: 'flora_cacao',
-                x: 5100,
-                y: this.sueloY,
-                nombre: 'Cacao Silvestre',
-                texturaKey: 'cacao_sheet',
-                animKey: 'cacao-balanceo',
                 sprite: null,
                 recolectada: false,
                 esDecoractiva: false
@@ -1565,6 +1606,8 @@ class EscenaBiodiversidad extends Phaser.Scene {
             padding: { x: 6, y: 3 }
         }).setOrigin(0.5).setDepth(5);
 
+        // Meta de expedición: Documentar 7 especies
+        // Texto informativo sobre la meta de expedición
         this.textoEstacionInfo = this.add.text(finX, this.sueloY - 115, '🏆 META DE EXPEDICIÓN\nDocumenta las 7 especies de la selva', {
             fontSize: '11px',
             fontFamily: 'Arial',
@@ -2679,6 +2722,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
     _finalizarExpedicionDirecta() {
         if (this._transitando) return;
         this._transitando = true;
+        this._detenerMusicaAmbiente();
 
         if (this.modalBitacoraAbierto) {
             this.contenedorBitacora.setVisible(false);
@@ -2702,6 +2746,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
     _salirDeSala(completada = false) {
         if (this._transitando) return;
         this._transitando = true;
+        this._detenerMusicaAmbiente();
 
         if (completada) {
             this._reproducirSonido('foto');
