@@ -179,7 +179,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
             frameHeight: 445
         });
 
-        this.load.audio('biodiversidad-ambiente', 'music/sountrack_biodiversidad.mp3');
+        this.load.audio('biodiversidad-ambiente', 'music/intro_biodiversidad.mp3');
     }
 
     create() {
@@ -358,7 +358,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
             this.musicaAmbienteVolumen = { valor: 0 };
             this.tweens.add({
                 targets: this.musicaAmbienteVolumen,
-                valor: 0.22,
+                valor: 0.42,
                 duration: 2400,
                 ease: 'Sine.easeInOut',
                 onUpdate: () => {
@@ -850,7 +850,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
         // Posición central del cartel en el mundo, modificar cx para moverlo
         const cx = 5100;
         const groundY = this.sueloY; // 660
-        const container = this.add.container(cx, groundY-10).setDepth(4);
+        const container = this.add.container(cx, groundY - 10).setDepth(4);
         container.setScale(0.60); // Cartel compacto y elegante
 
         const baseY = -30;
