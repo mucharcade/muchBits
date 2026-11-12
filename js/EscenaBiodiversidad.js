@@ -372,20 +372,9 @@ class EscenaBiodiversidad extends Phaser.Scene {
     }
 
     _detenerMusicaAmbiente() {
-        if (!this.musicaAmbiente) return;
-        this.tweens.add({
-            targets: { valor: this.musicaAmbiente.volume || 0.22 },
-            valor: 0,
-            duration: 500,
-            ease: 'Sine.easeInOut',
-            onUpdate: (tween, target) => {
-                this.musicaAmbiente.setVolume(target.valor);
-            },
-            onComplete: () => {
-                this.musicaAmbiente.stop();
-                this.musicaAmbiente = null;
-            }
-        });
+        this.sound.stopByKey('biodiversidad-ambiente');
+        if (this.musicaAmbiente) this.musicaAmbiente.stop();
+        this.musicaAmbiente = null;
     }
 
     /* -------------------------------------------------------------
@@ -2733,6 +2722,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
     _finalizarExpedicionDirecta() {
         if (this._transitando) return;
         this._transitando = true;
+        this._detenerMusicaAmbiente();
 
         if (this.modalBitacoraAbierto) {
             this.contenedorBitacora.setVisible(false);
@@ -2756,6 +2746,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
     _salirDeSala(completada = false) {
         if (this._transitando) return;
         this._transitando = true;
+        this._detenerMusicaAmbiente();
 
         if (completada) {
             this._reproducirSonido('foto');
