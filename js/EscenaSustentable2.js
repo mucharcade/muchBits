@@ -26,6 +26,7 @@ class EscenaSustentable2 extends Phaser.Scene {
     preload() {
         // Fondo Nivel 2: Paisaje Eólico / Ruinas Mayas (1699x926)
         this.load.image('fondo_sustentable_n2', 'pictures/sala_desarrollo_sustentable/Paisaje_Eolico_Ruinas_Maya.png');
+        this.load.audio('musica_sustentable', 'music/intro_sustentable_loop.mp3');
 
         // Texturas de plataformas (mismo conjunto que N1)
         this.load.image('plat_estable', 'pictures/sala_desarrollo_sustentable/plataforma_estable.png');
@@ -41,6 +42,9 @@ class EscenaSustentable2 extends Phaser.Scene {
 
     create() {
         this.initAudioSynthesizer();
+
+        // Iniciar música de fondo (misma pista que N1, ya va acelerada al entrar aquí)
+        this.iniciarMusicaFondo();
 
         // ── Estado del juego ────────────────────────────────────────────────────
         this.vidas = 3;
@@ -1350,9 +1354,13 @@ class EscenaSustentable2 extends Phaser.Scene {
         });
     }
 
-    reiniciarNivel() { this.scene.restart(); }
+    reiniciarNivel() {
+        this.esReinicio = true;
+        this.scene.restart();
+    }
 
     volverAlOrigen() {
+        this.detenerMusicaFondo();
         if (this.origen === 'EscenaMenu') {
             this.scene.start('EscenaMenu');
         } else {
@@ -1458,6 +1466,49 @@ class EscenaSustentable2 extends Phaser.Scene {
                 osc.connect(gain); gain.connect(ctx.destination);
                 osc.start(t); osc.stop(t + 0.22);
             });
+        }
+    }
+
+    iniciarMusicaFondo() {
+        // Si la música ya existe y está sonando (por ejemplo tras reiniciar nivel al perder o venir de N1), no la reiniciamos
+        let musicaExistente = this.sound.get('musica_sustentable');
+        if (musicaExistente && musicaExistente.isPlaying) {
+            this.musicaFondo = musicaExistente;
+            this.musicaFondo.setRate(1.2);
+            return;
+        }
+
+        // Detener cualquier música Phaser activa de escenas anteriores
+        if (this.sound && this.sound.sounds) {
+            this.sound.sounds.forEach(s => {
+                if (s.isPlaying) s.stop();
+            });
+        }
+
+        // En Nivel 2 la música arranca ya un poco más rápida (rate 1.2 — viene acelerada del N1)
+        this.musicaFondo = this.sound.add('musica_sustentable', { loop: true, volume: 0.5 });
+        this.musicaFondo.setRate(1.2);
+        this.musicaFondo.play();
+
+        // Detener y destruir música solo al salir de la escena (no al reiniciar por perder)
+        const detenerMusica = () => {
+            if (!this.esReinicio && this.musicaFondo) {
+                if (this.musicaFondo.isPlaying) this.musicaFondo.stop();
+                this.musicaFondo.destroy();
+                this.musicaFondo = null;
+            }
+            this.esReinicio = false;
+        };
+
+        this.events.once('shutdown', detenerMusica);
+        this.events.once('destroy', () => this.detenerMusicaFondo());
+    }
+
+    detenerMusicaFondo() {
+        if (this.musicaFondo) {
+            if (this.musicaFondo.isPlaying) this.musicaFondo.stop();
+            this.musicaFondo.destroy();
+            this.musicaFondo = null;
         }
     }
 }

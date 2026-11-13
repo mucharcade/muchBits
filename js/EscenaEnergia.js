@@ -1308,6 +1308,15 @@ class EscenaEnergia extends Phaser.Scene {
             const nuevoDelay = Math.max(600, 1600 - (this.nivel - 1) * 150);
             this.temporizadorGeneracion.delay = nuevoDelay;
         }
+
+        // Acelerar la música de fondo cada 2 niveles (nivel 2, 4, 6, 8...)
+        // Rate 1.0 = normal, 1.1 = +10%, máximo 1.5 para no distorsionar demasiado
+        if (this.musicaFondo && this.nivel % 2 === 0) {
+            const pasos = Math.floor(this.nivel / 2); // cuántos saltos de 2 llevamos
+            const nuevoRate = Math.min(1.0 + pasos * 0.08, 1.5);
+            this.musicaFondo.setRate(nuevoRate);
+            console.log(`[EscenaEnergia] Música acelerada: nivel ${this.nivel} → rate ${nuevoRate.toFixed(2)}`);
+        }
     }
 
     mostrarPantallaMaximoRendimiento() {
@@ -1631,10 +1640,12 @@ class EscenaEnergia extends Phaser.Scene {
     }
 
     reiniciarJuego() {
+        this.esReinicio = true;
         this.scene.restart();
     }
 
     salirAlMapa() {
+        this.detenerMusicaFondo();
         // Detener escena y regresar a la posición segura de la Sala B en EscenaJuego
         this.scene.stop('EscenaEnergia');
         this.scene.start('EscenaJuego', {
@@ -1908,6 +1919,47 @@ class EscenaEnergia extends Phaser.Scene {
                 osc.start(startTime);
                 osc.stop(startTime + 1.2);
             });
+        }
+    }
+
+    iniciarMusicaFondo() {
+        // Si la música ya existe y está sonando (por ejemplo tras reiniciar al perder), no la reiniciamos
+        let musicaExistente = this.sound.get('energia-presa-fondo');
+        if (musicaExistente && musicaExistente.isPlaying) {
+            this.musicaFondo = musicaExistente;
+            this.musicaFondo.setRate(1.0);
+            return;
+        }
+
+        // Detener cualquier otra música previa del sistema de audio de Phaser
+        if (this.sound && this.sound.sounds) {
+            this.sound.sounds.forEach(s => {
+                if (s.isPlaying) s.stop();
+            });
+        }
+
+        this.musicaFondo = this.sound.add('energia-presa-fondo', { loop: true, volume: 0.4 });
+        this.musicaFondo.play();
+
+        // Detener y destruir música solo al salir de la escena (no al reiniciar por perder)
+        const detenerMusica = () => {
+            if (!this.esReinicio && this.musicaFondo) {
+                if (this.musicaFondo.isPlaying) this.musicaFondo.stop();
+                this.musicaFondo.destroy();
+                this.musicaFondo = null;
+            }
+            this.esReinicio = false;
+        };
+
+        this.events.once('shutdown', detenerMusica);
+        this.events.once('destroy', () => this.detenerMusicaFondo());
+    }
+
+    detenerMusicaFondo() {
+        if (this.musicaFondo) {
+            if (this.musicaFondo.isPlaying) this.musicaFondo.stop();
+            this.musicaFondo.destroy();
+            this.musicaFondo = null;
         }
     }
 }

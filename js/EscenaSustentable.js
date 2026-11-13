@@ -25,6 +25,7 @@ class EscenaSustentable extends Phaser.Scene {
     preload() {
         // Fondo oficial del Nivel 1 (Cañón del Sumidero / Paneles Solares)
         this.load.image('fondo_sustentable_n1', 'pictures/sala_desarrollo_sustentable/Paisaje_Panel_Canon_Sumidero.png');
+        this.load.audio('musica_sustentable', 'music/intro_sustentable_loop.mp3');
 
         // Texturas oficiales de plataformas flotantes (diseñadas por los artistas)
         this.load.image('plat_estable', 'pictures/sala_desarrollo_sustentable/plataforma_estable.png');
@@ -41,6 +42,9 @@ class EscenaSustentable extends Phaser.Scene {
     create() {
         // Inicializar sintetizador de audio procedural (Web Audio API)
         this.initAudioSynthesizer();
+
+        // Iniciar música de fondo de la escena
+        this.iniciarMusicaFondo();
 
         // 1. Estado del juego
         this.vidas = 3;
@@ -1598,6 +1602,7 @@ class EscenaSustentable extends Phaser.Scene {
     }
 
     reiniciarNivel() {
+        this.esReinicio = true;
         if (this.temporizadorAutoNivel2) this.temporizadorAutoNivel2.remove();
         this.scene.restart();
     }
@@ -1606,6 +1611,7 @@ class EscenaSustentable extends Phaser.Scene {
         if (this.cambiandoNivel) return;
         this.cambiandoNivel = true;
         if (this.temporizadorAutoNivel2) this.temporizadorAutoNivel2.remove();
+
         const avatar = this.avatarKey || localStorage.getItem('muchbits-avatar') || 'user_male';
         this.scene.stop('EscenaSustentable');
         this.scene.start('EscenaSustentable2', {
@@ -1615,6 +1621,7 @@ class EscenaSustentable extends Phaser.Scene {
     }
 
     volverAlOrigen() {
+        this.detenerMusicaFondo();
         if (this.temporizadorAutoNivel2) this.temporizadorAutoNivel2.remove();
         if (this.origen === 'EscenaMenu') {
             this.scene.start('EscenaMenu');
@@ -1794,6 +1801,47 @@ class EscenaSustentable extends Phaser.Scene {
                 osc.start(t);
                 osc.stop(t + 0.22);
             });
+        }
+    }
+
+    iniciarMusicaFondo() {
+        // Si la música ya existe y está sonando (por ejemplo tras reiniciar nivel al perder), no la reiniciamos
+        let musicaExistente = this.sound.get('musica_sustentable');
+        if (musicaExistente && musicaExistente.isPlaying) {
+            this.musicaFondo = musicaExistente;
+            this.musicaFondo.setRate(1.0);
+            return;
+        }
+
+        // Detener cualquier otra música Phaser activa de escenas anteriores
+        if (this.sound && this.sound.sounds) {
+            this.sound.sounds.forEach(s => {
+                if (s.isPlaying) s.stop();
+            });
+        }
+
+        this.musicaFondo = this.sound.add('musica_sustentable', { loop: true, volume: 0.5 });
+        this.musicaFondo.play();
+
+        // Detener música solo al salir de la escena (no al reiniciar por perder)
+        const detenerMusica = () => {
+            if (!this.esReinicio && !this.cambiandoNivel && this.musicaFondo) {
+                if (this.musicaFondo.isPlaying) this.musicaFondo.stop();
+                this.musicaFondo.destroy();
+                this.musicaFondo = null;
+            }
+            this.esReinicio = false;
+        };
+
+        this.events.once('shutdown', detenerMusica);
+        this.events.once('destroy', () => this.detenerMusicaFondo());
+    }
+
+    detenerMusicaFondo() {
+        if (this.musicaFondo) {
+            if (this.musicaFondo.isPlaying) this.musicaFondo.stop();
+            this.musicaFondo.destroy();
+            this.musicaFondo = null;
         }
     }
 }
