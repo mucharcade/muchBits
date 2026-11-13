@@ -1309,14 +1309,14 @@ class EscenaEnergia extends Phaser.Scene {
             this.temporizadorGeneracion.delay = nuevoDelay;
         }
 
-        // Acelerar la música de fondo cada 2 niveles (nivel 2, 4, 6, 8...)
-        // Rate 1.0 = normal, 1.1 = +10%, máximo 1.5 para no distorsionar demasiado
-        if (this.musicaFondo && this.nivel % 2 === 0) {
-            const pasos = Math.floor(this.nivel / 2); // cuántos saltos de 2 llevamos
-            const nuevoRate = Math.min(1.0 + pasos * 0.08, 1.5);
-            this.musicaFondo.setRate(nuevoRate);
-            console.log(`[EscenaEnergia] Música acelerada: nivel ${this.nivel} → rate ${nuevoRate.toFixed(2)}`);
-        }
+        // // Acelerar la música de fondo cada 2 niveles (nivel 2, 4, 6, 8...)
+        // // Rate 1.0 = normal, 1.1 = +10%, máximo 1.5 para no distorsionar demasiado
+        // if (this.musicaFondo && this.nivel % 2 === 0) {
+        //     const pasos = Math.floor(this.nivel / 2); // cuántos saltos de 2 llevamos
+        //     const nuevoRate = Math.min(1.0 + pasos * 0.08, 1.5);
+        //     this.musicaFondo.setRate(nuevoRate);
+        //     console.log(`[EscenaEnergia] Música acelerada: nivel ${this.nivel} → rate ${nuevoRate.toFixed(2)}`);
+        // }
     }
 
     mostrarPantallaMaximoRendimiento() {
@@ -1923,30 +1923,31 @@ class EscenaEnergia extends Phaser.Scene {
     }
 
     iniciarMusicaFondo() {
-        // Si la música ya existe y está sonando (por ejemplo tras reiniciar al perder), no la reiniciamos
-        let musicaExistente = this.sound.get('energia-presa-fondo');
-        if (musicaExistente && musicaExistente.isPlaying) {
+        // 1. Revisar si la música ya existe y está sonando (ej: tras reiniciar al perder)
+        let musicaExistente = null;
+        if (this.sound && this.sound.sounds) {
+            musicaExistente = this.sound.sounds.find(s => s.key === 'energia-presa-fondo' && s.isPlaying);
+        }
+
+        if (musicaExistente) {
             this.musicaFondo = musicaExistente;
             this.musicaFondo.setRate(1.0);
-            return;
+        } else {
+            // Detener cualquier otra música previa del sistema de audio de Phaser
+            if (this.sound && this.sound.sounds) {
+                this.sound.sounds.forEach(s => {
+                    if (s.isPlaying) s.stop();
+                });
+            }
+
+            this.musicaFondo = this.sound.add('energia-presa-fondo', { loop: true, volume: 0.4 });
+            this.musicaFondo.play();
         }
 
-        // Detener cualquier otra música previa del sistema de audio de Phaser
-        if (this.sound && this.sound.sounds) {
-            this.sound.sounds.forEach(s => {
-                if (s.isPlaying) s.stop();
-            });
-        }
-
-        this.musicaFondo = this.sound.add('energia-presa-fondo', { loop: true, volume: 0.4 });
-        this.musicaFondo.play();
-
-        // Detener y destruir música solo al salir de la escena (no al reiniciar por perder)
+        // Siempre registrar el listener de shutdown para este ciclo de la escena
         const detenerMusica = () => {
             if (!this.esReinicio && this.musicaFondo) {
-                if (this.musicaFondo.isPlaying) this.musicaFondo.stop();
-                this.musicaFondo.destroy();
-                this.musicaFondo = null;
+                this.detenerMusicaFondo();
             }
             this.esReinicio = false;
         };

@@ -941,6 +941,13 @@ class EscenaSustentable2 extends Phaser.Scene {
         this.teclaESC = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
         this.teclaENTER = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
         this.teclaESC.on('down', () => this.volverAlOrigen());
+        this.teclaENTER.on('down', () => {
+            if (this.juegoTerminado && this.modalGameOver && this.modalGameOver.visible) {
+                this.reiniciarNivel();
+            } else if (this.nivelCompletado && this.modalVictoria && this.modalVictoria.visible) {
+                this.volverAlOrigen();
+            }
+        });
     }
 
     /* =========================================================================
@@ -1381,6 +1388,21 @@ class EscenaSustentable2 extends Phaser.Scene {
         this.actualizarCableDinamico();
         this.actualizarPlataformasYEnemigos();
         this.actualizarHUD();
+
+        // Interaccion movil para modales (Enter / Escape)
+        if (window.mobileControls) {
+            if (this.nivelCompletado && this.modalVictoria && this.modalVictoria.visible) {
+                if (window.mobileControls.consume('escape') || window.mobileControls.consume('enter')) {
+                    this.volverAlOrigen();
+                }
+            } else if (this.juegoTerminado && this.modalGameOver && this.modalGameOver.visible) {
+                if (window.mobileControls.consume('enter')) {
+                    this.reiniciarNivel();
+                } else if (window.mobileControls.consume('escape')) {
+                    this.volverAlOrigen();
+                }
+            }
+        }
     }
 
     /* =========================================================================
@@ -1470,32 +1492,31 @@ class EscenaSustentable2 extends Phaser.Scene {
     }
 
     iniciarMusicaFondo() {
-        // Si la música ya existe y está sonando (por ejemplo tras reiniciar nivel al perder o venir de N1), no la reiniciamos
-        let musicaExistente = this.sound.get('musica_sustentable');
-        if (musicaExistente && musicaExistente.isPlaying) {
+        // 1. Revisar si la música ya existe y está sonando (ej: de N1 o tras reiniciar nivel)
+        let musicaExistente = null;
+        if (this.sound && this.sound.sounds) {
+            musicaExistente = this.sound.sounds.find(s => s.key === 'musica_sustentable' && s.isPlaying);
+        }
+
+        if (musicaExistente) {
             this.musicaFondo = musicaExistente;
             this.musicaFondo.setRate(1.2);
-            return;
+        } else {
+            // Detener cualquier otra música previa de otra escena
+            if (this.sound && this.sound.sounds) {
+                this.sound.sounds.forEach(s => {
+                    if (s.isPlaying) s.stop();
+                });
+            }
+            this.musicaFondo = this.sound.add('musica_sustentable', { loop: true, volume: 0.5 });
+            this.musicaFondo.setRate(1.2);
+            this.musicaFondo.play();
         }
 
-        // Detener cualquier música Phaser activa de escenas anteriores
-        if (this.sound && this.sound.sounds) {
-            this.sound.sounds.forEach(s => {
-                if (s.isPlaying) s.stop();
-            });
-        }
-
-        // En Nivel 2 la música arranca ya un poco más rápida (rate 1.2 — viene acelerada del N1)
-        this.musicaFondo = this.sound.add('musica_sustentable', { loop: true, volume: 0.5 });
-        this.musicaFondo.setRate(1.2);
-        this.musicaFondo.play();
-
-        // Detener y destruir música solo al salir de la escena (no al reiniciar por perder)
+        // Siempre registrar el listener de shutdown para este ciclo de la escena
         const detenerMusica = () => {
             if (!this.esReinicio && this.musicaFondo) {
-                if (this.musicaFondo.isPlaying) this.musicaFondo.stop();
-                this.musicaFondo.destroy();
-                this.musicaFondo = null;
+                this.detenerMusicaFondo();
             }
             this.esReinicio = false;
         };

@@ -1805,30 +1805,31 @@ class EscenaSustentable extends Phaser.Scene {
     }
 
     iniciarMusicaFondo() {
-        // Si la música ya existe y está sonando (por ejemplo tras reiniciar nivel al perder), no la reiniciamos
-        let musicaExistente = this.sound.get('musica_sustentable');
-        if (musicaExistente && musicaExistente.isPlaying) {
+        // 1. Revisar si la música ya existe y está sonando (ej: tras reiniciar nivel al perder)
+        let musicaExistente = null;
+        if (this.sound && this.sound.sounds) {
+            musicaExistente = this.sound.sounds.find(s => s.key === 'musica_sustentable' && s.isPlaying);
+        }
+
+        if (musicaExistente) {
             this.musicaFondo = musicaExistente;
             this.musicaFondo.setRate(1.0);
-            return;
+        } else {
+            // Detener cualquier otra música Phaser activa de escenas anteriores
+            if (this.sound && this.sound.sounds) {
+                this.sound.sounds.forEach(s => {
+                    if (s.isPlaying) s.stop();
+                });
+            }
+
+            this.musicaFondo = this.sound.add('musica_sustentable', { loop: true, volume: 0.5 });
+            this.musicaFondo.play();
         }
 
-        // Detener cualquier otra música Phaser activa de escenas anteriores
-        if (this.sound && this.sound.sounds) {
-            this.sound.sounds.forEach(s => {
-                if (s.isPlaying) s.stop();
-            });
-        }
-
-        this.musicaFondo = this.sound.add('musica_sustentable', { loop: true, volume: 0.5 });
-        this.musicaFondo.play();
-
-        // Detener música solo al salir de la escena (no al reiniciar por perder)
+        // Siempre registrar el listener de shutdown para este ciclo de la escena
         const detenerMusica = () => {
             if (!this.esReinicio && !this.cambiandoNivel && this.musicaFondo) {
-                if (this.musicaFondo.isPlaying) this.musicaFondo.stop();
-                this.musicaFondo.destroy();
-                this.musicaFondo = null;
+                this.detenerMusicaFondo();
             }
             this.esReinicio = false;
         };
