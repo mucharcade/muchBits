@@ -1262,12 +1262,13 @@ class EscenaBiodiversidad extends Phaser.Scene {
         if (this.anims.exists(`quieto-izq-${key}`)) this.anims.remove(`quieto-izq-${key}`);
         if (this.anims.exists(`quieto-${key}`)) this.anims.remove(`quieto-${key}`);
 
-        const frameDerecha = this.avatarKey === 'user_male' ? 8 : 12;
-        const frameIzquierda = this.avatarKey === 'user_male' ? 12 : 8;
+        const frameDerecha = 12;
+        const frameIzquierda = 8;
 
-        // El personaje masculino tiene las filas laterales invertidas respecto a los otros avatares.
         // Fila 0 (frames 0-3): Abajo / Frente
         // Fila 1 (frames 4-7): Arriba / Espalda
+        // Fila 2 (frames 8-11): Izquierda
+        // Fila 3 (frames 12-15): Derecha
         this.anims.create({
             key: `caminar-der-${key}`,
             frames: this.anims.generateFrameNumbers(avatarTexKey, { start: frameDerecha, end: frameDerecha + 3 }),
@@ -1303,7 +1304,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
 
     _crearJugador() {
         const avatarTexKey = `avatar-${this.avatarKey}`;
-        const frameDerecha = this.avatarKey === 'user_male' ? 8 : 12;
+        const frameDerecha = 12;
         this.jugador = this.physics.add.sprite(150, this.sueloY - 40, avatarTexKey, frameDerecha);
         this.jugador.setDisplaySize(58, 58);
         this.jugador.body.setSize(38, 52, true);
@@ -2736,7 +2737,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
         this.cameras.main.once('camerafadeoutcomplete', () => {
             this.scene.start('EscenaJuego', {
                 avatarKey: this.avatarKey,
-                posInicial: { x: 1400, y: 900 },
+                posInicial: { x: 810, y: 535 },
                 ignoreEscape: true,
                 expedicionCompletada: true
             });
@@ -2757,7 +2758,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
         this.cameras.main.once('camerafadeoutcomplete', () => {
             this.scene.start('EscenaJuego', {
                 avatarKey: this.avatarKey,
-                posInicial: { x: 1400, y: 900 },
+                posInicial: { x: 810, y: 535 },
                 ignoreEscape: true,
                 expedicionCompletada: completada
             });

@@ -49,7 +49,7 @@ class EscenaDinoRun extends Phaser.Scene {
 
     crearTexturas() {
         const animKeyRun = `dino-jugador-corriendo-${this.avatarKey}`;
-        const frameDerecha = this.avatarKey === 'user_male' ? 8 : 12;
+        const frameDerecha = 12;
         if (this.anims.exists(animKeyRun)) {
             this.anims.remove(animKeyRun);
         }

@@ -5,12 +5,41 @@ class EscenaJuego extends Phaser.Scene {
 
     init(data) {
         this.ignoreEscape = Boolean(data && data.ignoreEscape);
-        this.posInicial = (data && data.posInicial) ? data.posInicial : null;
+        let pos = (data && data.posInicial) ? data.posInicial : null;
+        // Mapeo retrocompatible si una escena regresa con coordenadas del mapa antiguo
+        if (pos) {
+            if (pos.x === 710 && pos.y === 560) {
+                pos = { x: 810, y: 535 }; // Regreso de Sala A (Biodiversidad)
+            } else if (pos.x === 725 && (pos.y === 460 || pos.y === 465)) {
+                pos = { x: 900, y: 455 }; // Regreso de Sala B (Energía)
+            } else if (pos.x === 512 && pos.y === 510) {
+                pos = { x: 540, y: 535 }; // Regreso de Sala C (Sustentabilidad)
+            } else if (pos.x === 312 && (pos.y === 190 || pos.y === 135)) {
+                pos = { x: 320, y: 180 }; // Regreso de Sala Dino
+            } else if (pos.x > 1024 || pos.y > 800) {
+                if (pos.x >= 1500) {
+                    pos = { x: 900, y: 455 }; // Regreso de Sala B (Energía)
+                } else if (pos.x >= 1200) {
+                    pos = { x: 810, y: 535 }; // Regreso de Sala A (Biodiversidad)
+                } else if (pos.x >= 600) {
+                    pos = { x: 540, y: 535 }; // Regreso de Sala C (Sustentabilidad)
+                } else {
+                    pos = { x: 320, y: 180 }; // Regreso de Sala Dino
+                }
+            }
+        }
+        this.posInicial = pos;
         this.avatarKey = (data && data.avatarKey) ? data.avatarKey : (localStorage.getItem('muchbits-avatar') || 'user_male');
     }
 
     preload() {
-        this.load.image('arbusto', 'pictures/salabiodiversidad/arbusto.png');
+        // Cargar mapa y salas de la carpeta pictures/mapa
+        this.load.image('mapa_fondo', 'pictures/mapa/Pasto y camino.png');
+        this.load.image('sala_dino_img', 'pictures/mapa/Sala Dino.png');
+        this.load.image('sala_a_img', 'pictures/mapa/Sala A.png');
+        this.load.image('sala_b_img', 'pictures/mapa/Sala B.png');
+        this.load.image('sala_c_img', 'pictures/mapa/Sala C.png');
+
         if (!this.textures.exists(`avatar-${this.avatarKey}`)) {
             this.load.spritesheet(`avatar-${this.avatarKey}`, `pictures/${this.avatarKey}.png`, {
                 frameWidth: 64,
@@ -24,79 +53,130 @@ class EscenaJuego extends Phaser.Scene {
         this.events.once('shutdown', () => this.detenerMusicaMapa());
         this.events.once('destroy', () => this.detenerMusicaMapa());
 
-        const anchoMundo = 2000;
-        const altoMundo = 1200;
+        // Dimensiones reducidas del nuevo mapa según requerimiento: 1024 x 800
+        const anchoMundo = 1024;
+        const altoMundo = 800;
 
-        let startX = (this.posInicial && this.posInicial.x) ? this.posInicial.x : 160; // Aqui pasamos la pos inicial desde otra escena, si no existe
-        let startY = (this.posInicial && this.posInicial.y) ? this.posInicial.y : 500; // dejamos la posicion por defecto (160, 500)
+        let startX = (this.posInicial && this.posInicial.x) ? this.posInicial.x : 100;
+        let startY = (this.posInicial && this.posInicial.y) ? this.posInicial.y : 400;
 
-        this.ultimaPosSegura = { x: startX, y: startY }; //posición inicial del jugador
+        this.ultimaPosSegura = { x: startX, y: startY };
         this.enPortal = false;
 
         this.physics.world.setBounds(0, 0, anchoMundo, altoMundo);
         this.cameras.main.setBounds(0, 0, anchoMundo, altoMundo);
 
-        if (!this.textures.exists('textura_pasto')) {
-            let fondoPasto = this.make.graphics({ x: 0, y: 0, add: false });
-            fondoPasto.fillStyle(0x2f8f46, 1);
-            fondoPasto.fillRect(0, 0, anchoMundo, altoMundo);
-            fondoPasto.generateTexture('textura_pasto', anchoMundo, altoMundo);
-            fondoPasto.destroy();
-        }
-        this.add.image(anchoMundo / 2, altoMundo / 2, 'textura_pasto');
+        // Fondo del mapa con pasto y caminos integrados (pictures/mapa/Pasto y camino.png)
+        this.add.image(anchoMundo / 2, altoMundo / 2, 'mapa_fondo')
+            .setDisplaySize(anchoMundo, altoMundo)
+            .setDepth(0);
 
-        const tamanoArbusto = 65;
-        const offsetArbusto = tamanoArbusto / 2;
-        const pasoArbusto = 45;
+        // =========================================================================
+        // SALAS / EDIFICIOS (Imágenes de pictures/mapa)
+        // =========================================================================
 
-        for (let x = offsetArbusto; x <= anchoMundo - offsetArbusto; x += pasoArbusto) {
-            this.add.image(x, offsetArbusto, 'arbusto').setDisplaySize(tamanoArbusto, tamanoArbusto);
-            this.add.image(x, altoMundo - offsetArbusto, 'arbusto').setDisplaySize(tamanoArbusto, tamanoArbusto);
-        }
-
-        for (let y = offsetArbusto; y <= altoMundo - offsetArbusto; y += pasoArbusto) {
-            this.add.image(offsetArbusto, y, 'arbusto').setDisplaySize(tamanoArbusto, tamanoArbusto);
-            this.add.image(anchoMundo - offsetArbusto, y, 'arbusto').setDisplaySize(tamanoArbusto, tamanoArbusto);
-        }
-
-        let edificios = this.add.graphics().setDepth(2);
-        edificios.fillStyle(0x7f8c8d, 1); // color de los edificios
-        edificios.fillRect(120, 250, 150, 200); // edificio, pos X 110, pos Y 230, ancho 150, alto 170
-        edificios.fillRect(170, 590, 170, 190); // auditorio, pos X 70, pos Y 760, ancho 170, alto 190
-        edificios.lineStyle(4, 0x34495e, 1); // color del borde de los edificios
-        edificios.strokeRect(120, 250, 150, 200); // borde del edificio 1, pos X 110, pos Y 230, ancho 150, alto 170
-        edificios.strokeRect(170, 590, 170, 190); // borde del auditorio, pos X 70, pos Y 760, ancho 170, alto 190
-        this.add.text(195, 355, 'EDIFICIO', { // texto del edificio 1, pos X 185, pos Y 315
-            fontSize: '20px',
+        // 1. SALA SBEEL (Arco de piedra al norte)
+        this.add.image(320, 110, 'sala_dino_img')
+            .setDisplaySize(216, 116)
+            .setDepth(2);
+        this.add.text(320, 42, 'SALA SBEEL', { // SALA DINO
+            fontSize: '11px',
             fill: '#ffffff',
-            fontStyle: 'bold'
-        }).setOrigin(0.5).setDepth(3);
-        this.add.text(250, 680, 'AUDITORIO', { // texto del edificio 2, pos X 155, pos Y 855
-            fontSize: '20px',
-            fill: '#ffffff',
-            fontStyle: 'bold'
+            fontStyle: 'bold',
+            fontFamily: 'Arial',
+            stroke: '#000000',
+            strokeThickness: 3
         }).setOrigin(0.5).setDepth(3);
 
-        let colisionEdificio = this.add.zone(195, 350, 150, 200);
-        this.physics.add.existing(colisionEdificio, true);
+        // 2. SALA DESARROLLO SUSTENTABLE (Plataformas flotantes)
+        this.add.image(540, 380, 'sala_c_img')
+            .setDisplaySize(310, 240)
+            .setDepth(2);
+        this.add.text(540, 245, 'SALA C\nDESARROLLO SUSTENTABLE', { // SALA C
+            fontSize: '10px',
+            fill: '#ffffff',
+            fontStyle: 'bold',
+            fontFamily: 'Arial',
+            align: 'center',
+            stroke: '#000000',
+            strokeThickness: 3
+        }).setOrigin(0.5).setDepth(3);
 
-        let colisionAuditorio = this.add.zone(255, 685, 170, 190);
-        this.physics.add.existing(colisionAuditorio, true);
+        // 3. SALA DE ENERGÍA (Presa hidroeléctrica al este)
+        this.add.image(900, 310, 'sala_b_img')
+            .setDisplaySize(180, 208)
+            .setDepth(2);
+        this.add.text(900, 190, 'SALA B\nENERGÍA', { // SALA B
+            fontSize: '10px',
+            fill: '#ffffff',
+            fontStyle: 'bold',
+            fontFamily: 'Arial',
+            align: 'center',
+            stroke: '#000000',
+            strokeThickness: 3
+        }).setOrigin(0.5).setDepth(3);
 
-        this.edificiosGroup = this.physics.add.staticGroup([colisionEdificio, colisionAuditorio]);
+        // 4. Sala A (Biodiversidad / Pabellón Jaguar al sur)
+        this.add.image(810, 660, 'sala_a_img')
+            .setDisplaySize(200, 192)
+            .setDepth(2);
+        this.add.text(810, 775, 'SALA A: BIODIVERSIDAD', {
+            fontSize: '10px',
+            fill: '#ffffff',
+            fontStyle: 'bold',
+            fontFamily: 'Arial',
+            align: 'center',
+            stroke: '#000000',
+            strokeThickness: 3
+        }).setOrigin(0.5).setDepth(3);
 
-        if (!this.textures.exists('textura_sala')) {
-            let gSala = this.make.graphics({ x: 0, y: 0, add: false });
-            gSala.fillStyle(0xe74c3c, 0.4);
-            gSala.lineStyle(4, 0xe74c3c, 1);
-            gSala.fillCircle(60, 60, 60);
-            gSala.generateTexture('textura_sala', 120, 120);
-            gSala.destroy();
-        }
+        // =========================================================================
+        // COLISIONES SÓLIDAS PARA LOS EDIFICIOS
+        // =========================================================================
+        let colisionDino = this.add.zone(320, 95, 216, 70); // (x, y, ancho, alto)
+        this.physics.add.existing(colisionDino, true);
 
+        let colisionC = this.add.zone(540, 365, 280, 170);
+        this.physics.add.existing(colisionC, true);
+
+        let colisionB = this.add.zone(900, 295, 170, 170);
+        this.physics.add.existing(colisionB, true);
+
+        let colisionA = this.add.zone(810, 675, 180, 145);
+        this.physics.add.existing(colisionA, true);
+
+        this.edificiosGroup = this.physics.add.staticGroup([
+            colisionDino,
+            colisionC,
+            colisionB,
+            colisionA
+        ]);
+
+        // =========================================================================
+        // ZONAS DE PORTAL (Entradas a los minijuegos) -- HABILITA DEBUG PARA VER VISUALMENTE --
+        // =========================================================================
+        this.salas = this.physics.add.staticGroup();
+
+        let salaD = this.salas.create(320, 140, null).setVisible(false); // Circulo para entrar a Sala Dino SBEEL
+        salaD.body.setCircle(32);
+        salaD.setData({ nombre: 'DINO', salida: { x: 320, y: 180 } });
+
+        let salaC_portal = this.salas.create(540, 480, null).setVisible(false);
+        salaC_portal.body.setCircle(35);
+        salaC_portal.setData({ nombre: 'SUSTENTABILIDAD', salida: { x: 540, y: 535 } });
+
+        let salaB_portal = this.salas.create(900, 405, null).setVisible(false);
+        salaB_portal.body.setCircle(35);
+        salaB_portal.setData({ nombre: 'ENERGÍA (Presa)', salida: { x: 900, y: 455 } });
+
+        let salaA_portal = this.salas.create(810, 580, null).setVisible(false);
+        salaA_portal.body.setCircle(35);
+        salaA_portal.setData({ nombre: 'BIODIVERSIDAD', salida: { x: 810, y: 535 } });
+
+        // Animaciones del avatar (Fila 0: abajo, Fila 1: arriba, Fila 2: izquierda, Fila 3: derecha)
         const avatarTexKey = `avatar-${this.avatarKey}`;
-        const frameDerecha = this.avatarKey === 'user_male' ? 8 : 12;
-        const frameIzquierda = this.avatarKey === 'user_male' ? 12 : 8;
+        const frameDerecha = 12;
+        const frameIzquierda = 8;
         if (this.anims.exists('avatar-abajo')) this.anims.remove('avatar-abajo');
         if (this.anims.exists('avatar-arriba')) this.anims.remove('avatar-arriba');
         if (this.anims.exists('avatar-izquierda')) this.anims.remove('avatar-izquierda');
@@ -107,100 +187,15 @@ class EscenaJuego extends Phaser.Scene {
         this.anims.create({ key: 'avatar-izquierda', frames: this.anims.generateFrameNumbers(avatarTexKey, { start: frameIzquierda, end: frameIzquierda + 3 }), frameRate: 8, repeat: -1 });
         this.anims.create({ key: 'avatar-derecha', frames: this.anims.generateFrameNumbers(avatarTexKey, { start: frameDerecha, end: frameDerecha + 3 }), frameRate: 8, repeat: -1 });
 
-        let graficosBorde = this.add.graphics();
-        let graficosCamino = this.add.graphics();
-        graficosBorde.lineStyle(76, 0x101417, 1);
-        graficosCamino.lineStyle(70, 0x4a5154, 1);
-
-        let caminoOriginal = new Phaser.Curves.Spline([
-            160, 420,
-            280, 300,
-            420, 220,
-            700, 180,
-            1050, 180,
-            1400, 190,
-            1680, 300,
-            1780, 450,
-            1800, 650,
-            1750, 800,
-            1600, 900,
-            1400, 940,
-            1100, 900,
-            850, 760,
-            600, 620,
-            380, 560,
-            220, 580,
-            160, 620
-        ]);
-
-        let entradaBorde = this.add.graphics();
-        let entradaPasto = this.add.graphics();
-        entradaBorde.lineStyle(116, 0x101417, 1);
-        entradaPasto.lineStyle(100, 0x4a5154, 1);
-
-        caminoOriginal.draw(graficosBorde, 64);
-        caminoOriginal.draw(graficosCamino, 64);
-
-        let graficosRamalesBorde = this.add.graphics();
-        let graficosRamales = this.add.graphics();
-        graficosRamalesBorde.lineStyle(56, 0x1e272c, 1);
-        graficosRamales.lineStyle(50, 0x7f8c8d, 1);
-
-        let caminoDino = new Phaser.Curves.Spline([400, 220, 350, 175, 300, 130, 300, 90]);
-        let caminoSalaC = new Phaser.Curves.Spline([820, 180, 800, 320, 820, 460, 820, 600]);
-        let caminoSalaB = new Phaser.Curves.Spline([1780, 450, 1840, 450]);
-        let caminoSalaA = new Phaser.Curves.Spline([1400, 940, 1400, 1080]);
-
-        caminoDino.draw(graficosRamalesBorde, 42); caminoDino.draw(graficosRamales, 42);
-        caminoSalaC.draw(graficosRamalesBorde, 32); caminoSalaC.draw(graficosRamales, 32);
-        caminoSalaB.draw(graficosRamalesBorde, 32); caminoSalaB.draw(graficosRamales, 32);
-        caminoSalaA.draw(graficosRamalesBorde, 32); caminoSalaA.draw(graficosRamales, 32);
-
-        this.salas = this.physics.add.staticGroup();
-
-        let salaD = this.salas.create(300, 90, 'textura_sala');
-        salaD.setData({ nombre: 'DINO', salida: { x: 400, y: 220 } }); // SALA DINO
-        this.add.text(275, 80, 'DINO', { fill: '#ffffff', fontStyle: 'bold', fontFamily: 'Arial' });
-
-        let salaA = this.salas.create(1400, 1080, 'textura_sala');
-        salaA.setData({ nombre: 'BIODIVERSIDAD', salida: { x: 1400, y: 900 } }); // SALA BIODIVERSIDAD
-        this.add.text(1400, 1080, 'BIODIVERSIDAD', {
-            fontSize: '13px',
-            fill: '#ffffff',
-            fontStyle: 'bold',
-            fontFamily: 'Arial'
-        }).setOrigin(0.5);
-
-        let salaB = this.salas.create(1840, 450, 'textura_sala');
-        salaB.setData({ nombre: 'ENERGÍA (Presa)', salida: { x: 1750, y: 450 } }); // SALA B: ENERGÍA
-        this.add.text(1840, 450, 'SALA B\nENERGÍA', {
-            fontSize: '13px',
-            fill: '#ffffff',
-            fontStyle: 'bold',
-            fontFamily: 'Arial',
-            align: 'center'
-        }).setOrigin(0.5);
-
-        let salaC = this.salas.create(820, 600, 'textura_sala');
-        salaC.setData({ nombre: 'SUSTENTABILIDAD', salida: { x: 820, y: 510 } }); // SALA C: DESARROLLO SUSTENTABLE
-        this.add.text(820, 600, 'SALA C\nDESARROLLO\nSUSTENTABLE', {
-            fontSize: '11px',
-            fill: '#ffffff',
-            fontStyle: 'bold',
-            fontFamily: 'Arial',
-            align: 'center'
-        }).setOrigin(0.5);
-
-        this.salas.children.iterate((sala) => { sala.body.setCircle(60); });
-
-        this.jugador = this.physics.add.sprite(startX, startY, avatarTexKey, 0).setDepth(4); //posición inicial del jugador
-        this.jugador.setDisplaySize(58, 58);
-        this.jugador.body.setSize(38, 52, true);
+        // Jugador
+        this.jugador = this.physics.add.sprite(startX, startY, avatarTexKey, 0).setDepth(4);
+        this.jugador.setDisplaySize(50, 50);
+        this.jugador.body.setSize(30, 44, true);
         this.jugador.setCollideWorldBounds(true);
         this.jugador.play('avatar-abajo');
-        this.cameras.main.startFollow(this.jugador, true, 0.08, 0.08); // La camara sigue al jugador con un efecto de suavizado
+        this.cameras.main.startFollow(this.jugador, true, 0.08, 0.08);
 
-        this.physics.add.collider(this.jugador, this.edificiosGroup); //colision con edificios
+        this.physics.add.collider(this.jugador, this.edificiosGroup);
         this.physics.add.overlap(this.jugador, this.salas, this.entrarAAnuncioPortal, null, this);
 
         this.teclado = this.input.keyboard.createCursorKeys();
@@ -209,37 +204,41 @@ class EscenaJuego extends Phaser.Scene {
         this.teclaS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
         this.teclaN = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.N);
 
-        this.textoPortal = this.add.text(500, 400, '', {
-            fontSize: '24px',
+        this.textoPortal = this.add.text(512, 400, '', {
+            fontSize: '22px',
             fill: '#fff',
             backgroundColor: '#000',
             padding: { x: 20, y: 20 },
-            align: 'center'
-        }).setOrigin(0.5).setScrollFactor(0).setVisible(false).setDepth(10); //setScrollFactor(0) para que el texto no se mueva con la cámara y setDepth(10) para que esté por encima de otros elementos
+            align: 'center',
+            fontFamily: 'Arial',
+            stroke: '#000',
+            strokeThickness: 2
+        }).setOrigin(0.5).setScrollFactor(0).setVisible(false).setDepth(10);
 
         this.add.text(10, 10, 'Presiona [ESC] para volver al Menú principal', {
-            fontSize: '16px',
+            fontSize: '13px',
             fill: '#ffffff',
             backgroundColor: '#111111',
-            padding: { x: 5, y: 5 }
+            padding: { x: 6, y: 4 },
+            fontFamily: 'Arial'
         }).setScrollFactor(0).setDepth(10);
 
-        this.textoCoordenadas = this.add.text(500, 15, 'X: 160 | Y: 420', {
-            fontSize: '16px',
+        this.textoCoordenadas = this.add.text(512, 12, `X: ${startX} | Y: ${startY}`, {
+            fontSize: '13px',
             fill: '#ffffff',
             backgroundColor: '#111111',
-            padding: { x: 10, y: 5 },
+            padding: { x: 10, y: 4 },
             fontFamily: 'Arial',
             fontStyle: 'bold'
         }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(10);
 
-        let botonMenu = this.add.text(800, 20, 'VOLVER AL MENÚ', {
-            fontSize: '18px',
+        let botonMenu = this.add.text(anchoMundo - 15, 12, 'VOLVER AL MENÚ', {
+            fontSize: '14px',
             fill: '#ffffff',
             backgroundColor: '#c0392b',
             fontFamily: 'Arial',
-            padding: { x: 10, y: 8 }
-        }).setInteractive({ useHandCursor: true }).setScrollFactor(0).setDepth(10);
+            padding: { x: 10, y: 6 }
+        }).setOrigin(1, 0).setInteractive({ useHandCursor: true }).setScrollFactor(0).setDepth(10);
 
         botonMenu.on('pointerdown', () => {
             this.scene.stop('EscenaDinoRun');
@@ -348,11 +347,12 @@ class EscenaJuego extends Phaser.Scene {
         const arribaActivo = this.teclado.up.isDown || controlesTactiles?.isDown('up');
         const abajoActivo = this.teclado.down.isDown || controlesTactiles?.isDown('down');
 
-        if (izquierdaActiva) this.jugador.setVelocityX(-160);
-        else if (derechaActiva) this.jugador.setVelocityX(160);
+        const vel = 170;
+        if (izquierdaActiva) this.jugador.setVelocityX(-vel);
+        else if (derechaActiva) this.jugador.setVelocityX(vel);
 
-        if (arribaActivo) this.jugador.setVelocityY(-160);
-        else if (abajoActivo) this.jugador.setVelocityY(160);
+        if (arribaActivo) this.jugador.setVelocityY(-vel);
+        else if (abajoActivo) this.jugador.setVelocityY(vel);
 
         if (this.jugador.body.velocity.x < 0) this.jugador.anims.play('avatar-izquierda', true);
         else if (this.jugador.body.velocity.x > 0) this.jugador.anims.play('avatar-derecha', true);
@@ -360,32 +360,8 @@ class EscenaJuego extends Phaser.Scene {
         else if (this.jugador.body.velocity.y > 0) this.jugador.anims.play('avatar-abajo', true);
         else this.jugador.anims.stop();
 
-        if (this.sys.game.canvas) {
-            let ctx = this.sys.game.canvas.getContext('2d');
-            let camara = this.cameras.main;
-            let pixelX = Math.floor(this.jugador.x - camara.scrollX);
-            let pixelY = Math.floor(this.jugador.y + 20 - camara.scrollY);
-
-            if (pixelX < 0 || pixelY < 0 ||
-                pixelX >= this.sys.game.canvas.width ||
-                pixelY >= this.sys.game.canvas.height) {
-                return;
-            }
-
-            let pixel = ctx.getImageData(pixelX, pixelY, 1, 1).data;
-            let r = pixel[0];
-            let g = pixel[1];
-            let b = pixel[2];
-
-            if (r === 39 && g === 174 && b === 96) {
-                this.jugador.x = this.ultimaPosSegura.x;
-                this.jugador.y = this.ultimaPosSegura.y;
-                this.jugador.setVelocity(0);
-            } else {
-                this.ultimaPosSegura.x = posPreviaX;
-                this.ultimaPosSegura.y = posPreviaY;
-            }
-        }
+        this.ultimaPosSegura.x = posPreviaX;
+        this.ultimaPosSegura.y = posPreviaY;
     }
 
     entrarAAnuncioPortal(jugador, sala) {
@@ -406,7 +382,7 @@ class EscenaJuego extends Phaser.Scene {
     reiniciarJugador() {
         let salida = this.salaActual
             ? this.salaActual.getData('salida')
-            : { x: 160, y: 500 };
+            : { x: 100, y: 400 };
 
         this.jugador.x = salida.x;
         this.jugador.y = salida.y;

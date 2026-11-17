@@ -26,6 +26,7 @@ class EscenaSustentable2 extends Phaser.Scene {
     preload() {
         // Fondo Nivel 2: Paisaje Eólico / Ruinas Mayas (1699x926)
         this.load.image('fondo_sustentable_n2', 'pictures/sala_desarrollo_sustentable/Paisaje_Eolico_Ruinas_Maya.png');
+        this.load.audio('musica_sustentable', 'music/intro_sustentable_loop.mp3');
 
         // Texturas de plataformas (mismo conjunto que N1)
         this.load.image('plat_estable', 'pictures/sala_desarrollo_sustentable/plataforma_estable.png');
@@ -41,6 +42,9 @@ class EscenaSustentable2 extends Phaser.Scene {
 
     create() {
         this.initAudioSynthesizer();
+
+        // Iniciar música de fondo (misma pista que N1, ya va acelerada al entrar aquí)
+        this.iniciarMusicaFondo();
 
         // ── Estado del juego ────────────────────────────────────────────────────
         this.vidas = 3;
@@ -334,8 +338,8 @@ class EscenaSustentable2 extends Phaser.Scene {
      * ========================================================================= */
     crearAnimaciones() {
         const key = `avatar-${this.avatarKey}`;
-        const frameDerecha = this.avatarKey === 'user_male' ? 8 : 12;
-        const frameIzquierda = this.avatarKey === 'user_male' ? 12 : 8;
+        const frameDerecha = 12;
+        const frameIzquierda = 8;
         if (!this.anims.exists(`${key}-correr-der`)) {
             this.anims.create({ key: `${key}-correr-der`, frames: this.anims.generateFrameNumbers(key, { start: frameDerecha, end: frameDerecha + 3 }), frameRate: 10, repeat: -1 });
         }
@@ -937,6 +941,13 @@ class EscenaSustentable2 extends Phaser.Scene {
         this.teclaESC = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
         this.teclaENTER = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
         this.teclaESC.on('down', () => this.volverAlOrigen());
+        this.teclaENTER.on('down', () => {
+            if (this.juegoTerminado && this.modalGameOver && this.modalGameOver.visible) {
+                this.reiniciarNivel();
+            } else if (this.nivelCompletado && this.modalVictoria && this.modalVictoria.visible) {
+                this.volverAlOrigen();
+            }
+        });
     }
 
     /* =========================================================================
@@ -1350,13 +1361,17 @@ class EscenaSustentable2 extends Phaser.Scene {
         });
     }
 
-    reiniciarNivel() { this.scene.restart(); }
+    reiniciarNivel() {
+        this.esReinicio = true;
+        this.scene.restart();
+    }
 
     volverAlOrigen() {
+        this.detenerMusicaFondo();
         if (this.origen === 'EscenaMenu') {
             this.scene.start('EscenaMenu');
         } else {
-            this.scene.start('EscenaJuego', { posInicial: { x: 820, y: 510 }, avatarKey: this.avatarKey });
+            this.scene.start('EscenaJuego', { posInicial: { x: 540, y: 535 }, avatarKey: this.avatarKey });
         }
     }
 
@@ -1373,6 +1388,21 @@ class EscenaSustentable2 extends Phaser.Scene {
         this.actualizarCableDinamico();
         this.actualizarPlataformasYEnemigos();
         this.actualizarHUD();
+
+        // Interaccion movil para modales (Enter / Escape)
+        if (window.mobileControls) {
+            if (this.nivelCompletado && this.modalVictoria && this.modalVictoria.visible) {
+                if (window.mobileControls.consume('escape') || window.mobileControls.consume('enter')) {
+                    this.volverAlOrigen();
+                }
+            } else if (this.juegoTerminado && this.modalGameOver && this.modalGameOver.visible) {
+                if (window.mobileControls.consume('enter')) {
+                    this.reiniciarNivel();
+                } else if (window.mobileControls.consume('escape')) {
+                    this.volverAlOrigen();
+                }
+            }
+        }
     }
 
     /* =========================================================================
@@ -1458,6 +1488,46 @@ class EscenaSustentable2 extends Phaser.Scene {
                 osc.connect(gain); gain.connect(ctx.destination);
                 osc.start(t); osc.stop(t + 0.22);
             });
+        }
+    }
+
+    iniciarMusicaFondo() {
+        // 1. Revisar si la música ya existe y está sonando (ej: de N1 o tras reiniciar nivel)
+        let musicaExistente = null;
+        if (this.sound && this.sound.sounds) {
+            musicaExistente = this.sound.sounds.find(s => s.key === 'musica_sustentable' && s.isPlaying);
+        }
+
+        if (musicaExistente) {
+            this.musicaFondo = musicaExistente;
+        } else {
+            // Detener cualquier otra música previa de otra escena
+            if (this.sound && this.sound.sounds) {
+                this.sound.sounds.forEach(s => {
+                    if (s.isPlaying) s.stop();
+                });
+            }
+            this.musicaFondo = this.sound.add('musica_sustentable', { loop: true, volume: 0.5 });
+            this.musicaFondo.play();
+        }
+
+        // Siempre registrar el listener de shutdown para este ciclo de la escena
+        const detenerMusica = () => {
+            if (!this.esReinicio && this.musicaFondo) {
+                this.detenerMusicaFondo();
+            }
+            this.esReinicio = false;
+        };
+
+        this.events.once('shutdown', detenerMusica);
+        this.events.once('destroy', () => this.detenerMusicaFondo());
+    }
+
+    detenerMusicaFondo() {
+        if (this.musicaFondo) {
+            if (this.musicaFondo.isPlaying) this.musicaFondo.stop();
+            this.musicaFondo.destroy();
+            this.musicaFondo = null;
         }
     }
 }
