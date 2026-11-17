@@ -338,8 +338,8 @@ class EscenaSustentable2 extends Phaser.Scene {
      * ========================================================================= */
     crearAnimaciones() {
         const key = `avatar-${this.avatarKey}`;
-        const frameDerecha = this.avatarKey === 'user_male' ? 8 : 12;
-        const frameIzquierda = this.avatarKey === 'user_male' ? 12 : 8;
+        const frameDerecha = 12;
+        const frameIzquierda = 8;
         if (!this.anims.exists(`${key}-correr-der`)) {
             this.anims.create({ key: `${key}-correr-der`, frames: this.anims.generateFrameNumbers(key, { start: frameDerecha, end: frameDerecha + 3 }), frameRate: 10, repeat: -1 });
         }
@@ -1371,7 +1371,7 @@ class EscenaSustentable2 extends Phaser.Scene {
         if (this.origen === 'EscenaMenu') {
             this.scene.start('EscenaMenu');
         } else {
-            this.scene.start('EscenaJuego', { posInicial: { x: 820, y: 510 }, avatarKey: this.avatarKey });
+            this.scene.start('EscenaJuego', { posInicial: { x: 540, y: 535 }, avatarKey: this.avatarKey });
         }
     }
 
@@ -1500,7 +1500,6 @@ class EscenaSustentable2 extends Phaser.Scene {
 
         if (musicaExistente) {
             this.musicaFondo = musicaExistente;
-            this.musicaFondo.setRate(1.2);
         } else {
             // Detener cualquier otra música previa de otra escena
             if (this.sound && this.sound.sounds) {
@@ -1509,7 +1508,6 @@ class EscenaSustentable2 extends Phaser.Scene {
                 });
             }
             this.musicaFondo = this.sound.add('musica_sustentable', { loop: true, volume: 0.5 });
-            this.musicaFondo.setRate(1.2);
             this.musicaFondo.play();
         }
 

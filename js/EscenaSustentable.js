@@ -390,8 +390,8 @@ class EscenaSustentable extends Phaser.Scene {
      * ========================================================================= */
     crearAnimaciones() {
         const key = `avatar-${this.avatarKey}`;
-        const frameDerecha = this.avatarKey === 'user_male' ? 8 : 12;
-        const frameIzquierda = this.avatarKey === 'user_male' ? 12 : 8;
+        const frameDerecha = 12;
+        const frameIzquierda = 8;
 
         // Caminata hacia la derecha
         if (!this.anims.exists(`${key}-correr-der`)) {
@@ -1627,7 +1627,7 @@ class EscenaSustentable extends Phaser.Scene {
             this.scene.start('EscenaMenu');
         } else {
             this.scene.start('EscenaJuego', {
-                posInicial: { x: 820, y: 510 },
+                posInicial: { x: 540, y: 535 },
                 avatarKey: this.avatarKey
             });
         }

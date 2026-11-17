@@ -1650,7 +1650,7 @@ class EscenaEnergia extends Phaser.Scene {
         this.scene.stop('EscenaEnergia');
         this.scene.start('EscenaJuego', {
             avatarKey: this.avatarKey,
-            posInicial: { x: 1750, y: 450 },
+            posInicial: { x: 900, y: 455 },
             ignoreEscape: true
         });
     }
