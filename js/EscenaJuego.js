@@ -189,7 +189,7 @@ class EscenaJuego extends Phaser.Scene {
 
         // Jugador
         this.jugador = this.physics.add.sprite(startX, startY, avatarTexKey, 0).setDepth(4);
-        this.jugador.setDisplaySize(50, 50);
+        this.jugador.setDisplaySize(55, 60); // MODIFICAMOS EL TAMAÑO DEL AVATAR (ANCHO, ALTO)
         this.jugador.body.setSize(30, 44, true);
         this.jugador.setCollideWorldBounds(true);
         this.jugador.play('avatar-abajo');

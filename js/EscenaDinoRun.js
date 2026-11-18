@@ -12,8 +12,8 @@ class EscenaDinoRun extends Phaser.Scene {
                 frameHeight: 64
             });
         }
-        this.load.image('arbol', 'pictures/salabiodiversidad/arbol.png');
-        this.load.image('arbol_grande', 'pictures/salabiodiversidad/arbol_grande.png');
+        this.load.image('arbol', 'pictures/dino_sbeel/Arbol_1.png');
+        this.load.image('arbol_grande', 'pictures/dino_sbeel/Arbol_2.png');
         this.load.image('roca', 'pictures/sala_sbeel_dinosaurios/roca.png');
         this.load.spritesheet('terodactilo', 'pictures/sala_sbeel_dinosaurios/terodactile.png', {
             frameWidth: 524,
@@ -141,7 +141,8 @@ class EscenaDinoRun extends Phaser.Scene {
         const animKeyRun = `dino-jugador-corriendo-${this.avatarKey}`;
         const frameDerecha = this.avatarKey === 'user_male' ? 8 : 12;
         this.jugador = this.physics.add.sprite(220, 580, `avatar-${this.avatarKey}`, frameDerecha).setOrigin(0.5, 1).setDepth(3);  //Revisar como funciona sprite
-        this.jugador.setDisplaySize(58, 58);
+
+        this.jugador.setDisplaySize(65, 65); //Modificamos el tamaño del avatar
         this.jugador.body.setSize(38, 52, true);
         this.jugador.body.setGravityY(1050);
         this.jugador.setCollideWorldBounds(false);
@@ -161,8 +162,8 @@ class EscenaDinoRun extends Phaser.Scene {
         }
 
         this.perseguidor = this.physics.add.sprite(50, 554, 'dinosaurio-perseguidor', 0) //Revisar setOrigin(0.5, 1)
-            .setOrigin(0.5, 0.95) // Ajusta el origen Y (0.95 = casi el fondo) para que pise bien, dada la transparencia del sprite
-            .setDisplaySize(170, 140)
+            .setOrigin(0.5, 1) // Align bottom of chaser with player
+            .setDisplaySize(220, 180) // Tamaño del dinosaurio
             .setFlipX(false)
             .setDepth(2);
 
@@ -261,8 +262,11 @@ class EscenaDinoRun extends Phaser.Scene {
             obstaculo.setDisplaySize(64, 56);
             obstaculo.body.setSize(obstaculo.width * 0.5, obstaculo.height * 0.5, true);
         } else {
-            obstaculo.setDisplaySize(105, 83);
-            obstaculo.body.setSize(430, 280, true);
+            // Adjust terodactilo obstacle to align its bottom with player
+            obstaculo.setOrigin(0.5, 1);
+            obstaculo.setDisplaySize(120, 95);
+            obstaculo.body.setSize(120, 80, true);
+            obstaculo.body.setOffset(0, obstaculo.height * 0.2);
             obstaculo.play('terodactilo-volando');
         }
 
@@ -335,10 +339,10 @@ class EscenaDinoRun extends Phaser.Scene {
 
         const abajoActivo = this.teclado.down.isDown || window.mobileControls?.isDown('down');
         if (abajoActivo && enSuelo && !this.agachado) {
-            this.jugador.setDisplaySize(58, 38);
+            this.jugador.setDisplaySize(65, 55);  // Reducimos el tamaño del avatar, para simular que se agacha
             this.agachado = true;
         } else if (!abajoActivo && this.agachado) {
-            this.jugador.setDisplaySize(58, 58);
+            this.jugador.setDisplaySize(65, 65); // Vuelve al tamaño original despues de agacharse
             this.agachado = false;
         }
 
@@ -459,7 +463,7 @@ class EscenaDinoRun extends Phaser.Scene {
         this.perseguidor.body.enable = true;
         this.perseguidor.play('dinosaurio-corriendo');
         const animKeyRun = `dino-jugador-corriendo-${this.avatarKey}`;
-        this.jugador.setDisplaySize(58, 58);
+        this.jugador.setDisplaySize(65, 65); // Tamaño del jugador, solo reiniciamos valores
         this.jugador.body.setSize(38, 52, true);
         this.jugador.setFlipX(false);
         this.jugador.play(animKeyRun, true);
