@@ -45,8 +45,8 @@ class EscenaBiodiversidad extends Phaser.Scene {
                 estado: 'En peligro de extinción',
                 desc: 'Posee un hueso hioides hipertrofiado que amplifica sus aullidos para marcar territorio y comunicarse entre las copas de los árboles.',
                 registrada: false,
-                texturaKey: 'mono_img',
-                frameKey: null
+                texturaKey: 'mono_sheet',
+                frameKey: 0
             },
             pecari: {
                 id: 'pecari',
@@ -133,6 +133,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
 
         // Elementos de entorno
         this.load.image('arbusto', 'pictures/salabiodiversidad/arbusto.png');
+        this.load.image('arbusto_extendido', 'pictures/salabiodiversidad/arbusto_extendido.png');
         this.load.image('arbol', 'pictures/salabiodiversidad/arbol.png');
         this.load.image('arbol_grande', 'pictures/salabiodiversidad/arbol_grande.png');
         this.load.image('arbol-sala-b-1', 'pictures/salabiodiversidad/Arbol_1_sala_B.png');
@@ -141,10 +142,10 @@ class EscenaBiodiversidad extends Phaser.Scene {
         this.load.image('arbusto_escondite', 'pictures/salabiodiversidad/fauna/arbusto_escondite.png');
 
         // Spritesheets de fauna (mapeo directo)
-        // 1. Tapir: 1024x1024 -> 4 frames de 512x512 (2 columnas x 2 filas)
-        this.load.spritesheet('tapir_sheet', 'pictures/salabiodiversidad/fauna/tapir.png', {
-            frameWidth: 512,
-            frameHeight: 512
+        // 1. Tapir: 1024x256 -> 4 frames de 256x256 (4 columnas x 1 fila)
+        this.load.spritesheet('tapir_sheet', 'pictures/salabiodiversidad/fauna/tapir_spritesheet.png', {
+            frameWidth: 256,
+            frameHeight: 256
         });
 
         // 2. Pecarí: 992x1068 -> 6 frames de 496x356 (2 columnas x 3 filas)
@@ -159,8 +160,11 @@ class EscenaBiodiversidad extends Phaser.Scene {
         // 4. Quetzal volando / posado: 837x779 (Se mapea con frames personalizados: 'perch_wings_open', 'perch_wings_folded', 'fly_0' a 'fly_5')
         this.load.image('quetzal_volando_raw', 'pictures/salabiodiversidad/fauna/quetzal-volando.png');
 
-        // 5. Mono: 170x156 (sprite individual)
-        this.load.image('mono_img', 'pictures/salabiodiversidad/fauna/mono.png');
+        // 5. Mono: 1024x940 -> 4 frames de 512x470 (2 columnas x 2 filas)
+        this.load.spritesheet('mono_sheet', 'pictures/salabiodiversidad/fauna/mono.png', {
+            frameWidth: 512,
+            frameHeight: 470
+        });
 
         // 6. Flora strip heredada
         // this.load.image('flora_strip', 'pictures/salabiodiversidad/flora/flora.png');
@@ -291,7 +295,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
             this.anims.create({
                 key: 'tapir-caminar',
                 frames: this.anims.generateFrameNumbers('tapir_sheet', { start: 0, end: 3 }),
-                frameRate: 4,
+                frameRate: 6,
                 repeat: -1
             });
         }
@@ -299,7 +303,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
             this.anims.create({
                 key: 'tapir-correr',
                 frames: this.anims.generateFrameNumbers('tapir_sheet', { start: 0, end: 3 }),
-                frameRate: 11,
+                frameRate: 12,
                 repeat: -1
             });
         }
@@ -310,6 +314,18 @@ class EscenaBiodiversidad extends Phaser.Scene {
                 key: 'pecari-correr',
                 frames: this.anims.generateFrameNumbers('pecari_sheet', { start: 0, end: 1 }),
                 frameRate: 7,
+                repeat: -1
+            });
+        }
+
+        // --- E. ANIMACIÓN DE MONO COMIENDO (mono_sheet: 4 frames) ---
+        if (!this.anims.exists('mono-comer')) {
+            this.anims.create({
+                key: 'mono-comer',
+                frames: this.anims.generateFrameNumbers('mono_sheet', {
+                    frames: [2, 0, 1, 1, 0, 2, 3, 2]
+                }),
+                frameRate: 4,
                 repeat: -1
             });
         }
@@ -590,6 +606,22 @@ class EscenaBiodiversidad extends Phaser.Scene {
                 .setAlpha(0.88);
         }
 
+        // Arbustos en colinas medias (fondo lejano)
+        for (let x = 60; x <= this.mundoAncho; x += 110) {
+            const colinaY = 380 + Math.sin(x * 0.004) * 80;
+            const esExt = ((x / 110) % 2 === 0);
+            const clave = esExt ? 'arbusto_extendido' : 'arbusto';
+            const w = esExt ? 55 : 35;
+            const h = esExt ? 28 : 24;
+            this.add.image(x + 50, colinaY + 22, clave)
+                .setScrollFactor(0.2)
+                .setOrigin(0.5, 1)
+                .setDisplaySize(w, h)
+                .setTint(0x1b4d35)
+                .setAlpha(0.85)
+                .setFlipX(Math.sin(x) > 0);
+        }
+
         // Capa de neblina blanca selvática
         this.neblina = this.add.graphics().setScrollFactor(0.35).setAlpha(0.35);
         this.neblina.fillStyle(0xf1f5f9, 1);
@@ -610,6 +642,40 @@ class EscenaBiodiversidad extends Phaser.Scene {
                 .setDisplaySize(280, 320)
                 .setTint(0x235338)
                 .setAlpha(0.9);
+        }
+
+        // Arbustos de capa media/fondo (detrás del suelo principal y de la fauna)
+        for (let x = 80; x <= this.mundoAncho; x += 180) {
+            const esExt = ((x / 180) % 2 === 1);
+            const clave = esExt ? 'arbusto_extendido' : 'arbusto';
+            const w = esExt ? Phaser.Math.Between(85, 110) : Phaser.Math.Between(55, 75);
+            const h = esExt ? Phaser.Math.Between(42, 55) : Phaser.Math.Between(40, 52);
+            const offsetFondoY = Math.round(h * 0.12);
+            this.add.image(x, this.sueloY + offsetFondoY, clave)
+                .setScrollFactor(0.6)
+                .setOrigin(0.5, 1)
+                .setDisplaySize(w, h)
+                .setDepth(2)
+                .setTint(0x2d6344)
+                .setAlpha(0.85)
+                .setFlipX(Math.cos(x) > 0);
+        }
+
+        // Arbustos de capa media/fondo (detrás del suelo principal y de la fauna)
+        for (let x = 80; x <= this.mundoAncho; x += 180) {
+            const esExt = ((x / 180) % 2 === 1);
+            const clave = esExt ? 'arbusto_extendido' : 'arbusto';
+            const w = esExt ? Phaser.Math.Between(85, 110) : Phaser.Math.Between(55, 75);
+            const h = esExt ? Phaser.Math.Between(42, 55) : Phaser.Math.Between(40, 52);
+            const offsetFondoY = Math.round(h * 0.12);
+            this.add.image(x, this.sueloY + offsetFondoY, clave)
+                .setScrollFactor(0.6)
+                .setOrigin(0.5, 1)
+                .setDisplaySize(w, h)
+                .setDepth(2)
+                .setTint(0x2d6344)
+                .setAlpha(0.85)
+                .setFlipX(Math.cos(x) > 0);
         }
     }
 
@@ -778,17 +844,27 @@ class EscenaBiodiversidad extends Phaser.Scene {
             }).setDepth(4);
         }
 
-        // Arbustos decorativos en la superficie
-        for (let x = 120; x < this.mundoAncho - 200; x += Phaser.Math.Between(160, 320)) {
+        // Arbustos decorativos en la superficie (alternando arbusto y arbusto_extendido)
+        let indiceArbusto = 0;
+        for (let x = 90; x < this.mundoAncho - 150; x += Phaser.Math.Between(100, 170)) {
             // Evitar solaparse con las zonas de arbusto_escondite (2860 y 3850)
             if (Math.abs(x - 2860) < 140 || Math.abs(x - 3850) < 140) continue;
-            if (Math.random() > 0.3) {
-                this.add.image(x + 45, this.sueloY, 'arbusto')
-                    .setDisplaySize(Phaser.Math.Between(50, 75), Phaser.Math.Between(45, 65))
-                    .setOrigin(0.5, 1)
-                    .setDepth(4)
-                    .setTint(0x4a7c3f);
-            }
+
+            const esExtendido = (indiceArbusto % 2 === 1);
+            const claveArbusto = esExtendido ? 'arbusto_extendido' : 'arbusto';
+            // Arbustos de enfrente agrandados
+            const ancho = esExtendido ? Phaser.Math.Between(155, 195) : Phaser.Math.Between(95, 120);
+            const alto = esExtendido ? Phaser.Math.Between(72, 92) : Phaser.Math.Between(66, 84);
+            // Compensar el margen transparente inferior de los PNGs (~12%) para que asienten firmes sobre el césped
+            const offsetY = Math.round(alto * 0.12) + 2;
+
+            this.add.image(x, this.sueloY + offsetY, claveArbusto)
+                .setDisplaySize(ancho, alto)
+                .setOrigin(0.5, 1)
+                .setDepth(4)
+                .setFlipX(Math.random() > 0.5);
+
+            indiceArbusto++;
         }
 
         // Plataformas escalables
@@ -1322,7 +1398,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
     _crearFaunaPacifica() {
         // 1. EL QUETZAL (Posado en rama alta con animación de plumaje)
         this.quetzal = this.physics.add.sprite(1160, 344, 'quetzal_volando_raw', 'perch_wings_folded');
-        this.quetzal.setScale(0.24);
+        this.quetzal.setScale(0.42);
         this.quetzal.body.setAllowGravity(false);
         this.quetzal.body.setImmovable(true);
         this.quetzal.setDepth(5);
@@ -1330,21 +1406,21 @@ class EscenaBiodiversidad extends Phaser.Scene {
         this.quetzal.asustado = false;
 
         // Zona de encuadre fotográfico justo bajo la rama
-        this.quetzalFotoZona = this.add.zone(1160, 430, 240, 200);
+        this.quetzalFotoZona = this.add.zone(1160, 430, 260, 220);
         this.physics.add.existing(this.quetzalFotoZona, true);
 
         // Árbol grande y enraizado que sostiene al quetzal
         this.add.image(1160, this.sueloY, 'arbol_grande')
-            .setDisplaySize(300, 460)
+            .setDisplaySize(420, 460) // 
             .setOrigin(0.5, 1)
             .setDepth(4)
             .setAlpha(0.95);
 
         // 2. EL TAPIR (Con spritesheet de caminar y huir)
         this.tapir = this.physics.add.sprite(1650, this.sueloY - 45, 'tapir_sheet', 0);
-        this.tapir.setDisplaySize(145, 100);
-        this.tapir.body.setSize(380, 240);
-        this.tapir.body.setOffset(60, 160);
+        this.tapir.setDisplaySize(150, 150);
+        this.tapir.body.setSize(210, 120);
+        this.tapir.body.setOffset(24, 68);
         this.tapir.setDepth(5);
         this.tapir.setCollideWorldBounds(false);
         this.tapir.play('tapir-caminar');
@@ -1353,6 +1429,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
         this.tapir.estado = 'pastando';
         this.tapir.velocidadNormal = -25;
         this.tapir.velocidadHuida = 340;
+        this.tapir.setFlipX(true); // El sprite base mira a la derecha; invertimos para iniciar caminando a la izquierda
 
         // 3. EL MONO SARAGUATO
         this.monoArbol = this.add.image(2240, this.sueloY, 'arbol_grande') // Modificamos sueloY del arbol
@@ -1360,11 +1437,12 @@ class EscenaBiodiversidad extends Phaser.Scene {
             .setOrigin(0.5, 1)
             .setDepth(4);
 
-        this.mono = this.physics.add.sprite(2240, 340, 'mono_img');
-        this.mono.setDisplaySize(95, 90);
+        this.mono = this.physics.add.sprite(2240, 340, 'mono_sheet', 0);
+        this.mono.setDisplaySize(110, 100);
         this.mono.body.setAllowGravity(false);
         this.mono.body.setImmovable(true);
         this.mono.setDepth(5);
+        this.mono.play('mono-comer');
         this.mono.visiblePeriodo = true;
         this.mono.temporizadorEsconder = 0;
 
@@ -1955,9 +2033,9 @@ class EscenaBiodiversidad extends Phaser.Scene {
 
             // Cargar imagen con el frame exacto mapeado
             const imgEspecie = this.add.image(215, -160, det.texturaKey, det.frameKey !== null ? det.frameKey : undefined);
-            if (det.id === 'quetzal') imgEspecie.setDisplaySize(120, 125);
-            else if (det.id === 'tapir') imgEspecie.setDisplaySize(160, 110);
-            else if (det.id === 'mono') imgEspecie.setDisplaySize(110, 110);
+            if (det.id === 'quetzal') imgEspecie.setDisplaySize(145, 150);
+            else if (det.id === 'tapir') imgEspecie.setDisplaySize(150, 150);
+            else if (det.id === 'mono') imgEspecie.setDisplaySize(120, 110);
             else if (det.id === 'pecari') imgEspecie.setDisplaySize(140, 100);
             else if (det.id === 'jaguar') imgEspecie.setDisplaySize(100, 135);
             else imgEspecie.setDisplaySize(120, 95);
@@ -2300,7 +2378,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
             this.tapir.setVelocityX(this.tapir.velocidadNormal);
             if (this.tapir.x < 1550) this.tapir.velocidadNormal = 25;
             if (this.tapir.x > 1750) this.tapir.velocidadNormal = -25;
-            this.tapir.setFlipX(this.tapir.velocidadNormal > 0);
+            this.tapir.setFlipX(this.tapir.velocidadNormal < 0);
 
             const corriendoRapido = Math.abs(this.jugador.body.velocity.x) > 140;
             if (distTapir < 210 && corriendoRapido && !this.agachado) {
@@ -2324,7 +2402,7 @@ class EscenaBiodiversidad extends Phaser.Scene {
                 this.time.delayedCall(400, () => {
                     this.tapir.estado = 'huyendo';
                     this.tapir.setVelocityX(this.tapir.velocidadHuida);
-                    this.tapir.setFlipX(true);
+                    this.tapir.setFlipX(false); // Corre hacia la derecha (sprite base mira a la derecha)
                 });
             }
         } else if (this.tapir.estado === 'huyendo') {
@@ -2332,7 +2410,8 @@ class EscenaBiodiversidad extends Phaser.Scene {
             if (this.tapir.x > 2100) {
                 this.tapir.x = 1680;
                 this.tapir.estado = 'pastando';
-                this.tapir.setVelocityX(-25);
+                this.tapir.velocidadNormal = -25;
+                this.tapir.setFlipX(true);
                 this.tapir.play('tapir-caminar', true);
             }
         }
