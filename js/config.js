@@ -11,8 +11,8 @@ const config = {
         default: 'arcade',
         arcade: {
             gravity: { y: 0 },
-            debug: false
-            //debug: true
+            //debug: false
+            debug: true
         }
     },
     scene: [EscenaMenu, EscenaJuego, EscenaDinoRun, EscenaBiodiversidad, EscenaEnergia, EscenaSustentable, EscenaSustentable2]
