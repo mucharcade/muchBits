@@ -126,8 +126,8 @@ class EscenaBiodiversidad extends Phaser.Scene {
         // Avatar del jugador
         if (!this.textures.exists(`avatar-${this.avatarKey}`)) {
             this.load.spritesheet(`avatar-${this.avatarKey}`, `pictures/${this.avatarKey}.png`, {
-                frameWidth: 64,
-                frameHeight: 64
+                frameWidth: 256,
+                frameHeight: 256
             });
         }
 
@@ -1381,9 +1381,10 @@ class EscenaBiodiversidad extends Phaser.Scene {
     _crearJugador() {
         const avatarTexKey = `avatar-${this.avatarKey}`;
         const frameDerecha = 12;
-        this.jugador = this.physics.add.sprite(150, this.sueloY - 40, avatarTexKey, frameDerecha);
-        this.jugador.setDisplaySize(58, 58);
-        this.jugador.body.setSize(38, 52, true);
+        this.jugador = this.physics.add.sprite(150, this.sueloY - 50, avatarTexKey, frameDerecha);
+        this.jugador.setDisplaySize(70, 70);
+        this.jugador.body.setSize(110, 180);
+        this.jugador.body.setOffset(73, 34);
         this.jugador.setCollideWorldBounds(true);
         this.jugador.setDepth(7);
         this.jugador.direccion = 'derecha';
