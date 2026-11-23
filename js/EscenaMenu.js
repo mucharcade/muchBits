@@ -20,8 +20,8 @@ class EscenaMenu extends Phaser.Scene {
         this.avatarOpciones = ['user_male', 'user_female'];
         this.avatarOpciones.forEach((avatarKey) => {
             this.load.spritesheet(`avatar-${avatarKey}`, `pictures/${avatarKey}.png`, {
-                frameWidth: 64,
-                frameHeight: 64
+                frameWidth: 256,
+                frameHeight: 256
             });
         });
     }
@@ -354,8 +354,8 @@ class EscenaMenu extends Phaser.Scene {
 
         this.avatarItems = [];
         const nombresAvatares = {
-            'user_male': 'HOMBRE',
-            'user_female': 'MUJER'
+            'user_male': 'Parachico',
+            'user_female': 'Chiapaneca'
         };
 
         const avatarY = 328;
@@ -411,19 +411,22 @@ class EscenaMenu extends Phaser.Scene {
             badge.add([badgeFondo, badgeTexto]);
 
             // Efecto interactivo al pasar el cursor (Hover)
+            const baseScale = avatarSprite.scaleX;
             avatarSprite.on('pointerover', () => {
+                this.tweens.killTweensOf(avatarSprite);
                 this.tweens.add({
                     targets: avatarSprite,
-                    scale: 1.48,
+                    scale: baseScale * 1.10,
                     duration: 180,
                     ease: 'Back.easeOut'
                 });
             });
 
             avatarSprite.on('pointerout', () => {
+                this.tweens.killTweensOf(avatarSprite);
                 this.tweens.add({
                     targets: avatarSprite,
-                    scale: 1.34,
+                    scale: baseScale,
                     duration: 180,
                     ease: 'Quad.easeOut'
                 });
