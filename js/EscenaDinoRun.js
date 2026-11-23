@@ -8,8 +8,8 @@ class EscenaDinoRun extends Phaser.Scene {
         this.avatarKey = avatarKey;
         if (!this.textures.exists(`avatar-${avatarKey}`)) {
             this.load.spritesheet(`avatar-${avatarKey}`, `pictures/${avatarKey}.png`, {
-                frameWidth: 64,
-                frameHeight: 64
+                frameWidth: 256,
+                frameHeight: 256
             });
         }
         this.load.image('arbol', 'pictures/dino_sbeel/Arbol_1.png');
@@ -139,11 +139,11 @@ class EscenaDinoRun extends Phaser.Scene {
 
     crearJugador() {
         const animKeyRun = `dino-jugador-corriendo-${this.avatarKey}`;
-        const frameDerecha = this.avatarKey === 'user_male' ? 8 : 12;
+        const frameDerecha = 12;
         this.jugador = this.physics.add.sprite(220, 580, `avatar-${this.avatarKey}`, frameDerecha).setOrigin(0.5, 1).setDepth(3);  //Revisar como funciona sprite
 
         this.jugador.setDisplaySize(65, 65); //Modificamos el tamaño del avatar
-        this.jugador.body.setSize(38, 52, true);
+        this.jugador.body.setSize(152, 208, true);
         this.jugador.body.setGravityY(1050);
         this.jugador.setCollideWorldBounds(false);
         this.jugador.setFlipX(false);

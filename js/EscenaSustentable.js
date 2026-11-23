@@ -32,10 +32,10 @@ class EscenaSustentable extends Phaser.Scene {
         this.load.image('plat_movimiento', 'pictures/sala_desarrollo_sustentable/plataforma_movimiento.png');
         this.load.image('plat_fragil', 'pictures/sala_desarrollo_sustentable/plataforma_fragil.png');
 
-        // Spritesheet del avatar seleccionado (4x4 frames de 64x64)
+        // Spritesheet del avatar seleccionado (estandarizado a 256x256 por frame)
         this.load.spritesheet(`avatar-${this.avatarKey}`, `pictures/${this.avatarKey}.png`, {
-            frameWidth: 64,
-            frameHeight: 64
+            frameWidth: 256,
+            frameHeight: 256
         });
     }
 
@@ -360,16 +360,55 @@ class EscenaSustentable extends Phaser.Scene {
             c.destroy();
         }
 
-        // --- 6. Orbe de Energía Limpia Coleccionable (24x24) ---
+        // --- 6. Rayito de Luz / Energía Coleccionable (32x32) ---
         if (!this.textures.exists('orbe_energia')) {
             const c = this.make.graphics({ x: 0, y: 0, add: false });
-            c.fillStyle(0x00f2fe, 0.3);
-            c.fillCircle(12, 12, 11);
-            c.fillStyle(0x00d2d3, 0.8);
-            c.fillCircle(12, 12, 8);
+
+            // 1. Resplandor / Halo exterior de luz difusa
+            c.fillStyle(0xfff200, 0.22);
+            c.fillCircle(16, 16, 15);
+            c.fillStyle(0xffd32a, 0.4);
+            c.fillCircle(16, 16, 11);
+
+            // 2. Silueta exterior del rayo (dorado/ámbar para contraste)
+            const ptsBorde = [
+                { x: 19, y: 2 },
+                { x: 7, y: 15 },
+                { x: 14, y: 15 },
+                { x: 10, y: 30 },
+                { x: 25, y: 13 },
+                { x: 16, y: 13 }
+            ];
+            c.fillStyle(0xf39c12, 1);
+            c.fillPoints(ptsBorde, true);
+            c.lineStyle(1.5, 0xd35400, 1);
+            c.strokePoints(ptsBorde, true);
+
+            // 3. Cuerpo principal del rayito (amarillo eléctrico intenso)
+            const ptsCuerpo = [
+                { x: 18, y: 4 },
+                { x: 9, y: 15 },
+                { x: 14, y: 15 },
+                { x: 12, y: 27 },
+                { x: 23, y: 14 },
+                { x: 16, y: 14 }
+            ];
+            c.fillStyle(0xfff200, 1);
+            c.fillPoints(ptsCuerpo, true);
+
+            // 4. Núcleo central blanco incandescente (brillo de luz pura)
+            const ptsBrillo = [
+                { x: 17, y: 6 },
+                { x: 12, y: 14 },
+                { x: 15, y: 14 },
+                { x: 13, y: 23 },
+                { x: 20, y: 14 },
+                { x: 16, y: 14 }
+            ];
             c.fillStyle(0xffffff, 1);
-            c.fillCircle(10, 10, 4);
-            c.generateTexture('orbe_energia', 24, 24);
+            c.fillPoints(ptsBrillo, true);
+
+            c.generateTexture('orbe_energia', 32, 32);
             c.destroy();
         }
 
@@ -688,14 +727,14 @@ class EscenaSustentable extends Phaser.Scene {
         this.puntoSpawn = { x: 100, y: 500 };
 
         this.jugador = this.physics.add.sprite(this.puntoSpawn.x, this.puntoSpawn.y, `avatar-${this.avatarKey}`);
-        this.jugador.setDisplaySize(58, 58);
+        this.jugador.setDisplaySize(70, 70);
         this.jugador.setDepth(7);
         this.jugador.setCollideWorldBounds(true);
 
         // Físicas de salto tipo plataformas
         this.jugador.body.setGravityY(980);
-        this.jugador.body.setSize(30, 48);
-        this.jugador.body.setOffset(17, 14);
+        this.jugador.body.setSize(110, 180);
+        this.jugador.body.setOffset(73, 34);
 
         // Mochila / Arnés de transporte de cable (dibujado en tiempo real sobre el avatar)
         this.mochilaCable = this.add.graphics().setDepth(7.5);
@@ -807,15 +846,23 @@ class EscenaSustentable extends Phaser.Scene {
 
         posicionesOrbes.forEach((pos) => {
             const orbe = this.grupoOrbes.create(pos.x, pos.y, 'orbe_energia');
-            orbe.setDisplaySize(24, 24);
+            orbe.setDisplaySize(24, 26);
             orbe.setDepth(5);
-            orbe.body.setCircle(10, 2, 2);
+            orbe.body.setSize(16, 22);
 
-            // Flotación brillante
+            // Flotación brillante y balanceo de energía
             this.tweens.add({
                 targets: orbe,
                 y: pos.y - 8,
                 duration: 900,
+                yoyo: true,
+                repeat: -1,
+                ease: 'Sine.easeInOut'
+            });
+            this.tweens.add({
+                targets: orbe,
+                angle: { from: -8, to: 8 },
+                duration: 1100,
                 yoyo: true,
                 repeat: -1,
                 ease: 'Sine.easeInOut'
@@ -833,7 +880,7 @@ class EscenaSustentable extends Phaser.Scene {
         this.actualizarHUD();
 
         // Texto flotante de puntuación
-        this.mostrarTextoFlotante(orbe.x, orbe.y - 15, '+150 ⚡', '#00f2fe');
+        this.mostrarTextoFlotante(orbe.x, orbe.y - 15, '+150 ⚡', '#f1c40f');
 
         // Partículas de chispa al recoger
         for (let i = 0; i < 6; i++) {
@@ -992,7 +1039,7 @@ class EscenaSustentable extends Phaser.Scene {
             destX = this.posicionEnchufeMeta.x;
             destY = this.posicionEnchufeMeta.y;
         } else {
-            destX = this.jugador.x + (this.mirandoDerecha ? -14 : 14);
+            destX = this.jugador.x + (this.mirandoDerecha ? -18 : 18);
             destY = this.jugador.y - 4;
         }
 
@@ -1024,7 +1071,7 @@ class EscenaSustentable extends Phaser.Scene {
         // Dibujar mochila / arnés porta-cable sobre la espalda del jugador
         if (!this.cableConectado && this.jugador.active) {
             this.mochilaCable.clear();
-            const mochX = this.jugador.x + (this.mirandoDerecha ? -16 : 6);
+            const mochX = this.jugador.x + (this.mirandoDerecha ? -19 : 7);
             const mochY = this.jugador.y - 12;
 
             // Mochila verde de explorador con refuerzos

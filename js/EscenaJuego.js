@@ -42,8 +42,8 @@ class EscenaJuego extends Phaser.Scene {
 
         if (!this.textures.exists(`avatar-${this.avatarKey}`)) {
             this.load.spritesheet(`avatar-${this.avatarKey}`, `pictures/${this.avatarKey}.png`, {
-                frameWidth: 64,
-                frameHeight: 64
+                frameWidth: 256,
+                frameHeight: 256
             });
         }
     }
@@ -189,8 +189,8 @@ class EscenaJuego extends Phaser.Scene {
 
         // Jugador
         this.jugador = this.physics.add.sprite(startX, startY, avatarTexKey, 0).setDepth(4);
-        this.jugador.setDisplaySize(55, 60); // MODIFICAMOS EL TAMAÑO DEL AVATAR (ANCHO, ALTO)
-        this.jugador.body.setSize(30, 44, true);
+        this.jugador.setDisplaySize(65, 70); // MODIFICAMOS EL TAMAÑO DEL AVATAR (ANCHO, ALTO)
+        this.jugador.body.setSize(120, 176, true);
         this.jugador.setCollideWorldBounds(true);
         this.jugador.play('avatar-abajo');
         this.cameras.main.startFollow(this.jugador, true, 0.08, 0.08);
