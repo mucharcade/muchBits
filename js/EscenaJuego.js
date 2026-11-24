@@ -34,7 +34,7 @@ class EscenaJuego extends Phaser.Scene {
 
     preload() {
         // Cargar mapa y salas de la carpeta pictures/mapa
-        this.load.image('mapa_fondo', 'pictures/mapa/Pasto y camino.png');
+        this.load.image('mapa_fondo', 'pictures/mapa/mapa.jpg');
         this.load.image('sala_dino_img', 'pictures/mapa/Sala Dino.png');
         this.load.image('sala_a_img', 'pictures/mapa/Sala A.png');
         this.load.image('sala_b_img', 'pictures/mapa/Sala B.png');

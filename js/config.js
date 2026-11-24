@@ -15,7 +15,7 @@ const config = {
             debug: true
         }
     },
-    scene: [EscenaMenu, EscenaJuego, EscenaDinoRun, EscenaBiodiversidad, EscenaEnergia, EscenaSustentable, EscenaSustentable2]
+    scene: [EscenaMenu, EscenaJuego, EscenaDinoRun, EscenaBiodiversidad, EscenaEnergia, EscenaSustentable, EscenaSustentable2, EscenaSustentable3]
 };
 
 const game = new Phaser.Game(config);

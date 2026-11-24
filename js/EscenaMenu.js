@@ -411,12 +411,14 @@ class EscenaMenu extends Phaser.Scene {
             badge.add([badgeFondo, badgeTexto]);
 
             // Efecto interactivo al pasar el cursor (Hover)
-            const baseScale = avatarSprite.scaleX;
+            const baseScaleX = avatarSprite.scaleX;
+            const baseScaleY = avatarSprite.scaleY;
             avatarSprite.on('pointerover', () => {
                 this.tweens.killTweensOf(avatarSprite);
                 this.tweens.add({
                     targets: avatarSprite,
-                    scale: baseScale * 1.10,
+                    scaleX: baseScaleX * 1.10,
+                    scaleY: baseScaleY * 1.10,
                     duration: 180,
                     ease: 'Back.easeOut'
                 });
@@ -426,7 +428,8 @@ class EscenaMenu extends Phaser.Scene {
                 this.tweens.killTweensOf(avatarSprite);
                 this.tweens.add({
                     targets: avatarSprite,
-                    scale: baseScale,
+                    scaleX: baseScaleX,
+                    scaleY: baseScaleY,
                     duration: 180,
                     ease: 'Quad.easeOut'
                 });
@@ -664,7 +667,7 @@ class EscenaMenu extends Phaser.Scene {
         btnSustentable.on('pointerdown', () => {
             this.detenerMusicaMenu();
             localStorage.setItem('muchbits-avatar', this.avatarSeleccionado);
-            this.scene.start('EscenaSustentable', { avatarKey: this.avatarSeleccionado, origen: 'EscenaMenu' });
+            this.scene.start('EscenaSustentable3', { avatarKey: this.avatarSeleccionado, origen: 'EscenaMenu' });
         });
 
         // --- BOTÓN 4: VER CRÉDITOS ---

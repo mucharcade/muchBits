@@ -1321,8 +1321,9 @@ class EscenaSustentable2 extends Phaser.Scene {
         this.modalVictoria.add([telonV, cardV, tituloV, subV, this.textoDetalleVictoria]);
 
         this.botonesVictoria = [
-            this.crearBotonModalAbs(360, 540, 'REINTENTAR', 0xe67e22, () => this.reiniciarNivel()),
-            this.crearBotonModalAbs(640, 540, 'SALIR', 0x27ae60, () => this.volverAlOrigen())
+            this.crearBotonModalAbs(280, 540, 'REINTENTAR', 0xe67e22, () => this.reiniciarNivel()),
+            this.crearBotonModalAbs(500, 540, 'NIVEL 3', 0x0984e3, () => this.irANivel3()),
+            this.crearBotonModalAbs(720, 540, 'SALIR', 0x27ae60, () => this.volverAlOrigen())
         ];
 
         // ── Modal de Game Over ───────────────────────────────────────────────
@@ -1411,6 +1412,18 @@ class EscenaSustentable2 extends Phaser.Scene {
     reiniciarNivel() {
         this.esReinicio = true;
         this.scene.restart();
+    }
+
+    irANivel3() {
+        if (this.cambiandoNivel) return;
+        this.cambiandoNivel = true;
+        this.detenerMusicaFondo();
+        const avatar = this.avatarKey || localStorage.getItem('muchbits-avatar') || 'user_male';
+        this.scene.stop('EscenaSustentable2');
+        this.scene.start('EscenaSustentable3', {
+            origen: this.origen || 'EscenaMenu',
+            avatarKey: avatar
+        });
     }
 
     volverAlOrigen() {
