@@ -492,14 +492,13 @@ class EscenaSustentable3 extends Phaser.Scene {
             repeat: -1,
             ease: 'Linear'
         });
-
-        // Punto de enchufe y zona de activación
-        this.posicionEnchufeMeta = { x: 2085, y: 512 };
-        this.zonaConexionTerminal = this.add.zone(2065, 510, 120, 140);
+        // Punto de enchufe y zona de activación (desplazada a la derecha sobre la turbina) PUNTO DE CONEXION
+        this.posicionEnchufeMeta = { x: 2088, y: 511 };
+        this.zonaConexionTerminal = this.add.zone(2135, 500, 85, 130);
         this.physics.add.existing(this.zonaConexionTerminal, true);
 
-        // Marcador flotante de objetivo
-        this.marcadorMeta = this.add.text(2085, 435, '⚡ CONECTA LA TURBINA', {
+        // Marcador flotante de objetivo sobre la turbina
+        this.marcadorMeta = this.add.text(2135, 395, '⚡ CONECTA LA TURBINA', {
             fontSize: '11px',
             fontFamily: '"Press Start 2P", monospace',
             fill: '#f1c40f',
@@ -509,7 +508,7 @@ class EscenaSustentable3 extends Phaser.Scene {
 
         this.tweens.add({
             targets: this.marcadorMeta,
-            y: 427,
+            y: 388,
             duration: 700,
             yoyo: true,
             repeat: -1,
@@ -822,12 +821,14 @@ class EscenaSustentable3 extends Phaser.Scene {
         });
 
         this.physics.add.overlap(this.jugador, this.grupoEspectros, (jugador, espectro) => {
-            this.recibirDanoEspectro(espectro);
+            if (!this.invulnerable && !this.juegoTerminado && !this.juegoCompletado) {
+                this.recibirDanoEspectro(espectro);
+            }
         });
     }
 
     recibirDanoEspectro(espectro) {
-        if (this.invulnerable || this.juegoTerminado) return;
+        if (this.invulnerable || this.juegoTerminado || this.juegoCompletado) return;
         this.invulnerable = true;
         this.vidas--;
         this.actualizarHUD();
@@ -836,14 +837,18 @@ class EscenaSustentable3 extends Phaser.Scene {
         // Empuje de retroceso
         const dir = this.jugador.x < espectro.x ? -190 : 190;
         this.jugador.body.setVelocity(dir, -260);
+        this.cameras.main.shake(180, 0.008);
 
         this.mostrarTextoFlotante(this.jugador.x, this.jugador.y - 25, '¡ZAP! -1 VIDA', '#ff4757');
 
+        // Tiempo de invulnerabilidad completo con parpadeo suave
+        this.tweens.killTweensOf(this.jugador);
         this.tweens.add({
             targets: this.jugador,
-            alpha: { from: 0.3, to: 1 },
-            duration: 100,
-            repeat: 6,
+            alpha: { from: 0.25, to: 1 },
+            duration: 110,
+            yoyo: true,
+            repeat: 7,
             onComplete: () => {
                 this.jugador.setAlpha(1);
                 this.invulnerable = false;
@@ -1068,15 +1073,17 @@ class EscenaSustentable3 extends Phaser.Scene {
      * BUCLE PRINCIPAL DE ACTUALIZACIÓN
      * ========================================================================= */
     update(time, delta) {
-        if (this.juegoTerminado || this.juegoCompletado) return;
+        if (this.juegoTerminado) return;
 
         this.actualizarPlataformasMoviles();
         this.actualizarEnemigos(time, delta);
         this.actualizarNubesAmbiente();
-        this.actualizarMovimientoJugador(time);
+        if (!this.juegoCompletado) {
+            this.actualizarMovimientoJugador(time);
+            this.verificarCaidaAlVacio();
+            this.verificarConexionTerminal();
+        }
         this.actualizarCable();
-        this.verificarCaidaAlVacio();
-        this.verificarConexionTerminal();
     }
 
     actualizarEnemigos(time, delta) {
@@ -1265,14 +1272,30 @@ class EscenaSustentable3 extends Phaser.Scene {
 
         // Terminal acoplada visible en la turbina cuando se conecta
         if (this.cableConectado) {
+            // Halo de energía limpia y brillo eléctrico en la unión
+            this.graficosCable.fillStyle(0x00f2fe, 0.35);
+            this.graficosCable.fillCircle(destX + 8, destY, 22);
+
+            // Manga/conector blindado que une el cable directamente con la carcasa de la turbina
+            this.graficosCable.fillStyle(0x00d2d3, 0.95);
+            this.graficosCable.fillRect(destX + 4, destY - 5, 24, 10);
+            this.graficosCable.lineStyle(2, 0xffffff, 1);
+            this.graficosCable.strokeRect(destX + 4, destY - 5, 24, 10);
+
+            // Conector industrial clamped
             this.graficosCable.fillStyle(0x1e272e, 1);
-            this.graficosCable.fillRoundedRect(destX - 8, destY - 9, 16, 18, 4);
+            this.graficosCable.fillRoundedRect(destX - 10, destY - 11, 20, 22, 4);
             this.graficosCable.lineStyle(2, 0x00f2fe, 1);
-            this.graficosCable.strokeRoundedRect(destX - 8, destY - 9, 16, 18, 4);
+            this.graficosCable.strokeRoundedRect(destX - 10, destY - 11, 20, 22, 4);
+
+            // Pernos de fijación dorados
             this.graficosCable.fillStyle(0xf1c40f, 1);
-            this.graficosCable.fillCircle(destX, destY, 4.5);
+            this.graficosCable.fillCircle(destX - 3, destY - 6, 2.5);
+            this.graficosCable.fillCircle(destX - 3, destY + 6, 2.5);
+
+            // Núcleo de energía viva
             this.graficosCable.fillStyle(0xffffff, 1);
-            this.graficosCable.fillCircle(destX - 1, destY - 1, 2);
+            this.graficosCable.fillCircle(destX, destY, 4.5);
         }
 
         // Mochila / arnés sobre la espalda del personaje
@@ -1337,11 +1360,13 @@ class EscenaSustentable3 extends Phaser.Scene {
         this.restaurarPlataformasFragiles();
 
         this.invulnerable = true;
+        this.tweens.killTweensOf(this.jugador);
         this.tweens.add({
             targets: this.jugador,
-            alpha: { from: 0.3, to: 1 },
-            duration: 100,
-            repeat: 5,
+            alpha: { from: 0.25, to: 1 },
+            duration: 110,
+            yoyo: true,
+            repeat: 7,
             onComplete: () => {
                 this.jugador.setAlpha(1);
                 this.invulnerable = false;
@@ -1357,8 +1382,8 @@ class EscenaSustentable3 extends Phaser.Scene {
             this.posicionEnchufeMeta.x, this.posicionEnchufeMeta.y
         );
 
-        // Conexión garantizada al acercarse al acantilado final frente a la turbina
-        if (dist < 85 || this.jugador.x >= 2040) {
+        // Conectar solo al acercarse directamente a la turbina hidroeléctrica
+        if (dist < 45 || this.jugador.x >= 2098) {
             this.conectarCableExitoso();
         }
     }
@@ -1369,12 +1394,23 @@ class EscenaSustentable3 extends Phaser.Scene {
         this.juegoCompletado = true;
         this.marcadorMeta.setVisible(false);
 
-        // Inmovilizar personaje limpiamente mirando hacia la turbina
-        this.jugador.body.setVelocity(0, 0);
-        this.jugador.body.allowGravity = false;
-        this.jugador.body.immovable = true;
-        this.jugador.play(`quieto-${this.avatarKey}`, true);
+        // Desactivar físicas del personaje y posicionarlo firmemente de pie en el suelo del acantilado
+        this.jugador.setVelocity(0, 0);
+        if (this.jugador.body) {
+            this.jugador.body.setVelocity(0, 0);
+            this.jugador.body.setAcceleration(0, 0);
+            this.jugador.body.allowGravity = false;
+            this.jugador.body.moves = false;
+        }
+        // Superficie del acantilado en y=540, altura avatar 70 -> centro y=505
+        const finalX = Phaser.Math.Clamp(this.jugador.x, 2060, 2085);
+        this.jugador.setPosition(finalX, 505);
         this.jugador.setFlipX(false);
+        this.mirandoDerecha = true;
+        this.jugador.play(`quieto-${this.avatarKey}`, true);
+
+        // Actualizar de inmediato el cable acoplado a la turbina
+        this.actualizarCable();
 
         this.reproducirSonido('conexion_exito');
 
