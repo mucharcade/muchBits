@@ -1414,6 +1414,9 @@ class EscenaSustentable3 extends Phaser.Scene {
 
         this.reproducirSonido('conexion_exito');
 
+        // Mensaje flotante de celebración por concluir todos los niveles
+        this.mostrarTextoFlotante(this.jugador.x, this.jugador.y - 40, '¡TODOS LOS NIVELES COMPLETADOS!', '#f1c40f');
+
         // Flash y vibración de energía
         this.cameras.main.flash(400, 0, 242, 254);
         this.cameras.main.shake(250, 0.012);
@@ -1461,45 +1464,68 @@ class EscenaSustentable3 extends Phaser.Scene {
      * MODALES DE FIN DE JUEGO (VICTORIA Y GAME OVER)
      * ========================================================================= */
     crearModalesFinDeJuego() {
-        // ── Modal de Victoria (Gran Final Nivel 3) ────────────────────────────
-        this.modalVictoria = this.add.container(500, 400).setDepth(30).setVisible(false).setAlpha(0).setScrollFactor(0);
+        // ── Modal de Victoria (Gran Final Nivel 3 - Conclusión de Todos los Niveles) ────────────────────
+        this.modalVictoria = this.add.container(500, 390).setDepth(30).setVisible(false).setAlpha(0).setScrollFactor(0);
 
         const telonV = this.add.graphics();
-        telonV.fillStyle(0x000000, 0.85);
-        telonV.fillRect(-500, -400, 1000, 800);
+        telonV.fillStyle(0x000000, 0.88);
+        telonV.fillRect(-500, -390, 1000, 800);
 
         const cardV = this.add.graphics();
-        cardV.fillStyle(0x0c2461, 0.98);
-        cardV.fillRoundedRect(-300, -210, 600, 420, 18);
-        cardV.lineStyle(4, 0x00f2fe, 1);
-        cardV.strokeRoundedRect(-300, -210, 600, 420, 18);
+        cardV.fillStyle(0x0a1931, 0.98);
+        cardV.fillRoundedRect(-320, -235, 640, 470, 20);
+        cardV.lineStyle(4, 0xf1c40f, 1);
+        cardV.strokeRoundedRect(-320, -235, 640, 470, 20);
+        cardV.lineStyle(1.5, 0x00f2fe, 0.6);
+        cardV.strokeRoundedRect(-312, -227, 624, 454, 16);
+        // Línea decorativa divisoria superior
+        cardV.lineStyle(2, 0x00f2fe, 0.5);
+        cardV.lineBetween(-260, -95, 260, -95);
 
-        const tituloV = this.add.text(0, -165, '★ ¡PRESA CHICOASÉN ACTIVADA! ★', {
-            fontSize: '15px',
+        const badgeV = this.add.text(0, -195, '🏆 ¡FELICITACIONES! 🏆', {
+            fontSize: '18px',
             fontFamily: '"Press Start 2P", monospace',
-            fill: '#f1c40f'
+            fill: '#f1c40f',
+            stroke: '#000000',
+            strokeThickness: 4
         }).setOrigin(0.5);
 
-        const subV = this.add.text(0, -130, '¡Complejo Hidroeléctrico Energizado con Éxito!', {
+        const tituloV = this.add.text(0, -155, '¡HAS CONCLUIDO TODOS LOS NIVELES!', {
             fontSize: '12px',
+            fontFamily: '"Press Start 2P", monospace',
+            fill: '#00f2fe',
+            stroke: '#000000',
+            strokeThickness: 3,
+            align: 'center'
+        }).setOrigin(0.5);
+
+        const subV = this.add.text(0, -120, '★ ¡Red de Energía Sustentable 100% Restaurada! ★', {
+            fontSize: '13px',
             fontFamily: 'Arial',
             fontStyle: 'bold',
-            fill: '#7ed6df'
+            fill: '#2ecc71'
         }).setOrigin(0.5);
 
-        this.textoDetalleVictoria = this.add.text(0, -20, '', {
-            fontSize: '13px',
+        this.textoDetalleVictoria = this.add.text(0, -5, '', {
+            fontSize: '12px',
             fontFamily: '"Press Start 2P", monospace',
             fill: '#ffffff',
             align: 'center',
-            lineSpacing: 14
+            lineSpacing: 11
         }).setOrigin(0.5);
 
-        this.modalVictoria.add([telonV, cardV, tituloV, subV, this.textoDetalleVictoria]);
+        const textoFelicitacionFinal = this.add.text(0, 92, '🎉 ¡ERES UN HÉROE DEL PLANETA Y LA ENERGÍA LIMPIA! 🎉', {
+            fontSize: '9px',
+            fontFamily: '"Press Start 2P", monospace',
+            fill: '#f5cd79',
+            align: 'center'
+        }).setOrigin(0.5);
+
+        this.modalVictoria.add([telonV, cardV, badgeV, tituloV, subV, this.textoDetalleVictoria, textoFelicitacionFinal]);
 
         this.botonesVictoria = [
-            this.crearBotonModalAbs(360, 540, 'REINTENTAR', 0xe67e22, () => this.reiniciarNivel()),
-            this.crearBotonModalAbs(640, 540, 'SALIR', 0x27ae60, () => this.volverAlOrigen())
+            this.crearBotonModalAbs(350, 560, 'REINTENTAR', 0xe67e22, () => this.reiniciarNivel()),
+            this.crearBotonModalAbs(650, 560, 'SALIR AL MENÚ', 0x27ae60, () => this.volverAlOrigen())
         ];
 
         // ── Modal de Game Over ───────────────────────────────────────────────
@@ -1544,11 +1570,13 @@ class EscenaSustentable3 extends Phaser.Scene {
     }
 
     crearBotonModalAbs(x, y, texto, colorHex, accion) {
+        const anchoBtn = 200;
+        const altoBtn = 44;
         const bg = this.add.graphics().setDepth(32).setScrollFactor(0).setVisible(false).setAlpha(0);
         bg.fillStyle(colorHex, 1);
-        bg.fillRoundedRect(x - 90, y - 22, 180, 44, 10);
+        bg.fillRoundedRect(x - anchoBtn / 2, y - altoBtn / 2, anchoBtn, altoBtn, 10);
         bg.lineStyle(2, 0xffffff, 0.9);
-        bg.strokeRoundedRect(x - 90, y - 22, 180, 44, 10);
+        bg.strokeRoundedRect(x - anchoBtn / 2, y - altoBtn / 2, anchoBtn, altoBtn, 10);
 
         const txt = this.add.text(x, y, texto, {
             fontSize: '11px',
@@ -1556,7 +1584,7 @@ class EscenaSustentable3 extends Phaser.Scene {
             fill: '#ffffff'
         }).setOrigin(0.5).setDepth(33).setScrollFactor(0).setVisible(false).setAlpha(0);
 
-        const zone = this.add.zone(x, y, 180, 44).setDepth(34).setScrollFactor(0).disableInteractive();
+        const zone = this.add.zone(x, y, anchoBtn, altoBtn).setDepth(34).setScrollFactor(0).disableInteractive();
         zone.on('pointerdown', () => { this.reproducirSonido('click'); accion(); });
         zone.on('pointerover', () => { bg.setAlpha(0.85); txt.setScale(1.05); });
         zone.on('pointerout', () => { bg.setAlpha(1); txt.setScale(1); });
@@ -1586,13 +1614,44 @@ class EscenaSustentable3 extends Phaser.Scene {
         );
         this._setBotonesVisible(this.botonesVictoria, false, 0);
         this.modalVictoria.setVisible(true);
+
+        // Lluvia de confeti festivo por completar todos los niveles
+        this.lanzarConfetiVictoria();
+
         this.tweens.add({
             targets: this.modalVictoria,
             alpha: 1,
-            duration: 300,
+            duration: 350,
             ease: 'Quad.easeOut',
             onComplete: () => this._setBotonesVisible(this.botonesVictoria, true, 1)
         });
+    }
+
+    lanzarConfetiVictoria() {
+        const colores = [0xf1c40f, 0x00f2fe, 0x2ecc71, 0xe74c3c, 0x9b59b6, 0xffffff];
+        for (let i = 0; i < 45; i++) {
+            const x = Phaser.Math.Between(120, 880);
+            const y = Phaser.Math.Between(60, 240);
+            const w = Phaser.Math.Between(6, 12);
+            const h = Phaser.Math.Between(6, 12);
+            const color = Phaser.Utils.Array.GetRandom(colores);
+
+            const confeti = this.add.rectangle(x, y, w, h, color)
+                .setDepth(35)
+                .setScrollFactor(0)
+                .setAlpha(0.9);
+
+            this.tweens.add({
+                targets: confeti,
+                y: y + Phaser.Math.Between(260, 520),
+                x: x + Phaser.Math.Between(-90, 90),
+                angle: Phaser.Math.Between(-360, 360),
+                alpha: { from: 1, to: 0 },
+                duration: Phaser.Math.Between(1600, 2800),
+                ease: 'Cubic.easeOut',
+                onComplete: () => confeti.destroy()
+            });
+        }
     }
 
     declararGameOver(causa) {
