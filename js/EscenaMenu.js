@@ -157,7 +157,7 @@ class EscenaMenu extends Phaser.Scene {
         }
 
         // Encabezado retro sutil en la parte superior
-        this.add.text(500, 25, '★ MUCHBITS • ARCADE UNIVERSE ★', {
+        this.add.text(500, 15, '★ MUCHBITS • ARCADE UNIVERSE ★', {
             fontSize: '12px',
             fontFamily: '"Press Start 2P", monospace',
             fill: '#7ed6df',
@@ -241,18 +241,18 @@ class EscenaMenu extends Phaser.Scene {
     // ==========================================
     crearLetreroSobreAvatares() {
         // Creamos un contenedor para animar de forma sincronizada el letrero y sus efectos suspendidos
-        // Centrado respecto al arco de avatares (507, 235) para equilibrar los postes a los laterales
-        this.contenedorLetrero = this.add.container(507, 235).setDepth(6);
+        // Centrado respecto al arco de avatares (507, 160) subido 75px para eliminar espacio libre arriba
+        this.contenedorLetrero = this.add.container(507, 160).setDepth(6);
 
         // Cadenas o tensores de suspensión desde el techo que sostienen el letrero sobre los personajes
         const tensores = this.add.graphics();
         tensores.lineStyle(3, 0x4b6584, 0.7);
-        tensores.strokeLineShape(new Phaser.Geom.Line(280, 0, 280, 80));
-        tensores.strokeLineShape(new Phaser.Geom.Line(720, 0, 720, 80));
+        tensores.strokeLineShape(new Phaser.Geom.Line(280, 0, 280, 45));
+        tensores.strokeLineShape(new Phaser.Geom.Line(720, 0, 720, 45));
         tensores.lineStyle(2, 0xd1d8e0, 0.9);
-        for (let y = 10; y < 75; y += 14) {
-            tensores.strokeCircle(280, y, 3);
-            tensores.strokeCircle(720, y, 3);
+        for (let y = 8; y < 40; y += 10) {
+            tensores.strokeCircle(280, y, 2.5);
+            tensores.strokeCircle(720, y, 2.5);
         }
         tensores.setDepth(3);
 
@@ -298,7 +298,7 @@ class EscenaMenu extends Phaser.Scene {
         // Animación suave de suspensión (balanceo/flotación) para simular estar flotando sobre los avatares
         this.tweens.add({
             targets: this.contenedorLetrero,
-            y: 242,
+            y: 166,
             angle: { from: -0.5, to: 0.5 },
             duration: 2600,
             yoyo: true,
@@ -322,7 +322,7 @@ class EscenaMenu extends Phaser.Scene {
     // ==========================================
     crearSelectorAvatares() {
         // Título del selector ubicado justo bajo la viga del letrero
-        this.tituloSelector = this.add.text(500, 222, '▼  ELIGE TU AVATAR  ▼', {
+        this.tituloSelector = this.add.text(500, 150, '▼  ELIGE TU AVATAR  ▼', {
             fontSize: '13px',
             fontFamily: '"Press Start 2P", monospace',
             fill: '#f8c291',
@@ -345,12 +345,12 @@ class EscenaMenu extends Phaser.Scene {
         const tarima = this.add.graphics().setDepth(3);
         // Sombra de la tarima
         tarima.fillStyle(0x05070e, 0.6);
-        tarima.fillRoundedRect(260, 395, 480, 22, 11);
+        tarima.fillRoundedRect(260, 320, 480, 22, 11);
         // Base de tarima tecnológica
         tarima.fillStyle(0x192a56, 0.9);
-        tarima.fillRoundedRect(265, 386, 470, 16, 8);
+        tarima.fillRoundedRect(265, 311, 470, 16, 8);
         tarima.lineStyle(2, 0x00d2d3, 0.7);
-        tarima.strokeRoundedRect(265, 386, 470, 16, 8);
+        tarima.strokeRoundedRect(265, 311, 470, 16, 8);
 
         this.avatarItems = [];
         const nombresAvatares = {
@@ -358,7 +358,7 @@ class EscenaMenu extends Phaser.Scene {
             'user_female': 'Chiapaneca'
         };
 
-        const avatarY = 328;
+        const avatarY = 253;
         const coordsX = [390, 610];
 
         this.avatarOpciones.forEach((avatarKey, index) => {
@@ -560,7 +560,7 @@ class EscenaMenu extends Phaser.Scene {
     // ==========================================
     crearBotonesMenu() {
         // --- BOTÓN 1: INICIAR JUEGO (Arcade Principal) ---
-        const btnIniciar = this.add.container(500, 464).setDepth(7);
+        const btnIniciar = this.add.container(500, 395).setDepth(7);
         const bgIniciar = this.add.graphics();
         this.dibujarBotonArcade(bgIniciar, 300, 48, 0x27ae60, 0x2ecc71, 0x1abc9c);
 
@@ -605,7 +605,7 @@ class EscenaMenu extends Phaser.Scene {
         btnIniciar.on('pointerdown', () => this.iniciarJuego());
 
         // --- BOTÓN 2: SALA ENERGÍA (PRESA) ---
-        const btnEnergia = this.add.container(500, 516).setDepth(7);
+        const btnEnergia = this.add.container(500, 452).setDepth(7);
         const bgEnergia = this.add.graphics();
         this.dibujarBotonArcade(bgEnergia, 360, 36, 0x0c2461, 0x1e3799, 0x00f2fe);
 
@@ -638,7 +638,7 @@ class EscenaMenu extends Phaser.Scene {
         });
 
         // --- BOTÓN 3: SALA C: DESARROLLO SUSTENTABLE ---
-        const btnSustentable = this.add.container(500, 564).setDepth(7);
+        const btnSustentable = this.add.container(500, 502).setDepth(7);
         const bgSustentable = this.add.graphics();
         this.dibujarBotonArcade(bgSustentable, 360, 36, 0xd35400, 0xe67e22, 0xf1c40f);
 
@@ -671,7 +671,7 @@ class EscenaMenu extends Phaser.Scene {
         });
 
         // --- BOTÓN 4: VER CRÉDITOS ---
-        const btnCreditos = this.add.text(500, 612, '★ VER CRÉDITOS [ESC] ★', {
+        const btnCreditos = this.add.text(500, 552, '★ VER CRÉDITOS [ESC] ★', {
             fontSize: '11px',
             fontFamily: '"Press Start 2P", monospace',
             fill: '#74b9ff',
