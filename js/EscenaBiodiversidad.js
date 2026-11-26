@@ -1381,8 +1381,8 @@ class EscenaBiodiversidad extends Phaser.Scene {
     _crearJugador() {
         const avatarTexKey = `avatar-${this.avatarKey}`;
         const frameDerecha = 12;
-        this.jugador = this.physics.add.sprite(150, this.sueloY - 50, avatarTexKey, frameDerecha);
-        this.jugador.setDisplaySize(70, 70);
+        this.jugador = this.physics.add.sprite(150, this.sueloY - 60, avatarTexKey, frameDerecha);
+        this.jugador.setDisplaySize(90, 90);
         this.jugador.body.setSize(110, 180);
         this.jugador.body.setOffset(73, 34);
         this.jugador.setCollideWorldBounds(true);
@@ -1418,10 +1418,11 @@ class EscenaBiodiversidad extends Phaser.Scene {
             .setAlpha(0.95);
 
         // 2. EL TAPIR (Con spritesheet de caminar y huir)
-        this.tapir = this.physics.add.sprite(1650, this.sueloY - 45, 'tapir_sheet', 0);
+        //Recuadro para personalizar el tapir dentro del spritesheet
+        this.tapir = this.physics.add.sprite(1650, this.sueloY - 37, 'tapir_sheet', 0);
         this.tapir.setDisplaySize(150, 150);
-        this.tapir.body.setSize(210, 120);
-        this.tapir.body.setOffset(24, 68);
+        this.tapir.body.setSize(158, 90);
+        this.tapir.body.setOffset(49, 85);
         this.tapir.setDepth(5);
         this.tapir.setCollideWorldBounds(false);
         this.tapir.play('tapir-caminar');

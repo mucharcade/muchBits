@@ -63,90 +63,50 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 24px 16px;
-    max-width: 1080px;
-    width: 100%;
+    justify-content: center;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    max-width: none;
+    overflow: hidden;
 }
 
-/* Header styling */
-.game-header {
-    width: 100%;
-    max-width: 1032px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    padding: 12px 24px;
-    background: rgba(15, 23, 42, 0.75);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-}
-
-.brand {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.brand-badge {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 11px;
-    background: rgba(126, 217, 87, 0.15);
-    color: var(--accent-green);
-    border: 1px solid var(--border-glow);
-    padding: 6px 12px;
-    border-radius: 20px;
-    letter-spacing: 1px;
-}
-
-.game-title {
-    margin: 0;
-    font-family: 'Press Start 2P', monospace;
-    font-size: 18px;
-    background: linear-gradient(135deg, #ffffff 0%, var(--accent-green) 100%);
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    letter-spacing: 2px;
-    text-shadow: 0 0 20px rgba(126, 217, 87, 0.3);
-}
-
-.header-status {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-muted);
-    letter-spacing: 1px;
-}
-
+/* Botón flotante de Pantalla Completa reubicado en la esquina superior derecha */
 .fullscreen-btn {
-    appearance: none;
-    background: linear-gradient(135deg, rgba(126, 217, 87, 0.2) 0%, rgba(39, 174, 96, 0.25) 100%);
-    color: var(--accent-green);
-    border: 1px solid var(--border-glow);
-    padding: 6px 14px;
-    border-radius: 8px;
-    font-family: 'Outfit', sans-serif;
-    font-size: 12px;
-    font-weight: 800;
-    cursor: pointer;
-    display: inline-flex;
+    position: fixed;
+    top: max(10px, env(safe-area-inset-top));
+    right: max(14px, env(safe-area-inset-right));
+    z-index: 50;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1.5px solid rgba(0, 242, 254, 0.4);
+    color: #00f2fe;
+    display: flex;
     align-items: center;
-    gap: 6px;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.fullscreen-btn:hover,
+.fullscreen-btn:hover {
+    transform: scale(1.08);
+    background: rgba(0, 242, 254, 0.25);
+    border-color: #00f2fe;
+    box-shadow: 0 0 16px rgba(0, 242, 254, 0.6);
+}
+
 .fullscreen-btn:active {
-    background: linear-gradient(135deg, rgba(126, 217, 87, 0.4) 0%, rgba(39, 174, 96, 0.5) 100%);
-    color: #ffffff;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(126, 217, 87, 0.4);
+    transform: scale(0.92);
 }
 
 .fullscreen-btn.is-fullscreen {
@@ -155,64 +115,43 @@ body {
     color: #ff6b6b;
 }
 
-.status-dot {
-    width: 10px;
-    height: 10px;
-    background-color: var(--accent-green);
-    border-radius: 50%;
-    box-shadow: 0 0 10px var(--accent-green);
-    animation: pulse 2s infinite;
+.fs-icon {
+    font-size: 19px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-@keyframes pulse {
-    0% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(126, 217, 87, 0.7);
-    }
-
-    70% {
-        transform: scale(1);
-        box-shadow: 0 0 0 8px rgba(126, 217, 87, 0);
-    }
-
-    100% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(126, 217, 87, 0);
-    }
-}
-
-/* Game Card & Canvas Wrapper */
+/* Game Card & Canvas Wrapper maximizados para abarcar toda la pantalla */
 .game-card {
     position: relative;
-    width: min(100%, 1032px);
-    background: var(--card-bg);
-    backdrop-filter: blur(16px);
-    border: 2px solid var(--border-glow);
-    border-radius: 24px;
-    padding: 16px;
-    box-shadow:
-        0 0 40px rgba(126, 217, 87, 0.15),
-        0 24px 60px rgba(0, 0, 0, 0.75);
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    max-width: none;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.game-card:hover {
-    border-color: rgba(126, 217, 87, 0.6);
-    box-shadow:
-        0 0 50px rgba(126, 217, 87, 0.25),
-        0 24px 60px rgba(0, 0, 0, 0.85);
 }
 
 .canvas-wrapper {
     position: relative;
     width: 100%;
-    max-width: 1000px;
-    height: auto;
+    height: 100%;
+    max-width: none;
+    max-height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: transparent;
     box-shadow: none;
     border: none;
@@ -222,11 +161,15 @@ body {
 
 .canvas-wrapper canvas {
     display: block;
-    border-radius: 14px;
+    max-width: 100vw;
+    max-height: 100vh;
+    max-height: 100dvh;
+    margin: 0 !important; /* NO_CENTER: Phaser no inyecta margin; CSS flex centra el canvas */
+    border-radius: 10px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
 }
 
-/* Barra de Controles flotante que abarca los extremos de la pantalla/tarjeta */
+/* Barra de Controles flotante centrada verticalmente en el eje Y */
 .controls-bar {
     position: absolute;
     top: 0;
@@ -238,9 +181,8 @@ body {
     z-index: 25;
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
-    gap: 16px;
-    padding: max(12px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+    align-items: center; /* Centrado exacto en el eje Y */
+    padding: max(16px, env(safe-area-inset-top)) max(26px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(26px, env(safe-area-inset-left));
     pointer-events: none;
     box-sizing: border-box;
     border: none;
@@ -249,20 +191,20 @@ body {
     background: transparent;
 }
 
-/* Cruceta Arcade D-PAD con Transparencia Glassmorphism */
+/* Cruceta Arcade D-PAD estilo mando clásico */
 .dpad-container {
     pointer-events: auto;
     display: grid;
-    grid-template-columns: repeat(3, 44px);
-    grid-template-rows: repeat(3, 44px);
-    gap: 4px;
-    padding: 6px;
-    background: rgba(10, 15, 26, 0.35);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 18px;
-    border: 1px solid rgba(0, 242, 254, 0.25);
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    grid-template-columns: repeat(3, 52px);
+    grid-template-rows: repeat(3, 52px);
+    gap: 5px;
+    padding: 7px;
+    background: rgba(10, 15, 26, 0.45);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 22px;
+    border: 2px solid rgba(0, 242, 254, 0.28);
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .dpad-btn {
@@ -272,18 +214,18 @@ body {
     -webkit-tap-highlight-color: transparent;
     cursor: pointer;
     font-family: 'Press Start 2P', monospace;
-    font-size: 14px;
+    font-size: 16px;
     color: var(--accent-cyan);
-    background: rgba(15, 23, 42, 0.42);
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     border: 1px solid rgba(0, 242, 254, 0.35);
-    border-bottom: 2px solid rgba(0, 242, 254, 0.6);
-    border-radius: 10px;
+    border-bottom: 3px solid rgba(0, 242, 254, 0.6);
+    border-radius: 13px;
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3), inset 0 0 8px rgba(0, 242, 254, 0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35), inset 0 1px 2px rgba(255, 255, 255, 0.15);
     transition: transform 0.08s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
 }
 
@@ -293,6 +235,7 @@ body {
     background: rgba(0, 242, 254, 0.5);
     color: #ffffff;
     border-color: #00f2fe;
+    border-bottom-width: 1px;
     box-shadow: 0 0 18px rgba(0, 242, 254, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
@@ -301,118 +244,115 @@ body {
 .dpad-center {
     grid-column: 2;
     grid-row: 2;
-    background: radial-gradient(circle, rgba(51, 65, 85, 0.4) 0%, rgba(15, 23, 42, 0.3) 100%);
+    background: radial-gradient(circle, rgba(51, 65, 85, 0.5) 0%, rgba(15, 23, 42, 0.4) 100%);
     border-radius: 50%;
     border: 1px solid rgba(255, 255, 255, 0.12);
 }
 .arrow-right { grid-column: 3; grid-row: 2; }
 .arrow-down { grid-column: 2; grid-row: 3; }
 
-/* Botones de Acción con Transparencia Glassmorphism */
+/* Botones de Acción Estilo Control Clásico Retro (Disposición Diagonal SNES / Game Boy) */
 .action-buttons-container {
     pointer-events: auto;
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 6px;
-    background: rgba(10, 15, 26, 0.35);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 18px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    justify-content: center;
+    gap: 16px;
+    padding: 10px 14px;
+    background: rgba(10, 15, 26, 0.45);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 46px;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    transform: rotate(-25deg); /* Inclinación retro ergonómica para el pulgar */
 }
 
+/* Botones Circulares 3D Táctiles de Tamaño Óptimo */
 .action-btn {
     appearance: none;
     touch-action: manipulation;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 18px;
-    border-radius: 14px;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
-    transition: transform 0.08s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
-}
-
-.btn-confirm {
-    background: linear-gradient(135deg, rgba(46, 204, 113, 0.38) 0%, rgba(39, 174, 96, 0.22) 100%);
-    border: 1px solid rgba(126, 217, 87, 0.55);
-    border-bottom: 2px solid rgba(126, 217, 87, 0.8);
-    color: #ffffff;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3), inset 0 0 10px rgba(126, 217, 87, 0.15);
-}
-
-.btn-confirm:hover,
-.btn-confirm.is-pressed {
-    transform: translateY(2px) scale(0.96);
-    background: linear-gradient(135deg, rgba(46, 204, 113, 0.65) 0%, rgba(39, 174, 96, 0.5) 100%);
-    border-color: #7ed957;
-    box-shadow: 0 0 20px rgba(126, 217, 87, 0.8), inset 0 0 12px rgba(255, 255, 255, 0.4);
-}
-
-.btn-cancel {
-    background: linear-gradient(135deg, rgba(231, 76, 60, 0.38) 0%, rgba(192, 57, 43, 0.22) 100%);
-    border: 1px solid rgba(231, 76, 60, 0.55);
-    border-bottom: 2px solid rgba(231, 76, 60, 0.8);
-    color: #ffffff;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3), inset 0 0 10px rgba(231, 76, 60, 0.15);
-}
-
-.btn-cancel:hover,
-.btn-cancel.is-pressed {
-    transform: translateY(2px) scale(0.96);
-    background: linear-gradient(135deg, rgba(231, 76, 60, 0.65) 0%, rgba(192, 57, 43, 0.5) 100%);
-    border-color: #ff6b6b;
-    box-shadow: 0 0 20px rgba(231, 76, 60, 0.8), inset 0 0 12px rgba(255, 255, 255, 0.4);
-}
-
-.btn-badge {
-    font-size: 15px;
-    font-weight: 800;
-    width: 26px;
-    height: 26px;
-    background: rgba(0, 0, 0, 0.3);
+    width: 62px;
+    height: 62px;
+    min-width: 62px;
+    min-height: 62px;
     border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.15);
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 0;
+    margin: 0;
+    outline: none;
+    position: relative;
+    transition: transform 0.08s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.08s ease, filter 0.12s ease;
 }
 
-.btn-badge-esc {
-    font-size: 13px;
-    font-weight: 800;
-    color: #ff8888;
-    background: rgba(231, 76, 60, 0.25);
-    border: 1px solid rgba(231, 76, 60, 0.5);
+/* Símbolo interior ✔ / X con contrarrotación para mantenerse recto al ojo */
+.retro-btn-symbol {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(25deg); /* Contrarresta los -25deg del contenedor */
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 900;
+    font-size: 26px;
+    line-height: 1;
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+    pointer-events: none;
 }
 
-.btn-labels {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    text-align: left;
+/* Botón Aceptar (✔ - Verde Retro Arcade) */
+.btn-confirm {
+    background: radial-gradient(circle at 35% 30%, #34d399 0%, #10b981 50%, #059669 90%, #047857 100%);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 
+        0 6px 0 #065f46,
+        0 10px 20px rgba(0, 0, 0, 0.5),
+        inset 0 3px 4px rgba(255, 255, 255, 0.6),
+        inset 0 -3px 4px rgba(0, 0, 0, 0.35);
 }
 
-.main-label {
-    font-family: 'Outfit', sans-serif;
-    font-size: 13px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    text-transform: uppercase;
+.btn-confirm:hover {
+    filter: brightness(1.1);
 }
 
-.sub-label {
-    font-family: 'Press Start 2P', monospace;
-    font-size: 8px;
-    opacity: 0.85;
-    letter-spacing: 0.5px;
+.btn-confirm:active,
+.btn-confirm.is-pressed {
+    transform: translateY(4px) scale(0.96);
+    box-shadow: 
+        0 2px 0 #065f46,
+        0 4px 10px rgba(0, 0, 0, 0.6),
+        inset 0 2px 6px rgba(0, 0, 0, 0.5);
+    filter: brightness(0.95);
+}
+
+/* Botón Salir / Cancelar (X - Rojo / Carmesí Retro Arcade) */
+.btn-cancel {
+    background: radial-gradient(circle at 35% 30%, #f87171 0%, #ef4444 50%, #dc2626 90%, #b91c1c 100%);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 
+        0 6px 0 #7f1d1d,
+        0 10px 20px rgba(0, 0, 0, 0.5),
+        inset 0 3px 4px rgba(255, 255, 255, 0.6),
+        inset 0 -3px 4px rgba(0, 0, 0, 0.35);
+}
+
+.btn-cancel:hover {
+    filter: brightness(1.1);
+}
+
+.btn-cancel:active,
+.btn-cancel.is-pressed {
+    transform: translateY(4px) scale(0.96);
+    box-shadow: 
+        0 2px 0 #7f1d1d,
+        0 4px 10px rgba(0, 0, 0, 0.6),
+        inset 0 2px 6px rgba(0, 0, 0, 0.5);
+    filter: brightness(0.95);
 }
 
 /* ==========================================================================
@@ -582,67 +522,52 @@ body {
     }
 
     body {
-        align-items: flex-start;
+        align-items: center;
+        justify-content: center;
     }
 
     .main-wrapper {
         width: 100vw;
         max-width: none;
         height: 100dvh;
-        padding: 4px 8px;
+        padding: 0;
+        margin: 0;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
-    }
-
-    .game-header {
-        width: 100%;
-        flex: 0 0 auto;
-        margin-bottom: 4px;
-        padding: 5px 8px;
-        border-radius: 10px;
-    }
-
-    .brand {
-        gap: 8px;
-    }
-
-    .brand-badge {
-        font-size: 8px;
-        padding: 4px 6px;
-    }
-
-    .game-title {
-        font-size: 10px;
-        line-height: 1.3;
-        letter-spacing: 1px;
-    }
-
-    .header-status {
-        font-size: 10px;
-        gap: 8px;
+        justify-content: center;
+        align-items: center;
     }
 
     .fullscreen-btn {
-        font-size: 9px;
-        padding: 3px 6px;
+        width: 38px;
+        height: 38px;
+        top: max(8px, env(safe-area-inset-top));
+        right: max(12px, env(safe-area-inset-right));
+    }
+
+    .fs-icon {
+        font-size: 17px;
     }
 
     .game-card {
-        width: 100%;
-        flex: 1 1 auto;
+        width: 100vw;
+        height: 100dvh;
+        flex: 1 1 100%;
         min-height: 0;
-        height: calc(100dvh - 52px);
-        padding: 4px;
-        border-radius: 12px;
+        padding: 0;
+        margin: 0;
+        border: none;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
         position: relative;
         overflow: hidden;
     }
 
     .canvas-wrapper {
         position: relative;
-        width: calc(100% - 340px);
-        max-width: 1000px;
+        width: 100%;
+        max-width: none;
         height: 100%;
         max-height: 100%;
         margin: 0 auto;
@@ -650,11 +575,16 @@ body {
         box-shadow: none;
         border: none;
         overflow: visible;
-        display: block;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .canvas-wrapper canvas {
-        border-radius: 12px;
+        max-width: 100vw;
+        max-height: 100dvh;
+        margin: 0 !important; /* NO_CENTER: flex centra el canvas sin margin de Phaser */
+        border-radius: 8px;
         box-shadow: 0 6px 26px rgba(0, 0, 0, 0.65);
     }
 
@@ -668,12 +598,12 @@ body {
         height: 100%;
         max-height: none;
         margin: 0;
-        padding: max(6px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+        padding: max(10px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
         gap: 8px;
         display: flex;
         flex-direction: row;
         justify-content: space-between;
-        align-items: flex-end;
+        align-items: center; /* Centrado exacto en el eje Y en móviles */
         background: transparent;
         pointer-events: none;
         z-index: 25;
@@ -681,54 +611,42 @@ body {
 
     .dpad-container {
         pointer-events: auto;
-        grid-template-columns: repeat(3, 48px);
-        grid-template-rows: repeat(3, 48px);
-        gap: 4px;
-        padding: 5px;
-        border-radius: 16px;
-        margin-left: 0;
-        margin-bottom: 2px;
+        grid-template-columns: repeat(3, 54px);
+        grid-template-rows: repeat(3, 54px);
+        gap: 5px;
+        padding: 6px;
+        border-radius: 22px;
+        margin: 0;
     }
 
     .dpad-btn {
-        font-size: 15px;
-        border-radius: 11px;
+        font-size: 17px;
+        border-radius: 13px;
     }
 
     .action-buttons-container {
         pointer-events: auto;
         display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        width: auto;
-        gap: 6px;
-        padding: 4px;
-        border-radius: 14px;
-        margin-right: 0;
-        margin-bottom: 2px;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        padding: 8px 12px;
+        border-radius: 42px;
+        margin: 0;
+        transform: rotate(-25deg);
     }
 
     .action-btn {
-        width: 100%;
-        min-width: 95px;
-        justify-content: flex-start;
-        padding: 5px 8px;
-        gap: 6px;
-        border-radius: 10px;
+        width: 58px;
+        height: 58px;
+        min-width: 58px;
+        min-height: 58px;
+        border-radius: 50%;
     }
 
-    .btn-badge {
-        width: 20px;
-        height: 20px;
-        font-size: 11px;
-    }
-
-    .main-label {
-        font-size: 10px;
-    }
-
-    .sub-label {
-        font-size: 6.5px;
+    .retro-btn-symbol {
+        font-size: 24px;
     }
 }
 

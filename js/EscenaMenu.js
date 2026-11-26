@@ -667,7 +667,7 @@ class EscenaMenu extends Phaser.Scene {
         btnSustentable.on('pointerdown', () => {
             this.detenerMusicaMenu();
             localStorage.setItem('muchbits-avatar', this.avatarSeleccionado);
-            this.scene.start('EscenaSustentable3', { avatarKey: this.avatarSeleccionado, origen: 'EscenaMenu' });
+            this.scene.start('EscenaSustentable', { avatarKey: this.avatarSeleccionado, origen: 'EscenaMenu' });
         });
 
         // --- BOTÓN 4: VER CRÉDITOS ---

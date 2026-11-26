@@ -37,20 +37,12 @@
         </div>
     </div>
 
-    <div class="main-wrapper">
-        <header class="game-header">
-            <div class="brand">
-                <span class="brand-badge">MUCHBITS</span>
-                <h1 class="game-title">ARCADE UNIVERSE</h1>
-            </div>
-            <div class="header-status">
-                <button id="btn-fullscreen" class="fullscreen-btn" type="button" aria-label="Pantalla Completa">
-                    <span class="fs-icon">⛶</span>
-                </button>
-                <span class="status-dot"></span> EN VIVO
-            </div>
-        </header>
+    <!-- Botón flotante reubicado para maximizar / alternar pantalla completa -->
+    <button id="btn-fullscreen" class="fullscreen-btn" type="button" aria-label="Pantalla Completa" title="Pantalla Completa">
+        <span class="fs-icon">⛶</span>
+    </button>
 
+    <div class="main-wrapper">
         <main class="game-card">
             <!--Contenedor para el Canvas del juego en el centro-->
             <div id="game-container" class="canvas-wrapper"></div>
@@ -70,24 +62,15 @@
                         aria-label="Mover o Agacharse Abajo">▼</button>
                 </div>
 
-                <!-- Lado Derecho: Botones de Acción Accesibles (verticales) -->
+                <!-- Lado Derecho: Botones de Acción Estilo Control Clásico Retro -->
                 <div class="action-buttons-container" aria-label="Botones de Acción">
-                    <button class="action-btn btn-cancel" type="button" data-action="escape"
-                        aria-label="Salir o Volver (ESC)">
-                        <span class="btn-badge btn-badge-esc">X</span>
-                        <div class="btn-labels">
-                            <span class="main-label">SALIR</span>
-                            <span class="sub-label">ESC</span>
-                        </div>
-                    </button>
-
                     <button class="action-btn btn-confirm" type="button" data-action="enter"
                         aria-label="Aceptar o Entrar (ENTER)">
-                        <span class="btn-badge">✔</span>
-                        <div class="btn-labels">
-                            <span class="main-label">ACEPTAR</span>
-                            <span class="sub-label">ENTER</span>
-                        </div>
+                        <span class="retro-btn-symbol">✔</span>
+                    </button>
+                    <button class="action-btn btn-cancel" type="button" data-action="escape"
+                        aria-label="Salir o Volver (ESC)">
+                        <span class="retro-btn-symbol">X</span>
                     </button>
                 </div>
             </footer>
@@ -105,6 +88,22 @@
     <script src="js/EscenaSustentable3.js"></script>
     <script src="js/mobileControls.js"></script>
     <script src="js/config.js"></script>
+    <script>
+        // Fuerza margin:0 en el canvas de Phaser para evitar espacio
+        // arriba causado por autoCenter legacy (ahora usamos NO_CENTER + flex CSS)
+        window.addEventListener('load', () => {
+            const fixCanvasMargin = () => {
+                const canvas = document.querySelector('#game-container canvas');
+                if (canvas) {
+                    canvas.style.setProperty('margin', '0', 'important');
+                    canvas.style.setProperty('margin-top', '0', 'important');
+                } else {
+                    setTimeout(fixCanvasMargin, 100);
+                }
+            };
+            fixCanvasMargin();
+        });
+    </script>
 </body>
 
 </html>
